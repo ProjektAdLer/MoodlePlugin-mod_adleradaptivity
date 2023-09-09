@@ -27,12 +27,11 @@ require_once(__DIR__.'/lib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 
 
-// Course module id.
+// Module can be referenced by either "id" (Course module id) or "a" (Activity instance id) parameter in GET request.
+// Get Params from GET request.
 $id = optional_param('id', 0, PARAM_INT);
-
-// Activity instance id.
 $a = optional_param('a', 0, PARAM_INT);
-
+// Get objects from either id or a
 if ($id) {
     $cm = get_coursemodule_from_id('adleradaptivity', $id, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -43,55 +42,24 @@ if ($id) {
     $cm = get_coursemodule_from_instance('adleradaptivity', $moduleinstance->id, $course->id, false, MUST_EXIST);
 }
 
+// Check if user is logged in and has access to this course module.
 require_login($course, true, $cm);
+
 
 $modulecontext = context_module::instance($cm->id);
 
-//$event = \mod_adleradaptivity\event\course_module_viewed::create(array(
-//    'objectid' => $moduleinstance->id,
-//    'context' => $modulecontext
-//));
-//$event->add_record_snapshot('course', $course);
-//$event->add_record_snapshot('adleradaptivity', $moduleinstance);
-//$event->trigger();
-
-$PAGE->set_url('/mod/adleradaptivity/view.php', array('id' => $cm->id));
+// set page title, heading, url and context
+$PAGE->set_url('/mod/adleradaptivity/edit_questions.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
+//$output = $PAGE->get_renderer('mod_adleradaptivity', 'edit_questions_renderer');
+$output = $PAGE->get_renderer('mod_adleradaptivity');
+//ob_start(); // Start output buffering.
+echo $output->header();
 
+//echo $output->heading("BLUB");
 
-echo $OUTPUT->header();
-
-$quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
-//$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
-$quba->set_preferred_behaviour("immediatefeedback");
-
-
-//$questions = $DB->get_records('question');
-$mc_questions = array();
-foreach($questions as $key => $question) {
-    $qtype = question_bank::get_qtype($question->qtype, false);
-    if ($qtype->name() === 'missingtype') {
-        debugging('Missing question type: ' . $question->qtype, E_WARNING);
-        continue;
-    }
-    if ($qtype->name() !== 'multichoice') {
-        debugging('Not a multichoice question: ' . $question->qtype, E_NOTICE);
-        continue;
-    }
-    $qtype->get_question_options($question);
-    $mc_questions[] = $question;
-}
-
-$questions = [];
-foreach ($mc_questions as $questiondata) {
-    $questions[] = question_bank::make_question($questiondata);
-}
-
-$quba->start_all_questions();
-
-
-
-echo $OUTPUT->footer();
+echo $output->footer();
+//ob_end_flush(); // Flush output buffers.

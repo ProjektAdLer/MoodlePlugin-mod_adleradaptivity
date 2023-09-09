@@ -30,4 +30,12 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    'mod/adleradaptivity:edit' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

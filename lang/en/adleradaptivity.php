@@ -13,5 +13,7 @@ $string['modulenameplural'] = 'Adler Adaptivities';
 $string['modulename_help'] = 'Insert modulename help text here.';
 $string['pluginadministration'] = 'Adler Adaptivity administration';
 
+$string['menu_edit_questions'] = 'Edit questions';
+
 $string['form_field_title'] = 'Element title';
 $string['form_field_intro'] = 'Description (currently unused but required field by moodle)';
