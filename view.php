@@ -85,7 +85,6 @@ foreach($questions as $key => $question) {
 //    }
 //    $qtype->get_question_options($question);
     $mc_questions[] = $question2;
-    break; // only one question for now
 }
 
 // also done by question_bank::load_question
@@ -102,14 +101,19 @@ $quba->get_id();
 $quba = question_engine::load_questions_usage_by_activity($quba->get_id());
 
 //$slot = $quba->get_first_question_number();
+//$quba->get_slots();  // mh what is this could it simplify the code?
+$slots = [];
+foreach ($mc_questions as $mc_question) {
+    $slots[] = $quba->add_question($mc_question, 1);
+}
 $slot = $quba->add_question($mc_questions[0], 1);
 
 $options = new question_preview_options($question);
 $options->load_user_defaults();
 $options->set_from_request();
 
-$quba->start_question($slot, $options->variant);
-//$quba->start_all_questions();
+//$quba->start_question($slot, $options->variant);
+$quba->start_all_questions();
 
 
 
@@ -130,7 +134,10 @@ echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scroll
 echo html_writer::end_tag('div');
 
 // Output the question.
-echo $quba->render_question($slot, $options, $displaynumber);
+foreach ($slots as $slot) {
+    echo $quba->render_question($slot, $options, $displaynumber);
+    $displaynumber++;
+}
 
 
 
