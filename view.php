@@ -22,9 +22,11 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use qbank_previewquestion\question_preview_options;
+
 require(__DIR__.'/../../config.php');
 require_once(__DIR__.'/lib.php');
-require_once($CFG->dirroot . '/question/editlib.php');
+require_once($CFG->libdir . '/questionlib.php');
 
 
 // Course module id.
@@ -62,36 +64,91 @@ $PAGE->set_context($modulecontext);
 
 
 
-echo $OUTPUT->header();
 
 $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
 //$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
 $quba->set_preferred_behaviour("immediatefeedback");
 
 
-//$questions = $DB->get_records('question');
+$questions = $DB->get_records('question');
 $mc_questions = array();
 foreach($questions as $key => $question) {
-    $qtype = question_bank::get_qtype($question->qtype, false);
-    if ($qtype->name() === 'missingtype') {
-        debugging('Missing question type: ' . $question->qtype, E_WARNING);
-        continue;
-    }
-    if ($qtype->name() !== 'multichoice') {
-        debugging('Not a multichoice question: ' . $question->qtype, E_NOTICE);
-        continue;
-    }
-    $qtype->get_question_options($question);
-    $mc_questions[] = $question;
+    $question2 = question_bank::load_question($question->id);
+//    $qtype = question_bank::get_qtype($question->qtype, false);
+//    if ($qtype->name() === 'missingtype') {
+//        debugging('Missing question type: ' . $question->qtype, E_WARNING);
+//        continue;
+//    }
+//    if ($qtype->name() !== 'multichoice') {
+//        debugging('Not a multichoice question: ' . $question->qtype, E_NOTICE);
+//        continue;
+//    }
+//    $qtype->get_question_options($question);
+    $mc_questions[] = $question2;
+    break; // only one question for now
 }
 
-$questions = [];
-foreach ($mc_questions as $questiondata) {
-    $questions[] = question_bank::make_question($questiondata);
-}
+// also done by question_bank::load_question
+//$questions = [];
+//foreach ($mc_questions as $questiondata) {
+//    $questions[] = question_bank::make_question($questiondata);
+//}
 
-$quba->start_all_questions();
+// save attempt in db
+question_engine::save_questions_usage_by_activity($quba);
+// usage id
+$quba->get_id();
+// load attempt from db
+$quba = question_engine::load_questions_usage_by_activity($quba->get_id());
+
+//$slot = $quba->get_first_question_number();
+$slot = $quba->add_question($mc_questions[0], 1);
+
+$options = new question_preview_options($question);
+$options->load_user_defaults();
+$options->set_from_request();
+
+$quba->start_question($slot, $options->variant);
+//$quba->start_all_questions();
 
 
+
+$actionurl = new moodle_url('/mod/adleradaptivity/view.php', array('id' => $cm->id));  // TODO
+
+
+$displaynumber = 1;
+
+echo $OUTPUT->header();
+
+// Start the question form.
+echo html_writer::start_tag('form', array('method' => 'post', 'action' => $actionurl,
+    'enctype' => 'multipart/form-data', 'id' => 'responseform'));
+echo html_writer::start_tag('div');
+echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
+echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => $slot));
+echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scrollpos', 'value' => '', 'id' => 'scrollpos'));
+echo html_writer::end_tag('div');
+
+// Output the question.
+echo $quba->render_question($slot, $options, $displaynumber);
+
+
+
+
+// Finish the question form.
+echo html_writer::start_tag('div', array('id' => 'previewcontrols', 'class' => 'controls'));
+echo html_writer::empty_tag('input', array('disabled' => 'disabled') + array('type' => 'submit',
+        'name' => 'restart', 'value' => get_string('restart', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
+        'id' => 'id_restart_question_preview'));
+echo html_writer::empty_tag('input', array('disabled' => 'disabled') + array('type' => 'submit',
+        'name' => 'save', 'value' => get_string('save', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
+        'id' => 'id_save_question_preview'));
+echo html_writer::empty_tag('input', array('disabled' => 'disabled')    + array('type' => 'submit',
+        'name' => 'fill',    'value' => get_string('fillincorrect', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1'));
+echo html_writer::empty_tag('input', array('disabled' => 'disabled') + array('type' => 'submit',
+        'name' => 'finish', 'value' => get_string('submitandfinish', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
+        'id' => 'id_finish_question_preview'));
+echo html_writer::end_tag('div');
+echo html_writer::end_tag('form');
 
 echo $OUTPUT->footer();
