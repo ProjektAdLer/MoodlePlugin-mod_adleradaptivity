@@ -143,12 +143,14 @@ $displaynumber = 1;
 
 echo $OUTPUT->header();
 
+//$slot_numbers_on_this_page = $quba->get_slots_on_page($thispage);
+
 // Start the question form.
 echo html_writer::start_tag('form', array('method' => 'post', 'action' => $actionurl,
     'enctype' => 'multipart/form-data', 'id' => 'responseform'));
 echo html_writer::start_tag('div');
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
-echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => "1"));
+echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => json_encode($slots)));
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scrollpos', 'value' => '', 'id' => 'scrollpos'));
 echo html_writer::end_tag('div');
 
