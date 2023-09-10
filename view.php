@@ -49,6 +49,8 @@ require_login($course, true, $cm);
 
 $modulecontext = context_module::instance($cm->id);
 
+
+
 //$event = \mod_adleradaptivity\event\course_module_viewed::create(array(
 //    'objectid' => $moduleinstance->id,
 //    'context' => $modulecontext
@@ -68,6 +70,7 @@ $PAGE->set_context($modulecontext);
 $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
 //$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
 $quba->set_preferred_behaviour("immediatefeedback");
+
 
 
 $questions = $DB->get_records('question');
@@ -93,12 +96,12 @@ foreach($questions as $key => $question) {
 //    $questions[] = question_bank::make_question($questiondata);
 //}
 
-// save attempt in db
-question_engine::save_questions_usage_by_activity($quba);
-// usage id
-$quba->get_id();
-// load attempt from db
-$quba = question_engine::load_questions_usage_by_activity($quba->get_id());
+//// save attempt in db
+//question_engine::save_questions_usage_by_activity($quba);
+//// usage id
+//$quba->get_id();
+//// load attempt from db
+//$quba = question_engine::load_questions_usage_by_activity($quba->get_id());
 
 //$slot = $quba->get_first_question_number();
 //$quba->get_slots();  // mh what is this could it simplify the code?
@@ -106,7 +109,26 @@ $slots = [];
 foreach ($mc_questions as $mc_question) {
     $slots[] = $quba->add_question($mc_question, 1);
 }
-$slot = $quba->add_question($mc_questions[0], 1);
+//$slot = $quba->add_question($mc_questions[0], 1);
+
+
+if (data_submitted()) {
+    $timenow = time();
+    $transaction = $DB->start_delegated_transaction();
+
+    // get latest usage id
+    // TODO: this is very very bad, but should work for the purposes of that prototype
+//    $entries = $DB->get_records('question_usages', null, 'id ASC');
+//    $usageid = $entries[array_key_last($entries)]->id;
+
+//    $quba = question_engine::load_questions_usage_by_activity($usageid);
+//    $postdata = $quba->extract_responses($slots, $_POST);
+    $quba->process_all_actions($timenow);
+    question_engine::save_questions_usage_by_activity($quba);
+
+    $transaction->allow_commit();
+}
+
 
 $options = new question_preview_options($question);
 $options->load_user_defaults();
@@ -129,7 +151,7 @@ echo html_writer::start_tag('form', array('method' => 'post', 'action' => $actio
     'enctype' => 'multipart/form-data', 'id' => 'responseform'));
 echo html_writer::start_tag('div');
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
-echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => $slot));
+echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => "[1,2]"));
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scrollpos', 'value' => '', 'id' => 'scrollpos'));
 echo html_writer::end_tag('div');
 
