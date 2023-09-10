@@ -156,7 +156,7 @@ echo html_writer::end_tag('div');
 
 // Output the question.
 foreach ($slots as $slot) {
-    echo $quba->render_question($slot, $options, $displaynumber);
+    echo $quba->render_question($slot, $options, round($displaynumber/2) . ($slot % 2 == 1 ? "a" : "b"));
     $displaynumber++;
 }
 
@@ -165,15 +165,15 @@ foreach ($slots as $slot) {
 
 // Finish the question form.
 echo html_writer::start_tag('div', array('id' => 'previewcontrols', 'class' => 'controls'));
-echo html_writer::empty_tag('input', array('disabled' => 'disabled') + array('type' => 'submit',
-        'name' => 'restart', 'value' => get_string('restart', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
-        'id' => 'id_restart_question_preview'));
-echo html_writer::empty_tag('input', array('disabled' => 'disabled') + array('type' => 'submit',
-        'name' => 'save', 'value' => get_string('save', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
-        'id' => 'id_save_question_preview'));
-echo html_writer::empty_tag('input', array('disabled' => 'disabled')    + array('type' => 'submit',
-        'name' => 'fill',    'value' => get_string('fillincorrect', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1'));
-echo html_writer::empty_tag('input', array('disabled' => 'disabled') + array('type' => 'submit',
+//echo html_writer::empty_tag('input', array('type' => 'submit',
+//        'name' => 'restart', 'value' => get_string('restart', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
+//        'id' => 'id_restart_question_preview'));
+//echo html_writer::empty_tag('input', array('type' => 'submit',
+//        'name' => 'save', 'value' => get_string('save', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
+//        'id' => 'id_save_question_preview'));
+//echo html_writer::empty_tag('input', array('type' => 'submit',
+//        'name' => 'fill',    'value' => get_string('fillincorrect', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1'));
+echo html_writer::empty_tag('input', array('type' => 'submit',
         'name' => 'finish', 'value' => get_string('submitandfinish', 'question'), 'class' => 'btn btn-secondary mr-1 mb-1',
         'id' => 'id_finish_question_preview'));
 echo html_writer::end_tag('div');

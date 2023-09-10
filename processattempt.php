@@ -3,7 +3,7 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
-
+# reference: quiz\processattempt.php
 
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
@@ -85,4 +85,11 @@ question_engine::save_questions_usage_by_activity($quba);
 
 $transaction->allow_commit();
 
-redirect(new moodle_url('/mod/adleradaptivity/view.php', ['id' => $id, 'attempt' => $attemptid]));
+// check if key "finish" exists in $_POST
+// if yes, redirect to result.php
+// if no, redirect to view.php
+if (array_key_exists('finish', $_POST)) {
+    redirect(new moodle_url('/mod/adleradaptivity/result.php', ['id' => $id, 'attempt' => $attemptid]));
+} else {
+    redirect(new moodle_url('/mod/adleradaptivity/view.php', ['id' => $id, 'attempt' => $attemptid]));
+}
