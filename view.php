@@ -35,6 +35,9 @@ $id = optional_param('id', 0, PARAM_INT);
 // Activity instance id.
 $a = optional_param('a', 0, PARAM_INT);
 
+// attempt id
+$attemptid = optional_param('attempt', -1, PARAM_INT);
+
 if ($id) {
     $cm = get_coursemodule_from_id('adleradaptivity', $id, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -66,17 +69,15 @@ $PAGE->set_context($modulecontext);
 
 
 
-
-$quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
-//$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
-$quba->set_preferred_behaviour("immediatefeedback");
-
-
-
-$questions = $DB->get_records('question');
-$mc_questions = array();
-foreach($questions as $key => $question) {
-    $question2 = question_bank::load_question($question->id);
+// load quiz attempt if attempt parameter is not -1, otherwise create new attempt
+if ($attemptid === -1) {
+    $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
+    //$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
+    $quba->set_preferred_behaviour("immediatefeedback");
+    $questions = $DB->get_records('question');
+    $mc_questions = array();
+    foreach($questions as $key => $question) {
+        $question2 = question_bank::load_question($question->id);
 //    $qtype = question_bank::get_qtype($question->qtype, false);
 //    if ($qtype->name() === 'missingtype') {
 //        debugging('Missing question type: ' . $question->qtype, E_WARNING);
@@ -87,8 +88,8 @@ foreach($questions as $key => $question) {
 //        continue;
 //    }
 //    $qtype->get_question_options($question);
-    $mc_questions[] = $question2;
-}
+        $mc_questions[] = $question2;
+    }
 
 // also done by question_bank::load_question
 //$questions = [];
@@ -105,41 +106,37 @@ foreach($questions as $key => $question) {
 
 //$slot = $quba->get_first_question_number();
 //$quba->get_slots();  // mh what is this could it simplify the code?
-$slots = [];
-foreach ($mc_questions as $mc_question) {
-    $slots[] = $quba->add_question($mc_question, 1);
-}
+    $slots = [];
+    foreach ($mc_questions as $mc_question) {
+        $slots[] = $quba->add_question($mc_question, 1);
+    }
 //$slot = $quba->add_question($mc_questions[0], 1);
 
+    //$quba->start_question($slot, $options->variant);
+    $quba->start_all_questions();
 
-if (data_submitted()) {
-    $timenow = time();
-    $transaction = $DB->start_delegated_transaction();
-
-    // get latest usage id
-    // TODO: this is very very bad, but should work for the purposes of that prototype
-//    $entries = $DB->get_records('question_usages', null, 'id ASC');
-//    $usageid = $entries[array_key_last($entries)]->id;
-
-//    $quba = question_engine::load_questions_usage_by_activity($usageid);
-//    $postdata = $quba->extract_responses($slots, $_POST);
-    $quba->process_all_actions($timenow);
     question_engine::save_questions_usage_by_activity($quba);
-
-    $transaction->allow_commit();
+} else {
+    $quba = question_engine::load_questions_usage_by_activity($attemptid);
+    $slots = $quba->get_slots();
 }
+
+
+
+
+
+
 
 
 $options = new question_preview_options($question);
 $options->load_user_defaults();
 $options->set_from_request();
 
-//$quba->start_question($slot, $options->variant);
-$quba->start_all_questions();
 
 
 
-$actionurl = new moodle_url('/mod/adleradaptivity/view.php', array('id' => $cm->id));  // TODO
+
+$actionurl = new moodle_url('/mod/adleradaptivity/processattempt.php', ['id' => $cm->id, 'attempt' => $quba->get_id()]);  // TODO
 
 
 $displaynumber = 1;
@@ -151,7 +148,7 @@ echo html_writer::start_tag('form', array('method' => 'post', 'action' => $actio
     'enctype' => 'multipart/form-data', 'id' => 'responseform'));
 echo html_writer::start_tag('div');
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
-echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => "[1,2]"));
+echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots', 'value' => "1"));
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scrollpos', 'value' => '', 'id' => 'scrollpos'));
 echo html_writer::end_tag('div');
 
