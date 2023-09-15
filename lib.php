@@ -10,6 +10,10 @@ use core_completion\api as completion_api;
  */
 function adleradaptivity_supports($feature) {
     switch ($feature) {
+        case FEATURE_COMPLETION_TRACKS_VIEWS:  // this actually enables the "Activity completion" tracking setting "Show activity as complete when conditions are met"
+        case FEATURE_COMPLETION_HAS_RULES:  // no idea what this actually activates. What i did expect from this setting is done by FEATURE_COMPLETION_TRACKS_VIEWS
+            // update: maybe everything works as expected and it just looked otherwise because of some stuff not (yet) working
+        case FEATURE_USES_QUESTIONS:
         case FEATURE_MOD_INTRO:
             return true;
         default:
@@ -50,10 +54,12 @@ function adleradaptivity_add_instance($instancedata, $mform = null): int {
 function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
     global $DB;
 
+//    $updated_module = DB->get_record('adleradaptivity2', array('id' => $moduleinstance->instance));
+
     $moduleinstance->timemodified = time();
     $moduleinstance->id = $moduleinstance->instance;
 
-    return $DB->update_record('adleradaptivity2', $moduleinstance);
+    return $DB->update_record('adleradaptivity', $moduleinstance);
 }
 
 /** The [modname]_delete_instance() function is called when the activity
@@ -87,4 +93,49 @@ function adleradaptivity_extend_settings_navigation(settings_navigation $setting
     }
 
     question_extend_settings_navigation($adleradaptivity_node, $settings->get_page()->cm->context);
+}
+
+/**
+ * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
+ *
+ * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+ * @return array $descriptions the array of descriptions for the custom rules.
+ */
+function adleradaptivity_get_completion_active_rule_descriptions($cm) {
+    return ['Lorem ipsum'];
+}
+
+
+/**
+ * Add a get_coursemodule_info function to add 'extra' information
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function adleradaptivity_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+//    $fields = 'id, name, intro, introformat, completionposts, completiondiscussions, completionreplies, duedate, cutoffdate';
+    if (!$cm = $DB->get_record('adleradaptivity', $dbparams)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $cm->name;
+//
+//    if ($coursemodule->showdescription) {
+//        // Convert intro to html. Do not filter cached version, filters run at display time.
+//        $result->content = format_module_intro('forum', $forum, $coursemodule->id, false);
+//    }
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['default_rule'] = "blub";
+    }
+    return $result;
 }

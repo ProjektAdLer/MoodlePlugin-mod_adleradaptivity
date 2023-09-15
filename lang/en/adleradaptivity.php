@@ -17,3 +17,4 @@ $string['menu_edit_questions'] = 'Edit questions';
 
 $string['form_field_title'] = 'Element title';
 $string['form_field_intro'] = 'Description (currently unused but required field by moodle)';
+$string['form_field_adleradaptivity_rule_help'] = 'Some help text';

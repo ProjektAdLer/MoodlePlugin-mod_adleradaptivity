@@ -73,7 +73,7 @@ $PAGE->set_context($modulecontext);
 if ($attemptid === -1) {
     $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
     //$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
-    $quba->set_preferred_behaviour("immediatefeedback");
+    $quba->set_preferred_behaviour("adaptivenopenalty");
     $questions = $DB->get_records('question');
     $mc_questions = array();
     foreach($questions as $key => $question) {

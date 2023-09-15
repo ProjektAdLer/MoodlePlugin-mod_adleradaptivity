@@ -40,7 +40,7 @@ $transaction = $DB->start_delegated_transaction();
 
 $quba = question_engine::load_questions_usage_by_activity($attemptid);
 
-$questions = $DB->get_records('question');
+//$questions = $DB->get_records('question');
 //$mc_questions = array();
 //foreach($questions as $key => $question) {
 //    $question2 = question_bank::load_question($question->id);
@@ -81,15 +81,29 @@ $questions = $DB->get_records('question');
 
 //    $postdata = $quba->extract_responses($slots, $_POST);
 $quba->process_all_actions($timenow);
-question_engine::save_questions_usage_by_activity($quba);
 
-$transaction->allow_commit();
+
+
+// Update completion state
+$completion = new completion_info($course);
+if ($completion->is_enabled($cm)) {
+    $completion->update_state($cm, COMPLETION_COMPLETE);
+}
 
 // check if key "finish" exists in $_POST
-// if yes, redirect to result.php
-// if no, redirect to view.php
 if (array_key_exists('finish', $_POST)) {
-    redirect(new moodle_url('/mod/adleradaptivity/result.php', ['id' => $id, 'attempt' => $attemptid]));
+    $quba->finish_all_questions($timenow);
+    question_engine::save_questions_usage_by_activity($quba);
+
+    $transaction->allow_commit();
+
+
+    // redirect to course
+    redirect(new moodle_url('/course/view.php', ['id' => $course->id]));
+//    redirect(new moodle_url('/mod/adleradaptivity/result.php', ['id' => $id, 'attempt' => $attemptid]));
 } else {
+    question_engine::save_questions_usage_by_activity($quba);
+
+    $transaction->allow_commit();
     redirect(new moodle_url('/mod/adleradaptivity/view.php', ['id' => $id, 'attempt' => $attemptid]));
 }
