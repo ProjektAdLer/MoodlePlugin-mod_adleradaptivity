@@ -14,7 +14,7 @@ use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
 
-class get_question_details extends external_api {
+class answer_questions extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
@@ -31,7 +31,21 @@ class get_question_details extends external_api {
                             VALUE_OPTIONAL
                         ),
                     ]
-                )
+                ),
+                'questions' => new external_multiple_structure(
+                    new external_single_structure(
+                        [
+                            'uuid' => new external_value(
+                                PARAM_TEXT,
+                                'UUID of the question',
+                            ),
+                            'answer' => new external_value(
+                                PARAM_TEXT,
+                                'JSON encoded data containing the question answer. For example for a multiple choice question: [false, false, true, false]. null if the question was not attempted.',
+                            ),
+                        ]
+                    )
+                ),
             ]
         );
     }
@@ -51,19 +65,19 @@ class get_question_details extends external_api {
                                     PARAM_TEXT,
                                     "Status of the question, one of correct, incorrect, notAttempted"
                                 ),
-                                "answers" => new external_value(
-                                    PARAM_TEXT,
-                                    "JSON encoded data containing the question answer. For example for a multiple choice question: [false, false, true, false]. null if the question was not attempted."
-                                ),
-//                                "answers" => new external_multiple_structure(
-//                                    new external_value(
-//                                        PARAM_TEXT,
-//                                        "JSON encoded data containing the question answer. For example for a multiple choice question: [false, false, true, false]. null if the question was not attempted."
-//                                    )
-//                                )
+//                                "answers" => new external_value(
+//                                    PARAM_TEXT,
+//                                    "JSON encoded data containing the question answer. For example for a multiple choice question: [false, false, true, false]. null if the question was not attempted."
+//                                ),
+////                                "answers" => new external_multiple_structure(
+////                                    new external_value(
+////                                        PARAM_TEXT,
+////                                        "JSON encoded data containing the question answer. For example for a multiple choice question: [false, false, true, false]. null if the question was not attempted."
+////                                    )
+////                                )
                             ]
                         )
-                    )
+                    ),
                 ]
             )
         ]);
@@ -75,10 +89,11 @@ class get_question_details extends external_api {
      * @throws dml_exception
      * @throws restricted_context_exception
      */
-    public static function execute(array $element): array {
+    public static function execute(array $element, array $questions): array {
         // Parameter validation
-        $params = self::validate_parameters(self::execute_parameters(), array('element' => $element));
+        $params = self::validate_parameters(self::execute_parameters(), array('element' => $element, 'questions' => $questions));
         $element = $params['element'];
+        $questions = $params['questions'];
 
         return [
             'data' => [
@@ -86,22 +101,18 @@ class get_question_details extends external_api {
                     [
                         "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
                         "status" => "correct",
-                        "answers" => json_encode([false, false, true, false])
                     ],
                     [
                         "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
                         "status" => "incorrect",
-                        "answers" => json_encode([false, false, true, false])
                     ],
                     [
                         "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
                         "status" => "notAttempted",
-                        "answers" => null
                     ],
                     [
                         "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
                         "status" => "correct",
-                        "answers" => json_encode([false, false, true, false])
                     ]
                 ]
             ]
