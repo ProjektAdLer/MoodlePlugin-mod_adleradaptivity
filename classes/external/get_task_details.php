@@ -1,5 +1,6 @@
 <?php
 
+
 namespace mod_adleradaptivity\external;
 
 global $CFG;
@@ -14,7 +15,7 @@ use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
 
-class get_question_details extends external_api {
+class get_task_details extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
@@ -40,7 +41,7 @@ class get_question_details extends external_api {
         return new external_function_parameters([
             'data' => new external_single_structure(
                 [
-                    'questions' => new external_multiple_structure(
+                    'tasks' => new external_multiple_structure(
                         new external_single_structure(
                             [
                                 "uuid" => new external_value(
@@ -50,10 +51,6 @@ class get_question_details extends external_api {
                                 "status" => new external_value(
                                     PARAM_TEXT,
                                     "Status of the question, one of correct, incorrect, notAttempted"
-                                ),
-                                "answers" => new external_value(
-                                    PARAM_TEXT,
-                                    "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'answer_correct'. null if the question was not attempted."
                                 ),
                             ]
                         )
@@ -76,41 +73,22 @@ class get_question_details extends external_api {
 
         return [
             'data' => [
-                'questions' => [
+                'tasks' => [
                     [
                         "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
                         "status" => "correct",
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => true, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true]
-                        ])
                     ],
                     [
                         "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
                         "status" => "incorrect",
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => false],
-                            ['checked' => true, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => false]
-                        ])
                     ],
                     [
                         "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
                         "status" => "notAttempted",
-                        "answers" => null
                     ],
                     [
                         "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
                         "status" => "correct",
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => true, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true]
-                        ])
                     ]
                 ]
             ]

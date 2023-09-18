@@ -11,6 +11,15 @@ $functions = array(
         'capabilities' => 'mod/adleradaptivity:view', // comma separated list of capabilities used by the function.
         'loginrequired' => true
     ),
+    'mod_adleradaptivity_get_task_details' => array(
+        'classname' => 'mod_adleradaptivity\external\get_task_details',
+        'description' => 'Get details for all tasks in one learning element',    //human readable description of the web service function
+        'type' => 'read',
+        'ajax' => false,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE, 'adler_services'),
+        'capabilities' => 'mod/adleradaptivity:view',
+        'loginrequired' => true
+    ),
     'mod_adleradaptivity_answer_questions' => array(
         'classname' => 'mod_adleradaptivity\external\answer_questions',
         'description' => 'Answer one question',    //human readable description of the web service function
