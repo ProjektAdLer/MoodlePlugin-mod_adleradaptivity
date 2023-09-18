@@ -39,7 +39,8 @@ class custom_completion extends activity_custom_completion {
                 $status = static::check_element_completed();
                 break;
         }
-return COMPLETION_INCOMPLETE;
+// TODO changing this line between INCOMPLETE and COMPLETE will will change the completion state accordingly on EVERY form submit
+return COMPLETION_COMPLETE;
         return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 

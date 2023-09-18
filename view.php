@@ -53,7 +53,7 @@ require_login($course, true, $cm);
 $modulecontext = context_module::instance($cm->id);
 
 
-
+// This probably has to be implemented, but not here and not that way. search for "course_module_viewed" in other modules
 //$event = \mod_adleradaptivity\event\course_module_viewed::create(array(
 //    'objectid' => $moduleinstance->id,
 //    'context' => $modulecontext
@@ -72,47 +72,19 @@ $PAGE->set_context($modulecontext);
 // load quiz attempt if attempt parameter is not -1, otherwise create new attempt
 if ($attemptid === -1) {
     $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
-    //$quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
     $quba->set_preferred_behaviour("adaptivenopenalty");
-    $questions = $DB->get_records('question');
-    $mc_questions = array();
-    foreach($questions as $key => $question) {
-        $question2 = question_bank::load_question($question->id);
-//    $qtype = question_bank::get_qtype($question->qtype, false);
-//    if ($qtype->name() === 'missingtype') {
-//        debugging('Missing question type: ' . $question->qtype, E_WARNING);
-//        continue;
-//    }
-//    if ($qtype->name() !== 'multichoice') {
-//        debugging('Not a multichoice question: ' . $question->qtype, E_NOTICE);
-//        continue;
-//    }
-//    $qtype->get_question_options($question);
-        $mc_questions[] = $question2;
+    $questions = array();
+    foreach($DB->get_records('question') as $key => $question) {
+        $questions[] = question_bank::load_question($question->id);
     }
 
-// also done by question_bank::load_question
-//$questions = [];
-//foreach ($mc_questions as $questiondata) {
-//    $questions[] = question_bank::make_question($questiondata);
-//}
-
-//// save attempt in db
-//question_engine::save_questions_usage_by_activity($quba);
-//// usage id
-//$quba->get_id();
-//// load attempt from db
-//$quba = question_engine::load_questions_usage_by_activity($quba->get_id());
-
-//$slot = $quba->get_first_question_number();
-//$quba->get_slots();  // mh what is this could it simplify the code?
     $slots = [];
-    foreach ($mc_questions as $mc_question) {
-        $slots[] = $quba->add_question($mc_question, 1);
+    foreach ($questions as $question) {
+        $slots[] = $quba->add_question($question, 1);
     }
-//$slot = $quba->add_question($mc_questions[0], 1);
+    //$slots = $quba->get_slots();  // this should be equivalent to defining the slots array from the return values of add_question()
 
-    //$quba->start_question($slot, $options->variant);
+    //$quba->start_question($slot, $options->variant); // should be an alternative for individual questions to start_all_questions()
     $quba->start_all_questions();
 
     question_engine::save_questions_usage_by_activity($quba);
@@ -122,28 +94,19 @@ if ($attemptid === -1) {
 }
 
 
-
-
-
-
-
-
+// not exactly sure about that, probably better doing this in the foreach loop below
+$question = $questions[0];
 $options = new question_preview_options($question);
 $options->load_user_defaults();
 $options->set_from_request();
 
 
-
-
-
-$actionurl = new moodle_url('/mod/adleradaptivity/processattempt.php', ['id' => $cm->id, 'attempt' => $quba->get_id()]);  // TODO
+$actionurl = new moodle_url('/mod/adleradaptivity/processattempt.php', ['id' => $cm->id, 'attempt' => $quba->get_id()]);
 
 
 $displaynumber = 1;
 
 echo $OUTPUT->header();
-
-//$slot_numbers_on_this_page = $quba->get_slots_on_page($thispage);
 
 // Start the question form.
 echo html_writer::start_tag('form', array('method' => 'post', 'action' => $actionurl,
@@ -159,8 +122,6 @@ foreach ($slots as $slot) {
     echo $quba->render_question($slot, $options, round($displaynumber/2) . ($slot % 2 == 1 ? "a" : "b"));
     $displaynumber++;
 }
-
-
 
 
 // Finish the question form.
