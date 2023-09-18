@@ -7,10 +7,9 @@ namespace mod_adleradaptivity\completion;
 use core_completion\activity_custom_completion;
 
 /**
- * Activity custom completion subclass for the quiz activity.
+ * Activity custom completion subclass for the adleradaptivity activity.
  *
- * Class for defining mod_quiz's custom completion rules and fetching the completion statuses
- * of the custom completion rules for a given quiz instance and a user.
+ * Class for defining mod_adleradaptivity's custom completion rule and fetching the completion statuse
  *
  * @package   mod_adleradaptivity
  * @copyright 2023 Markus Heck
@@ -39,7 +38,8 @@ class custom_completion extends activity_custom_completion {
                 $status = static::check_element_completed();
                 break;
         }
-return COMPLETION_INCOMPLETE;
+// TODO changing this line between INCOMPLETE and COMPLETE will will change the completion state accordingly on EVERY form submit
+return COMPLETION_COMPLETE;
         return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 

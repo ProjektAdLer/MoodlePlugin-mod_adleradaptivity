@@ -6,8 +6,6 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/lib.php');
 class mod_adleradaptivity_mod_form extends moodleform_mod {
 
     function definition() {
-        global $CFG, $DB, $OUTPUT;
-
         $mform =& $this->_form;
 
         $mform->addElement('text', 'name', get_string('form_field_title', 'mod_adleradaptivity'), ['size' => '64']);
@@ -15,11 +13,6 @@ class mod_adleradaptivity_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
 
         $this->standard_intro_elements(get_string('form_field_intro', 'mod_adleradaptivity'));
-
-
-//        // Label does not add "Show description" checkbox meaning that 'intro' is always shown on the course page.
-//        $mform->addElement('hidden', 'showdescription', 1);
-//        $mform->setType('showdescription', PARAM_INT);
 
         $this->standard_coursemodule_elements();
 
@@ -75,7 +68,7 @@ class mod_adleradaptivity_mod_form extends moodleform_mod {
 
     /**
      * @param array $data Input data not yet validated.
-     * @return bool True if one or more rules is enabled, false if none are.
+     * @return bool True if one or more rules enabled, false otherwise.
      */
     public function completion_rule_enabled($data) {
         // for my understanding this should check whether the checkbox in add_completion_rules is checked

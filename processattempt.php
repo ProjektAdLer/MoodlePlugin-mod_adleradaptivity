@@ -7,8 +7,8 @@ require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
-
-
+// Activity instance id
+$a = optional_param('a', 0, PARAM_INT);
 // attempt id
 $attemptid = required_param('attempt', PARAM_INT);
 
@@ -29,57 +29,10 @@ if ($id) {
 require_login($course, false, $cm);
 require_sesskey();
 
-
 $transaction = $DB->start_delegated_transaction();
-
-//// get latest usage id
-//// TODO: this is very very bad, but should work for the purposes of that prototype
-//$entries = $DB->get_records('question_usages', null, 'id ASC');
-//$attemptid = $entries[array_key_last($entries)]->id;
-
 
 $quba = question_engine::load_questions_usage_by_activity($attemptid);
 
-//$questions = $DB->get_records('question');
-//$mc_questions = array();
-//foreach($questions as $key => $question) {
-//    $question2 = question_bank::load_question($question->id);
-////    $qtype = question_bank::get_qtype($question->qtype, false);
-////    if ($qtype->name() === 'missingtype') {
-////        debugging('Missing question type: ' . $question->qtype, E_WARNING);
-////        continue;
-////    }
-////    if ($qtype->name() !== 'multichoice') {
-////        debugging('Not a multichoice question: ' . $question->qtype, E_NOTICE);
-////        continue;
-////    }
-////    $qtype->get_question_options($question);
-//    $mc_questions[] = $question2;
-//}
-//
-//// also done by question_bank::load_question
-////$questions = [];
-////foreach ($mc_questions as $questiondata) {
-////    $questions[] = question_bank::make_question($questiondata);
-////}
-//
-////// save attempt in db
-////question_engine::save_questions_usage_by_activity($quba);
-////// usage id
-////$quba->get_id();
-////// load attempt from db
-////$quba = question_engine::load_questions_usage_by_activity($quba->get_id());
-//
-////$slot = $quba->get_first_question_number();
-////$quba->get_slots();  // mh what is this could it simplify the code?
-//$slots = [];
-//foreach ($mc_questions as $mc_question) {
-//    $slots[] = $quba->add_question($mc_question, 1);
-//}
-
-
-
-//    $postdata = $quba->extract_responses($slots, $_POST);
 $quba->process_all_actions($timenow);
 
 

@@ -1,5 +1,8 @@
 <?php
 
+// required file per moodle doc https://docs.moodle.org/dev/Activity_modules#index.php
+// no idea where it is called (did not care about that yet)
+
 require_once('../../config.php');
 
 // The `id` parameter is the course id.
