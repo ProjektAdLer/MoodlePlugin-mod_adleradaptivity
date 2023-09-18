@@ -93,15 +93,17 @@ function adleradaptivity_extend_settings_navigation(settings_navigation $setting
     question_extend_settings_navigation($adleradaptivity_node, $settings->get_page()->cm->context);
 }
 
-/**
- * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
- *
- * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
- * @return array $descriptions the array of descriptions for the custom rules.
- */
-function mod_adleradaptivity_get_completion_active_rule_descriptions($cm) {
-    return ['Lorem ipsum'];
-}
+// Could not find out where this function is called (in 4.2.1). My guess is this was required before and is now obsolete with
+// the introduction of the custom_completion class. Sadly, I could not find any documentation about this assumption.
+///**
+// * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
+// *
+// * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+// * @return array $descriptions the array of descriptions for the custom rules.
+// */
+//function mod_adleradaptivity_get_completion_active_rule_descriptions($cm) {
+//    return ['Lorem ipsum'];
+//}
 
 
 /**
