@@ -65,10 +65,10 @@ class answer_questions extends external_api {
                                     PARAM_TEXT,
                                     "Status of the question, one of correct, incorrect, notAttempted"
                                 ),
-//                                "answers" => new external_value(
-//                                    PARAM_TEXT,
-//                                    "JSON encoded data containing the question answer. For example for a multiple choice question: [false, false, true, false]. null if the question was not attempted."
-//                                ),
+                                "answers" => new external_value(
+                                    PARAM_TEXT,
+                                    "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'answer_correct'. null if the question was not attempted."
+                                ),
 ////                                "answers" => new external_multiple_structure(
 ////                                    new external_value(
 ////                                        PARAM_TEXT,
@@ -101,18 +101,42 @@ class answer_questions extends external_api {
                     [
                         "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
                         "status" => "correct",
+                        "answers" => json_encode([
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => true, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => true],
+                        ])
                     ],
                     [
                         "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
                         "status" => "incorrect",
+                        "answers" => json_encode([
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => false],
+                            ['checked' => true, 'answer_correct' => false],
+                            ['checked' => false, 'answer_correct' => false],
+                        ])
                     ],
                     [
                         "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
-                        "status" => "notAttempted",
+                        "status" => "correct",
+                        "answers" => json_encode([
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => true, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => true],
+                        ])
                     ],
                     [
                         "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
                         "status" => "correct",
+                        "answers" => json_encode([
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => true],
+                            ['checked' => true, 'answer_correct' => true],
+                            ['checked' => false, 'answer_correct' => true],
+                        ])
                     ]
                 ]
             ]
