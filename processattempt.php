@@ -1,7 +1,7 @@
 <?php
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/mod/quiz/locallib.php');
+require_once($CFG->libdir . '/questionlib.php');
 
 # reference: quiz\processattempt.php
 

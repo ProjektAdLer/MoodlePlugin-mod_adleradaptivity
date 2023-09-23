@@ -5,6 +5,7 @@ namespace mod_adleradaptivity\external;
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
+use context_module;
 use core_external\restricted_context_exception;
 use dml_exception;
 use external_api;
@@ -13,6 +14,8 @@ use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
+use mod_adleradaptivity\local\helpers;
+use moodle_exception;
 
 class answer_questions extends external_api {
     public static function execute_parameters(): external_function_parameters {
@@ -106,16 +109,81 @@ class answer_questions extends external_api {
     }
 
     /**
-     * @param array $elements [int $course_id, string $element_type, array $uuids]
+     * @param array $element [int $module_id, string $instance_id]
+     * @param array $questions [array $question]
      * @throws invalid_parameter_exception
      * @throws dml_exception
      * @throws restricted_context_exception
+     * @throws moodle_exception
      */
     public static function execute(array $element, array $questions): array {
+        global $DB;
+
         // Parameter validation
         $params = self::validate_parameters(self::execute_parameters(), array('element' => $element, 'questions' => $questions));
         $element = $params['element'];
         $questions = $params['questions'];
+
+        // $element has to contain either module_id or instance_id. Both are optional parameters as defined in execute_parameters.
+        // - If module_id is given, fetch the module from the database and get the instance_id from it.
+        // - If instance_id is given, fetch the module from the database and get the module_id from it.
+        // - If none of them is given, throw an exception.
+        if (isset($element['module_id'])) {
+            $module = get_coursemodule_from_id('adleradaptivity', $element['module_id'], 0, false, MUST_EXIST);
+        } else if (isset($element['instance_id'])) {
+            $module = get_coursemodule_from_instance('adleradaptivity', $element['instance_id'], 0, false, MUST_EXIST);
+        } else {
+            throw new invalid_parameter_exception('Either module_id or instance_id has to be given.');
+        }
+        $module_id = $module->id;
+        $instance_id = $module->instance;
+
+        // default validation stuff with context
+        $context = context_module::instance($module->id);
+        static::validate_context($context);
+
+
+        // validate all questions are in the given module and save question_bank_entry and task in $questions for later use
+        foreach($questions as $key => $question) {
+            // This SQL statement is designed to select all columns from the {tasks} table where there is a matching condition between {questions}, {tasks}, and {question_bank_entries} tables.
+            // The statement performs the following:
+            // 1. Joins the {question_bank_entries} table with the {questions} table where the 'id' of {question_bank_entries} equals 'question_bank_entries_id' of {questions}.
+            // 2. Then, it joins the resultant set with the {tasks} table where 'adleradaptivity_tasks_id' of {questions} equals the 'id' of {tasks}.
+            // 3. It filters the result to include rows where 'idnumber' of {question_bank_entries} is "978c2fb5-a947-4d22-8481-5824187d4641" and 'adleradaptivity_id' of {tasks} is 1.
+            $sql = "
+                SELECT t.*
+                FROM {question_bank_entries} qbe
+                JOIN {adleradaptivity_questions} q ON qbe.id = q.question_bank_entries_id
+                JOIN {adleradaptivity_tasks} t ON q.adleradaptivity_tasks_id = t.id
+                WHERE qbe.idnumber = ? AND t.adleradaptivity_id = ?;
+            ";
+            $adleradaptivity_task = $DB->get_record_sql($sql, [$question['uuid'], $instance_id]);
+            if (!$adleradaptivity_task) {
+                throw new invalid_parameter_exception('Question with uuid ' . $question['uuid'] . ' is not in the given module.');
+            }
+
+            // save $adleradaptivity_task for later use
+            $questions[$key]['task'] = $adleradaptivity_task;
+        }
+
+        // TODO: this should work with class loading (or not because class loading is for classes)
+//        global $CFG;
+//        require_once($CFG->dirroot . '/mod/adleradaptivity/classes/local/helpers.php');
+        // load attempt
+        $quba = helpers::load_or_create_question_usage($module_id);
+
+
+        // TODO: question type handling: if question is of type "multichoice", then continue, otherwise return not supported
+        // TODO: convert $question['answer'] ([false, false, true, false]) to the format required by the question type
+        // TODO: Proccess answer
+        //    create attempt if not exists, otherwise load attempt
+
+        // TODO: after processing all questions: check if affected tasks are now complete
+        // TODO: after processing all questions: check if module is now complete
+
+        // TODO: return data with status of affected questions, tasks and modules
+
+
 
         return [
             'data' => [

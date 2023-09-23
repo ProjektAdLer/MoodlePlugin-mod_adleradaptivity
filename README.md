@@ -25,3 +25,13 @@ It will now list just all added questions. My aim was to work with multiplechoic
 The questions are numbered 1a, 1b, 2a, 2b, ... as a test for custom question numbering (Default is just 1, 2, 3, ...).
 
 
+some notes for me:
+adleradaptivity_questions -> question_bank_entries
+
+question_bank_entries has uuids for questions
+
+get actual question: 
+- get lines FROM question_version WHERE question_versions.questionbankentryid = question_bank_entries.id
+- get highest question_versions.version
+- form this entry take questionid
+- (optional) get question by questionid

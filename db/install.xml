@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/adleradaptivity/db" VERSION="20230918" COMMENT="XMLDB file for Moodle mod/adleradaptivity"
+<XMLDB PATH="mod/adleradaptivity/db" VERSION="20230921" COMMENT="XMLDB file for Moodle mod/adleradaptivity"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -7,10 +7,10 @@
     <TABLE NAME="adleradaptivity" COMMENT="Adler adaptivity activity module">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Course this module is part of"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="intro" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="adapt_element_intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="User visible description of the activity"/>
+        <FIELD NAME="adaptivity_element_intro" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="User visible introduction text. This is a text shown inside the learning element"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
@@ -19,32 +19,43 @@
         <KEY NAME="fk_course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="mod_adleradapt_tasks" COMMENT="Tasks consist of multiple questions with different difficulties. Ugly table name ('adapt' instead of 'adaptivity' because moodle allows only short table names. This allows longer appendixes to describe the table.">
+    <TABLE NAME="adleradaptivity_tasks" COMMENT="Tasks consist of multiple questions with different difficulties. Ugly table name ('adapt' instead of 'adaptivity' because moodle allows only short table names. This allows longer appendixes to describe the table.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="adleradapt_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="title" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="uuid" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="adleradaptivity_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity activity this task is part of"/>
+        <FIELD NAME="title" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="User visible title of the task"/>
+        <FIELD NAME="uuid" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Unique identifier of the task"/>
         <FIELD NAME="optional" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether this task is optional to complete the module"/>
         <FIELD NAME="required_difficulty" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="higher is more difficult; condition is: equal or higher"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_adleradapt" TYPE="foreign" FIELDS="adleradapt_id" REFTABLE="mod_adleradapt" REFFIELDS="id"/>
+        <KEY NAME="fk_adleradaptivity" TYPE="foreign" FIELDS="adleradaptivity_id" REFTABLE="adleradaptivity" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="mod_adleradapt_questions" COMMENT="Individual questions. For the same task there might be multiple questions with different difficulties.  Ugly table name ('adapt' instead of 'adaptivity' because moodle allows only short table names. This allows longer appendixes to describe the table.">
+    <TABLE NAME="adleradaptivity_questions" COMMENT="Individual questions. For the same task there might be multiple questions with different difficulties.  Ugly table name ('adapt' instead of 'adaptivity' because moodle allows only short table names. This allows longer appendixes to describe the table.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="adleradapt_tasks_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="question_bank_entries_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="adleradaptivity_tasks_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity tasks this question is part of"/>
+        <FIELD NAME="question_bank_entries_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Question bank entry this entry relates to. 1:1 relation"/>
         <FIELD NAME="difficulty" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_adleradapt_tasks" TYPE="foreign" FIELDS="adleradapt_tasks_id" REFTABLE="mod_adleradapt_tasks" REFFIELDS="id"/>
+        <KEY NAME="fk_adleradaptivity_tasks" TYPE="foreign" FIELDS="adleradaptivity_tasks_id" REFTABLE="adleradaptivity_tasks" REFFIELDS="id"/>
         <KEY NAME="fk_question_bank_entries_id" TYPE="foreign" FIELDS="question_bank_entries_id" REFTABLE="question_bank_entries" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="adleradaptivity_attempts" COMMENT="stores relation between a 'question' attempt and a user (looks like the question attempts are user independent)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="attempt_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Every attempt started is represented as a line in the question_usages table. question_attemps are attempts on individual questions."/>
+        <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User owning this attempt"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_attempt_id" TYPE="foreign" FIELDS="attempt_id" REFTABLE="question_usages" REFFIELDS="id"/>
+        <KEY NAME="fk_user_id" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
