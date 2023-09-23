@@ -57,19 +57,23 @@ class answer_questions extends external_api {
         return new external_function_parameters([
             'data' => new external_single_structure(
                 [
-                    'modules' => new external_multiple_structure(
-                        new external_single_structure(
-                            [
-                                "uuid" => new external_value(
-                                    PARAM_TEXT,
-                                    "UUID of the module"
-                                ),
-                                "status" => new external_value(
-                                    PARAM_TEXT,
-                                    "Status of the Task, one of correct, incorrect"
-                                ),
-                            ]
-                        )
+                    'module' => new external_single_structure(
+                        [
+                            'module_id' => new external_value(
+                                PARAM_TEXT,
+                                'Either module_id or instance_id are required. Module_id of the adaptivity module',
+                                VALUE_OPTIONAL
+                            ),
+                            'instance_id' => new external_value(
+                                PARAM_TEXT,
+                                'Either module_id or instance_id are required. Instance_id of the adaptivity module',
+                                VALUE_OPTIONAL
+                            ),
+                            "status" => new external_value(
+                                PARAM_TEXT,
+                                "Status of the Task, one of correct, incorrect"
+                            ),
+                        ]
                     ),
                     'tasks' => new external_multiple_structure(
                         new external_single_structure(
@@ -92,7 +96,7 @@ class answer_questions extends external_api {
                                     PARAM_TEXT,
                                     "UUID of the question"
                                 ),
-                                "status_question" => new external_value(
+                                "status" => new external_value(
                                     PARAM_TEXT,
                                     "Status of the Task, one of correct, incorrect, notAttempted"
                                 ),
@@ -193,16 +197,15 @@ class answer_questions extends external_api {
                         'status' => 'correct', // or incorrect
                     ]
                 ],
-                'modules' => [
-                    [
-                        'uuid' => '687d3191-dc59-4142-a7cb-957049e50fcf',
-                        'status' => 'correct', // or incorrect
-                    ]
+                'module' => [
+                    'module_id' => '10',
+                    'instance_id' => '1',
+                    'status' => 'correct', // or incorrect
                 ],
                 'questions' => [
                     [
                         "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
-                        "status_question" => "correct", // or incorrect
+                        "status" => "correct", // or incorrect
                         "answers" => json_encode([
                             ['checked' => false, 'answer_correct' => true],
                             ['checked' => false, 'answer_correct' => true],
@@ -212,7 +215,7 @@ class answer_questions extends external_api {
                     ],
                     [
                         "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
-                        "status_question" => "incorrect",
+                        "status" => "incorrect",
                         "answers" => json_encode([
                             ['checked' => false, 'answer_correct' => true],
                             ['checked' => false, 'answer_correct' => false],
@@ -222,7 +225,7 @@ class answer_questions extends external_api {
                     ],
                     [
                         "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
-                        "status_question" => "correct",
+                        "status" => "correct",
                         "answers" => json_encode([
                             ['checked' => false, 'answer_correct' => true],
                             ['checked' => false, 'answer_correct' => true],
@@ -232,7 +235,7 @@ class answer_questions extends external_api {
                     ],
                     [
                         "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
-                        "status_question" => "correct",
+                        "status" => "correct",
                         "answers" => json_encode([
                             ['checked' => false, 'answer_correct' => true],
                             ['checked' => false, 'answer_correct' => true],
