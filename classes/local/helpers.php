@@ -35,7 +35,7 @@ use question_engine;
 use question_usage_by_activity;
 use stdClass;
 
-class helpers{
+class helpers {
     /** Load adleradaptivity_attempts by cmid
      * - Get context by cmid
      * - with the context id get the question_usage
@@ -82,8 +82,8 @@ class helpers{
         // Fetch existing question usages for the given cmid and userid
         $adleradaptivity_attempts_all_users = static::load_adleradaptivity_attempt_by_cmid($cmid);
         // filter the results by userid
-        $adleradaptivity_attempts = array_filter($adleradaptivity_attempts_all_users, function($attempt) use ($userid) {
-            return $attempt->userid == $userid;
+        $adleradaptivity_attempts = array_filter($adleradaptivity_attempts_all_users, function ($attempt) use ($userid) {
+            return $attempt->user_id == $userid;
         });
 
 
@@ -146,11 +146,15 @@ class helpers{
     /** Get all question objects from the question table for the given course module ID (cmid) of the adleradaptivity element.
      *
      * @param int $cmid course module id of the adleradaptivity element.
+     * @param bool $allow_shuffle whether to allow shuffling of questions. For adleradaptivity always false becaues the order of the answers in the 3D world (over api) is not under control of this plugin.
      * @return array of question_definition objects.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public static function load_questions_by_cmid($cmid) {
+    public static function load_questions_by_cmid($cmid, $allow_shuffle=false) {
         global $DB;
+
+        // get instance id from cmid
+        $instance_id = $DB->get_field('course_modules', 'instance', ['id' => $cmid]);
 
         // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
         // This is achieved by:
@@ -165,7 +169,7 @@ class helpers{
         JOIN `{question_versions}` AS qv ON qv.questionbankentryid = qa.question_bank_entries_id
         WHERE at.adleradaptivity_id = ?
     ";
-        $question_versions = $DB->get_records_sql($sql, [$cmid]);
+        $question_versions = $DB->get_records_sql($sql, [$instance_id]);
 
         $questions = [];
         foreach ($question_versions as $question_version) {
@@ -179,9 +183,82 @@ class helpers{
                 );
             }
 
-            $questions[] = question_bank::load_question($question_version->questionid);
+            $questions[] = question_bank::load_question($question_version->questionid, $allow_shuffle);
         }
 
         return $questions;
+    }
+
+    /** Get question object from the question table for the given adleradaptivity question uuid.
+     *
+     * @param string $uuid uuid of the adleradaptivity question.
+     * @return stdClass question object.
+     * @throws moodle_exception if question version is not equal to 1.
+     * @throws dml_exception if question is not found or there are multiple results for the same question (multiple versions)
+     */
+    public static function load_question_by_uuid($uuid) {
+        global $DB;
+
+
+        $sql = "
+            SELECT q.*, aaq.*, qv.version, qmo.single
+            FROM {question_bank_entries} as qbe
+            JOIN {question_versions} as qv ON qv.questionbankentryid = qbe.id
+            JOIN {question} as q ON q.id = qv.questionid
+            JOIN {adleradaptivity_questions} as aaq ON aaq.question_bank_entries_id = qbe.id
+            JOIN {qtype_multichoice_options} as qmo ON qmo.questionid = q.id
+            WHERE qbe.idnumber = :question_uuid
+        ";
+        $question_versions = $DB->get_records_sql(
+            $sql,
+            [
+                'question_uuid' => $uuid
+            ]
+        );
+
+        if (count($question_versions) == 0) {
+            throw new dml_exception('Question with uuid ' . $uuid . ' not found');
+        }
+
+        if (count($question_versions) > 1) {
+            throw new dml_exception('Multiple questions with uuid ' . $uuid . ' found. This might be related to different versions of the same question. This is not supported by this module');
+        }
+
+        $question = reset($question_versions);
+
+        if ($question->version != 1) {
+            throw new moodle_exception(
+                'question_version_not_one',
+                'mod_adleradaptivity',
+                '',
+                '',
+                'There question version is ' . $question->version . '. It should be one.'
+            );
+        }
+
+        // Limiting fields returned because I dont know yet what this method exactly has to return. If this even the right type or if
+        // I should better return a question_definition object.
+        // Limiting fields allow me to easier see what data is actually used
+        $result = new stdClass();
+        $result->id = $question->id;
+        $result->qtype = $question->qtype;
+        $result->single = $question->single;
+        return $result;
+    }
+
+    /** Get slot number by question uuid from question_engine
+     *
+     * @param string $uuid uuid of the adleradaptivity question.
+     * @param question_usage_by_activity $quba question usage object.
+     * @return int slot number
+     * @throws moodle_exception if question is not found in question usage
+     */
+    public static function get_slot_number_by_uuid($uuid, $quba) {
+        foreach ($quba->get_slots() as $slot) {
+            if ($quba->get_question($slot)->idnumber == $uuid) {
+                return $slot;
+            }
+        }
+        throw new moodle_exception('Question with uuid ' . $uuid . ' not found in question usage');
     }
 }

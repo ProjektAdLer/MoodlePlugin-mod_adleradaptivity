@@ -59,7 +59,7 @@ if ($attemptid === -1) {
     $quba->set_preferred_behaviour("adaptivenopenalty");
     $questions = array();
     foreach($DB->get_records('question') as $key => $question) {
-        $questions[] = question_bank::load_question($question->id);
+        $questions[] = question_bank::load_question($question->id, false);
     }
 
     $slots = [];

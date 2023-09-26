@@ -4,7 +4,9 @@ namespace mod_adleradaptivity\external;
 
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
+require_once($CFG->libdir . '/questionlib.php');
 
+use completion_info;
 use context_module;
 use core_external\restricted_context_exception;
 use dml_exception;
@@ -16,6 +18,7 @@ use external_single_structure;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\helpers;
 use moodle_exception;
+use question_usage_by_activity;
 
 class answer_questions extends external_api {
     public static function execute_parameters(): external_function_parameters {
@@ -122,6 +125,7 @@ class answer_questions extends external_api {
      */
     public static function execute(array $element, array $questions): array {
         global $DB;
+        $time_at_request_start = time();  // save time here to ensure users are not disadvantaged if processing takes a longer
 
         // Parameter validation
         $params = self::validate_parameters(self::execute_parameters(), array('element' => $element, 'questions' => $questions));
@@ -170,17 +174,45 @@ class answer_questions extends external_api {
             $questions[$key]['task'] = $adleradaptivity_task;
         }
 
-        // TODO: this should work with class loading (or not because class loading is for classes)
-//        global $CFG;
-//        require_once($CFG->dirroot . '/mod/adleradaptivity/classes/local/helpers.php');
+
         // load attempt
         $quba = helpers::load_or_create_question_usage($module_id);
 
+        // start processing the questions
+        foreach ($questions as $key => $question) {
+            // load question object
+            $question['question_object'] = helpers::load_question_by_uuid($question['uuid']);
 
-        // TODO: question type handling: if question is of type "multichoice", then continue, otherwise return not supported
-        // TODO: convert $question['answer'] ([false, false, true, false]) to the format required by the question type
-        // TODO: Proccess answer
-        //    create attempt if not exists, otherwise load attempt
+            // switch case over question types. For now only multichoice is supported
+            // reformat answer from api format to question type format
+            switch ($question['question_object']->qtype) {
+                case 'multichoice':
+                    // process multichoice question
+                    $question['formatted_answer'] = static::format_multichoice_answer($question['answer'], $question['question_object']->single);
+                    break;
+                default:
+                    throw new invalid_parameter_exception('Question type ' . $question['task']->question_type . ' is not supported.');
+            }
+
+            // now the formatted answer can be processed like it came from the web interface
+            // Also note that answer shuffling is (has to be) disabled for all questions in this module
+            $quba->process_action(
+                helpers::get_slot_number_by_uuid($question['uuid'], $quba),
+                $question['formatted_answer'],
+                $time_at_request_start
+            );
+        }
+
+        // Update completion state
+        $course = get_course($module->course);
+        $completion = new completion_info($course);
+        if ($completion->is_enabled($module)) {
+            $completion->update_state($module, COMPLETION_COMPLETE);
+        } else {
+            throw new moodle_exception('Completion is not enabled for this module.');
+        }
+
+
 
         // TODO: after processing all questions: check if affected tasks are now complete
         // TODO: after processing all questions: check if module is now complete
@@ -247,4 +279,77 @@ class answer_questions extends external_api {
             ]
         ];
     }
+
+    /** Converts the answers from our api format to the format the multichoice question type expects
+     *
+     * @param string $answer JSON encoded array of booleans
+     * @param bool $is_single_choice Whether the question is single choice or not (multiple choice
+     * @return array answer string in multichoice format
+     * @throws invalid_parameter_exception If the answer has invalid format after json_decode
+     *
+     *  Format for single choice:
+     *  Single choice: $submitteddata = [
+     *     '-submit' => "1",   // always set if submitted, otherwise this entry is missing
+     *     'answer' => "1",    // selected answer in both cases, submitted and not submitted
+     *     'answer' => "-1",   // This was never submitted (before)
+     *  ]
+     *
+     *  Format for multiple choice:
+     *  Multiple choice:
+     *  $submitteddata = [
+     *     '-submit' => "1",   // always set if submitted, otherwise this entry is missing
+     *     'choice0' => "0",   // choices are there in all cases, submitted, not submitted and never submitted
+     *     'choice1' => "1",
+     *     'choice2' => "1",
+     *     'choice3' => "0",
+     *     'choice4' => "0",
+     *  ] // submitted this question
+     */
+    private static function format_multichoice_answer(string $answer, bool $is_single_choice) {
+        // Answer shuffling is no problem because it is disabled for all attempts in this module
+
+        $answers_array = json_decode($answer);
+
+        // Check if decoded value is not only an array, but an array of booleans.
+        // if answer is null is no mappable, throw exception
+        if (!is_array($answers_array) || !self::all_elements_are_bool($answers_array)) {
+            throw new invalid_parameter_exception('Answer has invalid format: ' . json_encode($answersArray));
+        }
+
+        $result = ['-submit' => "1"];
+
+        if ($is_single_choice) {
+            // if single choice, return the index of the first true value
+            $true_index = array_search(true, $answers_array, true);
+
+            if ($true_index === false) {
+                throw new invalid_parameter_exception("Invalid answer, no \"true\" value found: " . json_encode($answers_array));
+            }
+
+            $result["answer"] = strval($true_index);
+        } else {
+            // iterate over all answers and set ['choice<index>'] = "1" if true, "0" if false
+            foreach ($answers_array as $key => $value) {
+                $result['choice' . $key] = $value ? "1" : "0";
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Helper function to check if all elements of an array are booleans.
+     *
+     * @param array $array The array to check.
+     * @return bool True if all elements are booleans, false otherwise.
+     */
+    private static function all_elements_are_bool(array $array): bool {
+        foreach ($array as $item) {
+            if (!is_bool($item)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
