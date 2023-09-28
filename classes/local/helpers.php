@@ -143,6 +143,50 @@ class helpers {
         return $quba;
     }
 
+    /** Get adleradaptivity questions with moodle question ids for the given adleradaptivity task id.
+     *
+     * @param int $task_id task id of the adleradaptivity task.
+     * @return array of objects with moodle question id and adleradaptivity question id.
+     * @throws moodle_exception if any question version is not equal to 1.
+     */
+    public static function load_questions_by_task_id($task_id) {
+        global $DB;
+
+        // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
+        // This is achieved by:
+        // 1. Joining `{adleradaptivity_questions}` with `{adleradaptivity_tasks}`
+        // to filter questions associated with a specific task.
+        // 2. Further joining with `{question_versions}` to get the versions
+        // of questions that match the adaptivity task's criteria.
+        $sql = "
+            SELECT qv.questionid, qv.version, aq.*
+            FROM `{adleradaptivity_questions}` AS aq
+            JOIN `{question_versions}` AS qv ON qv.questionbankentryid = aq.question_bank_entries_id
+            WHERE aq.adleradaptivity_tasks_id = ?;
+        ";
+        $question_data = $DB->get_records_sql($sql, [$task_id]);
+
+        $result = [];
+        foreach ($question_data as $one_question) {
+            if ($one_question->version != 1) {
+                throw new moodle_exception(
+                    'question_version_not_one',
+                    'mod_adleradaptivity',
+                    '',
+                    '',
+                    'There is a question with version ' . $question_data->version . '. This is not supported by adleradaptivity.'
+                );
+            }
+
+            // remove version field from $one_question
+            unset($one_question->version);
+
+            $result[] = $one_question;
+        }
+
+        return $result;
+    }
+
     /** Get all question objects from the question table for the given course module ID (cmid) of the adleradaptivity element.
      *
      * @param int $cmid course module id of the adleradaptivity element.
@@ -187,6 +231,18 @@ class helpers {
         }
 
         return $questions;
+    }
+
+    /** Get all tasks for the given instance ID (cmid) of the adleradaptivity element.
+     *
+     * @param int $cmid course module id of the adleradaptivity element.
+     * @return array of task objects.
+     * @throws dml_exception
+     */
+    public static function load_tasks_by_instance_id($instance_id) {
+        global $DB;
+
+        return $DB->get_records('adleradaptivity_tasks', ['adleradaptivity_id' => $instance_id]);
     }
 
     /** Get question object from the question table for the given adleradaptivity question uuid.

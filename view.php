@@ -75,6 +75,11 @@ if ($attemptid === -1) {
 } else {
     $quba = question_engine::load_questions_usage_by_activity($attemptid);
     $slots = $quba->get_slots();
+    // load all questions to fill $questions variable
+    $questions = array();
+    foreach($slots as $slot) {
+        $questions[] = $quba->get_question($slot);
+    }
 }
 
 
