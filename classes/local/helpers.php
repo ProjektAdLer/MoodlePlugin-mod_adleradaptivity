@@ -257,13 +257,12 @@ class helpers {
 
 
         $sql = "
-            SELECT q.*, aaq.*, qv.version, qmo.single
+            SELECT q.*, qv.version, qmo.single
             FROM {question_bank_entries} as qbe
             JOIN {question_versions} as qv ON qv.questionbankentryid = qbe.id
             JOIN {question} as q ON q.id = qv.questionid
-            JOIN {adleradaptivity_questions} as aaq ON aaq.question_bank_entries_id = qbe.id
             JOIN {qtype_multichoice_options} as qmo ON qmo.questionid = q.id
-            WHERE qbe.idnumber = :question_uuid
+            WHERE qbe.idnumber = :question_uuid 
         ";
         $question_versions = $DB->get_records_sql(
             $sql,

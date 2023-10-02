@@ -18,6 +18,7 @@ use external_single_structure;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\helpers;
 use moodle_exception;
+use question_engine;
 use question_usage_by_activity;
 
 class answer_questions extends external_api {
@@ -202,6 +203,9 @@ class answer_questions extends external_api {
                 $time_at_request_start
             );
         }
+
+        // save current questions usage
+        question_engine::save_questions_usage_by_activity($quba);
 
         // Update completion state
         $course = get_course($module->course);

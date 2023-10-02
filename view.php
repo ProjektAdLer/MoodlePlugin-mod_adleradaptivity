@@ -6,6 +6,7 @@
  * @copyright   2023 Markus Heck
  */
 
+use mod_adleradaptivity\local\helpers;
 use qbank_previewquestion\question_preview_options;
 
 require(__DIR__.'/../../config.php');
@@ -57,10 +58,7 @@ $PAGE->set_context($modulecontext);
 if ($attemptid === -1) {
     $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
     $quba->set_preferred_behaviour("adaptivenopenalty");
-    $questions = array();
-    foreach($DB->get_records('question') as $key => $question) {
-        $questions[] = question_bank::load_question($question->id, false);
-    }
+    $questions = helpers::load_questions_by_cmid($cm->id);
 
     $slots = [];
     foreach ($questions as $question) {

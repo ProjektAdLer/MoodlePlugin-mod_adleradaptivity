@@ -10,7 +10,7 @@ use core_completion\api as completion_api;
  */
 function adleradaptivity_supports($feature) {
     switch ($feature) {
-        case FEATURE_COMPLETION_TRACKS_VIEWS:  // seems to add the "Require view" checkbox to the "when conditions are met" in the "activity completion" section of the activity settings
+//        case FEATURE_COMPLETION_TRACKS_VIEWS:  // seems to add the "Require view" checkbox to the "when conditions are met" in the "activity completion" section of the activity settings
         case FEATURE_COMPLETION_HAS_RULES:  // custom completion rules
         case FEATURE_USES_QUESTIONS:
         case FEATURE_MOD_INTRO:
