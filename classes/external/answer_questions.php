@@ -16,10 +16,10 @@ use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
+use mod_adleradaptivity\local\completion_helpers;
 use mod_adleradaptivity\local\helpers;
 use moodle_exception;
 use question_engine;
-use question_usage_by_activity;
 
 class answer_questions extends external_api {
     public static function execute_parameters(): external_function_parameters {
@@ -106,7 +106,7 @@ class answer_questions extends external_api {
                                 ),
                                 "answers" => new external_value(
                                     PARAM_TEXT,
-                                    "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'answer_correct'. null if the question was not attempted."
+                                    "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'user_answer_correct'. null if the question was not attempted."
                                 ),
                             ]
                         )
@@ -153,7 +153,7 @@ class answer_questions extends external_api {
 
 
         // validate all questions are in the given module and save question_bank_entry and task in $questions for later use
-        foreach($questions as $key => $question) {
+        foreach ($questions as $key => $question) {
             // This SQL statement is designed to select all columns from the {tasks} table where there is a matching condition between {questions}, {tasks}, and {question_bank_entries} tables.
             // The statement performs the following:
             // 1. Joins the {question_bank_entries} table with the {questions} table where the 'id' of {question_bank_entries} equals 'question_bank_entries_id' of {questions}.
@@ -178,6 +178,9 @@ class answer_questions extends external_api {
 
         // load attempt
         $quba = helpers::load_or_create_question_usage($module_id);
+
+        // start delegating transaction
+        $transaction = $DB->start_delegated_transaction();
 
         // start processing the questions
         foreach ($questions as $key => $question) {
@@ -211,75 +214,59 @@ class answer_questions extends external_api {
         $course = get_course($module->course);
         $completion = new completion_info($course);
         if ($completion->is_enabled($module)) {
+            // possibleresult: COMPLETION_COMPLETE prevents setting the completion state to incomplete after it was set to complete
             $completion->update_state($module, COMPLETION_COMPLETE);
         } else {
             throw new moodle_exception('Completion is not enabled for this module.');
         }
 
+        // allow commit
+        $transaction->allow_commit();
 
 
-        // TODO: after processing all questions: check if affected tasks are now complete
-        // TODO: after processing all questions: check if module is now complete
+        // check completion state of questions, tasks and module
+        // completion state of module
+        $module_completion = ($completion->get_data($module)->completionstate == COMPLETION_COMPLETE || $completion->get_data($module)->completionstate == COMPLETION_COMPLETE_PASS)
+            ? 'correct'
+            : 'incorrect';
 
-        // TODO: return data with status of affected questions, tasks and modules
+        // completion state of tasks
+        $tasks = [];
+        foreach ($questions as $question) {
+            // check whether $question['task'] is already in $tasks
+            foreach ($tasks as $task) {
+                if ($task['uuid'] == $question['task']->uuid) {
+                    // if it is, skip this question
+                    continue 2;
+                }
+            }
+            $tasks[] = [
+                'uuid' => $question['task']->uuid,
+                'status' => completion_helpers::check_task_completed($quba, $question['task']) ? 'correct' : 'incorrect',
+            ];
+        }
 
+        // completion state of questions
+        $questions_completion = [];
+        foreach ($questions as $question) {
+            $question_attempt = $quba->get_question_attempt(helpers::get_slot_number_by_uuid($question['uuid'], $quba));
+            $questions_completion[] = [
+                'uuid' => $question['uuid'],
+                'status' => completion_helpers::check_question_correctly_answered($question_attempt) ? 'correct' : 'incorrect',
+                'answers' => json_encode(completion_helpers::get_question_answer_details($question_attempt)),
+            ];
+        }
 
 
         return [
             'data' => [
-                'tasks' => [
-                    [
-                        'uuid' => '687d3191-dc59-4142-a7cb-957049e50fcf',
-                        'status' => 'correct', // or incorrect
-                    ]
-                ],
                 'module' => [
-                    'module_id' => '10',
-                    'instance_id' => '1',
-                    'status' => 'correct', // or incorrect
+                    'module_id' => $module_id,
+                    'instance_id' => $instance_id,
+                    'status' => $module_completion,
                 ],
-                'questions' => [
-                    [
-                        "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
-                        "status" => "correct", // or incorrect
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => true, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                        ])
-                    ],
-                    [
-                        "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
-                        "status" => "incorrect",
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => false],
-                            ['checked' => true, 'answer_correct' => false],
-                            ['checked' => false, 'answer_correct' => false],
-                        ])
-                    ],
-                    [
-                        "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
-                        "status" => "correct",
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => true, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                        ])
-                    ],
-                    [
-                        "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
-                        "status" => "correct",
-                        "answers" => json_encode([
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                            ['checked' => true, 'answer_correct' => true],
-                            ['checked' => false, 'answer_correct' => true],
-                        ])
-                    ]
-                ]
+                'tasks' => $tasks,
+                'questions' => $questions_completion,
             ]
         ];
     }
