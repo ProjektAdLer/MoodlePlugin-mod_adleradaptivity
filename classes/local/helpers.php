@@ -308,7 +308,7 @@ class helpers {
      * @return int slot number
      * @throws moodle_exception if question is not found in question usage
      */
-    public static function get_slot_number_by_uuid($uuid, $quba) {
+    public static function get_slot_number_by_uuid(string $uuid, question_usage_by_activity $quba) {
         foreach ($quba->get_slots() as $slot) {
             if ($quba->get_question($slot)->idnumber == $uuid) {
                 return $slot;

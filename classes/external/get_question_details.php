@@ -5,20 +5,22 @@ namespace mod_adleradaptivity\external;
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
+use coding_exception;
+use context_module;
 use core_external\restricted_context_exception;
-use dml_exception;
 use external_api;
 use external_function_parameters;
 use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
+use mod_adleradaptivity\local\helpers;
 
 class get_question_details extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
-                'element' => new external_single_structure(
+                'module' => new external_single_structure(
                     [
                         'module_id' => new external_value(
                             PARAM_TEXT,
@@ -64,55 +66,40 @@ class get_question_details extends external_api {
     }
 
     /**
-     * @param array $elements [int $course_id, string $element_type, array $uuids]
-     * @throws invalid_parameter_exception
-     * @throws dml_exception
-     * @throws restricted_context_exception
+     * @param array $module [int $module_id, string $instance_id]
+     * @throws invalid_parameter_exception If neither module_id nor instance_id are set
+     * @throws coding_exception If the module could not be found
+     * @throws restricted_context_exception If the user does not have the required context to view the module
      */
-    public static function execute(array $element): array {
+    public static function execute(array $module): array {
         // Parameter validation
-        $params = self::validate_parameters(self::execute_parameters(), array('element' => $element));
-        $element = $params['element'];
+        $params = self::validate_parameters(self::execute_parameters(), array('module' => $module));
+        $module = $params['module'];
+
+        $module = external_helpers::validate_module_params_and_get_module($module);
+        $module_id = $module->id;
+        $instance_id = $module->instance;
+
+        // default validation stuff with context
+        $context = context_module::instance($module_id);
+        static::validate_context($context);
+
+        // load attempt
+        $quba = helpers::load_or_create_question_usage($module_id);
+
+        // load all questions in the attempt
+        $questions = [];
+        foreach ($quba->get_slots() as $slot) {
+            $questions[] = $quba->get_question($slot);
+        }
+
+        // completion state of questions
+        $questions_completion = external_helpers::generate_question_response_data($questions, $quba);
+
 
         return [
             'data' => [
-                'questions' => [
-                    [
-                        "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
-                        "status" => "correct",
-                        "answers" => json_encode([
-                            ['checked' => false, 'user_answer_correct' => true],
-                            ['checked' => false, 'user_answer_correct' => true],
-                            ['checked' => true, 'user_answer_correct' => true],
-                            ['checked' => false, 'user_answer_correct' => true]
-                        ])
-                    ],
-                    [
-                        "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
-                        "status" => "incorrect",
-                        "answers" => json_encode([
-                            ['checked' => false, 'user_answer_correct' => true],
-                            ['checked' => false, 'user_answer_correct' => false],
-                            ['checked' => true, 'user_answer_correct' => true],
-                            ['checked' => false, 'user_answer_correct' => false]
-                        ])
-                    ],
-                    [
-                        "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
-                        "status" => "notAttempted",
-                        "answers" => null
-                    ],
-                    [
-                        "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
-                        "status" => "correct",
-                        "answers" => json_encode([
-                            ['checked' => false, 'user_answer_correct' => true],
-                            ['checked' => false, 'user_answer_correct' => true],
-                            ['checked' => true, 'user_answer_correct' => true],
-                            ['checked' => false, 'user_answer_correct' => true]
-                        ])
-                    ]
-                ]
+                'questions' => $questions_completion
             ]
         ];
     }

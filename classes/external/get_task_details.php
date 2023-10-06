@@ -19,7 +19,7 @@ class get_task_details extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
-                'element' => new external_single_structure(
+                'module' => new external_single_structure(
                     [
                         'module_id' => new external_value(
                             PARAM_TEXT,
@@ -66,10 +66,10 @@ class get_task_details extends external_api {
      * @throws dml_exception
      * @throws restricted_context_exception
      */
-    public static function execute(array $element): array {
+    public static function execute(array $module): array {
         // Parameter validation
-        $params = self::validate_parameters(self::execute_parameters(), array('element' => $element));
-        $element = $params['element'];
+        $params = self::validate_parameters(self::execute_parameters(), array('element' => $module));
+        $module = $params['module'];
 
         return [
             'data' => [

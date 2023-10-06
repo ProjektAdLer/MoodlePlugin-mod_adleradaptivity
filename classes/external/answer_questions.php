@@ -25,7 +25,7 @@ class answer_questions extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
-                'element' => new external_single_structure(
+                'module' => new external_single_structure(
                     [
                         'module_id' => new external_value(
                             PARAM_TEXT,
@@ -117,38 +117,28 @@ class answer_questions extends external_api {
     }
 
     /**
-     * @param array $element [int $module_id, string $instance_id]
+     * @param array $module [int $module_id, string $instance_id]
      * @param array $questions [array $question]
      * @throws invalid_parameter_exception
      * @throws dml_exception
-     * @throws restricted_context_exception
+     * @throws restricted_context_exception If the context is not valid (user is not allowed to access the module)
      * @throws moodle_exception
      */
-    public static function execute(array $element, array $questions): array {
+    public static function execute(array $module, array $questions): array {
         global $DB;
         $time_at_request_start = time();  // save time here to ensure users are not disadvantaged if processing takes a longer
 
         // Parameter validation
-        $params = self::validate_parameters(self::execute_parameters(), array('element' => $element, 'questions' => $questions));
-        $element = $params['element'];
+        $params = self::validate_parameters(self::execute_parameters(), array('module' => $module, 'questions' => $questions));
+        $module = $params['module'];
         $questions = $params['questions'];
 
-        // $element has to contain either module_id or instance_id. Both are optional parameters as defined in execute_parameters.
-        // - If module_id is given, fetch the module from the database and get the instance_id from it.
-        // - If instance_id is given, fetch the module from the database and get the module_id from it.
-        // - If none of them is given, throw an exception.
-        if (isset($element['module_id'])) {
-            $module = get_coursemodule_from_id('adleradaptivity', $element['module_id'], 0, false, MUST_EXIST);
-        } else if (isset($element['instance_id'])) {
-            $module = get_coursemodule_from_instance('adleradaptivity', $element['instance_id'], 0, false, MUST_EXIST);
-        } else {
-            throw new invalid_parameter_exception('Either module_id or instance_id has to be given.');
-        }
+        $module = external_helpers::validate_module_params_and_get_module($module);
         $module_id = $module->id;
         $instance_id = $module->instance;
 
         // default validation stuff with context
-        $context = context_module::instance($module->id);
+        $context = context_module::instance($module_id);
         static::validate_context($context);
 
 
@@ -247,16 +237,7 @@ class answer_questions extends external_api {
         }
 
         // completion state of questions
-        $questions_completion = [];
-        foreach ($questions as $question) {
-            $question_attempt = $quba->get_question_attempt(helpers::get_slot_number_by_uuid($question['uuid'], $quba));
-            $questions_completion[] = [
-                'uuid' => $question['uuid'],
-                'status' => completion_helpers::check_question_correctly_answered($question_attempt) ? 'correct' : 'incorrect',
-                'answers' => json_encode(completion_helpers::get_question_answer_details($question_attempt)),
-            ];
-        }
-
+        $questions_completion = external_helpers::generate_question_response_data($questions, $quba);
 
         return [
             'data' => [
