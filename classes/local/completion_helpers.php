@@ -104,49 +104,54 @@ class completion_helpers {
      * - answer_correct: bool, true if the users' choice is correct
      *
      * @param question_attempt $question_attempt The question attempt object.
-     * @return array
+     * @return array|null
      */
-    public static function get_question_answer_details(question_attempt $question_attempt): array {
+    public static function get_question_answer_details(question_attempt $question_attempt): array|null {
         $question = $question_attempt->get_question();
         $response = $question_attempt->get_last_qt_data();
 
         $answer_details = [];
 
-        // differentiate between single and multiple choice questions
-        // switch case over class type of $question
-        switch (get_class($question)) {
-            case 'qtype_multichoice_multi_question':
-                $answer_order = $question->get_order($question_attempt);
-                for ($i = 0; $i < count($answer_order); $i++) {
-                    $answer = $question->answers[$answer_order[$i]];
+        // if there is no attepmt, return null, otherwise return the answer details
+        if ($question_attempt->get_last_step()->get_state()->get_state_class(false) == 'notyetanswered') {
+            $answer_details = null;
+        } else {
+            // differentiate between single and multiple choice questions
+            // switch case over class type of $question
+            switch (get_class($question)) {
+                case 'qtype_multichoice_multi_question':
+                    $answer_order = $question->get_order($question_attempt);
+                    for ($i = 0; $i < count($answer_order); $i++) {
+                        $answer = $question->answers[$answer_order[$i]];
 
-                    $user_chose_this_answer = $response['choice' . $i] == $answer->id;
-                    $user_answer_is_correct = self::is_multichoice_answer_correct($answer) && $user_chose_this_answer;
-                    $answer_details[] = [
-                        'checked' => $user_chose_this_answer,
-                        'user_answer_correct' => $user_answer_is_correct,
-                    ];
-                }
-                break;
-            case 'qtype_multichoice_single_question':
-                foreach ($question->answers as $key => $answer) {
-                    $user_chose_this_answer = $question->get_order($question_attempt)[$response['answer']] == $key;
-                    $user_answer_is_correct = self::is_multichoice_answer_correct($answer) && $user_chose_this_answer;
-                    $answer_details[] = [
-                        'checked' => $user_chose_this_answer,
-                        'user_answer_correct' => $user_answer_is_correct,
-                    ];
-                }
-                break;
-            default:
-                // This should never happen because except multichoice adds some new stuff
-                throw new moodle_exception(
-                    'unknown_multichoice_question_type',
-                    'mod_adleradaptivity',
-                    '',
-                    null,
-                    'Type of question is not known: ' . get_class($question)
-                );
+                        $user_chose_this_answer = $response['choice' . $i] == $answer->id;
+                        $user_answer_is_correct = self::is_multichoice_answer_correct($answer) && $user_chose_this_answer;
+                        $answer_details[] = [
+                            'checked' => $user_chose_this_answer,
+                            'user_answer_correct' => $user_answer_is_correct,
+                        ];
+                    }
+                    break;
+                case 'qtype_multichoice_single_question':
+                    foreach ($question->answers as $key => $answer) {
+                        $user_chose_this_answer = $question->get_order($question_attempt)[$response['answer']] == $key;
+                        $user_answer_is_correct = self::is_multichoice_answer_correct($answer) && $user_chose_this_answer;
+                        $answer_details[] = [
+                            'checked' => $user_chose_this_answer,
+                            'user_answer_correct' => $user_answer_is_correct,
+                        ];
+                    }
+                    break;
+                default:
+                    // This should never happen because except multichoice adds some new stuff
+                    throw new moodle_exception(
+                        'unknown_multichoice_question_type',
+                        'mod_adleradaptivity',
+                        '',
+                        null,
+                        'Type of question is not known: ' . get_class($question)
+                    );
+            }
         }
 
         return $answer_details;

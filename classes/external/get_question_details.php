@@ -90,7 +90,9 @@ class get_question_details extends external_api {
         // load all questions in the attempt
         $questions = [];
         foreach ($quba->get_slots() as $slot) {
-            $questions[] = $quba->get_question($slot);
+            $questions[] = [
+                'uuid' => $quba->get_question($slot)->idnumber,
+            ];
         }
 
         // completion state of questions

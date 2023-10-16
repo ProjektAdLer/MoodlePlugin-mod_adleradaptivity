@@ -6,6 +6,7 @@ namespace mod_adleradaptivity\external;
 global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
+use context_module;
 use core_external\restricted_context_exception;
 use dml_exception;
 use external_api;
@@ -14,6 +15,8 @@ use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
+use mod_adleradaptivity\local\completion_helpers;
+use mod_adleradaptivity\local\helpers;
 
 class get_task_details extends external_api {
     public static function execute_parameters(): external_function_parameters {
@@ -68,29 +71,36 @@ class get_task_details extends external_api {
      */
     public static function execute(array $module): array {
         // Parameter validation
-        $params = self::validate_parameters(self::execute_parameters(), array('element' => $module));
+        $params = self::validate_parameters(self::execute_parameters(), array('module' => $module));
         $module = $params['module'];
+
+        $module = external_helpers::validate_module_params_and_get_module($module);
+        $module_id = $module->id;
+        $instance_id = $module->instance;
+
+        // default validation stuff with context
+        $context = context_module::instance($module_id);
+        static::validate_context($context);
+
+        // load attempt
+        $quba = helpers::load_or_create_question_usage($module_id);
+
+        // load all tasks in current module
+        $tasks = helpers::load_tasks_by_instance_id($instance_id);
+
+        // generate response data
+        $results = [];
+        foreach ($tasks as $task) {
+            $results[] = [
+                'uuid' => $task->uuid,
+                'status' => completion_helpers::check_task_completed($quba, $task) ? 'correct' : 'incorrect',
+            ];
+        }
+
 
         return [
             'data' => [
-                'tasks' => [
-                    [
-                        "uuid" => "298a7c8b-f6a6-41a7-b54f-065c70dc47c0",
-                        "status" => "correct",
-                    ],
-                    [
-                        "uuid" => "febcc2e5-c8b5-48c7-b1b7-e729e2bb12c3",
-                        "status" => "incorrect",
-                    ],
-                    [
-                        "uuid" => "687d3191-dc59-4142-a7cb-957049e50fcf ",
-                        "status" => "notAttempted",
-                    ],
-                    [
-                        "uuid" => "8b2d1cc2-e567-4558-aae5-55239deb3494",
-                        "status" => "correct",
-                    ]
-                ]
+                'tasks' => $results
             ]
         ];
     }

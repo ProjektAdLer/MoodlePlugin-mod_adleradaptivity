@@ -37,7 +37,7 @@ class external_helpers {
     /**
      * Generates request response data for questions
      *
-     * @param array $questions Array of questions. They have to be part of the $question_usage object.
+     * @param array $questions Array of questions. They have to be part of the $question_usage object. Only the field uuid is required.
      * @param question_usage_by_activity $question_usage The question usage object
      * @return array Array of questions with the fields uuid, status and answers
      * @throws moodle_exception If the question could not be found in the question usage object or answer checking failed.

@@ -108,6 +108,7 @@ class answer_questions extends external_api {
                                     PARAM_TEXT,
                                     "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'user_answer_correct'. null if the question was not attempted."
                                 ),
+                                // TODO two status: status_current_try and status_highest_attempt
                             ]
                         )
                     ),
