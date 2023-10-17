@@ -14,6 +14,7 @@ function adleradaptivity_supports($feature) {
         case FEATURE_COMPLETION_HAS_RULES:  // custom completion rules
         case FEATURE_USES_QUESTIONS:
         case FEATURE_MOD_INTRO:
+        case FEATURE_BACKUP_MOODLE2:
             return true;
         default:
             return null;
