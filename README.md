@@ -10,6 +10,4 @@ get actual question:
 - from this entry take questionid
 - (optional) get question by questionid
 
-
-# Bugs
-- wrong naming: adleradaptivity_tasks_id -> adleradaptivity_task_id 
+ 

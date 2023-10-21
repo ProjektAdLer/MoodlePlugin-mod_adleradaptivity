@@ -78,7 +78,7 @@ class external_helpers {
             FROM {question_bank_entries} qbe
             JOIN {question_references} qr ON qbe.id = qr.questionbankentryid
             JOIN {adleradaptivity_questions} aq ON qr.itemid = aq.id
-            JOIN {adleradaptivity_tasks} t ON aq.adleradaptivity_tasks_id = t.id
+            JOIN {adleradaptivity_tasks} t ON aq.adleradaptivity_task_id = t.id
             
             WHERE qr.component = 'mod_adleradaptivity'
             AND qr.questionarea = 'question'

@@ -50,10 +50,10 @@ class backup_adleradaptivity_activity_structure_step extends backup_questions_ac
         $question->set_source_sql('
                 SELECT aq.* 
                 FROM {adleradaptivity_questions} aq
-                JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_tasks_id = at.id
-                WHERE aq.adleradaptivity_tasks_id = :adleradaptivity_tasks_id; 
+                JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_task_id = at.id
+                WHERE aq.adleradaptivity_task_id = :adleradaptivity_task_id; 
             ',
-            ['adleradaptivity_tasks_id' => backup::VAR_PARENTID]
+            ['adleradaptivity_task_id' => backup::VAR_PARENTID]
         );
 
         $this->add_question_references($question, 'mod_adleradaptivity', 'question');

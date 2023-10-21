@@ -36,12 +36,12 @@
     <TABLE NAME="adleradaptivity_questions" COMMENT="Individual questions. For the same task there might be multiple questions with different difficulties.  Ugly table name ('adapt' instead of 'adaptivity' because moodle allows only short table names. This allows longer appendixes to describe the table.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="adleradaptivity_tasks_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity tasks this question is part of"/>
+        <FIELD NAME="adleradaptivity_task_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity tasks this question is part of"/>
         <FIELD NAME="difficulty" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="fk_adleradaptivity_tasks" TYPE="foreign" FIELDS="adleradaptivity_tasks_id" REFTABLE="adleradaptivity_tasks" REFFIELDS="id"/>
+        <KEY NAME="fk_adleradaptivity_task" TYPE="foreign" FIELDS="adleradaptivity_task_id" REFTABLE="adleradaptivity_tasks" REFFIELDS="id"/>
         <KEY NAME="fk_question_bank_entries_id" TYPE="foreign" FIELDS="question_bank_entries_id" REFTABLE="question_bank_entries" REFFIELDS="id"/>
       </KEYS>
     </TABLE>

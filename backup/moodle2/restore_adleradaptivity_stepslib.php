@@ -66,7 +66,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
 
         $data = (object)$data;
 
-        $data->adleradaptivity_tasks_id = $this->get_new_parentid("task");
+        $data->adleradaptivity_task_id = $this->get_new_parentid("task");
         // TODO: question_bank_entries_id mapping
 
         $newitemid = $DB->insert_record('adleradaptivity_questions', $data);

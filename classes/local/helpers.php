@@ -159,7 +159,7 @@ class helpers {
             JOIN {question_references} qr ON qr.itemid = aq.id
             JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
             
-            WHERE aq.adleradaptivity_tasks_id = ?
+            WHERE aq.adleradaptivity_task_id = ?
             AND qr.component = 'mod_adleradaptivity'
             AND qr.questionarea = 'question';
         ";
@@ -204,7 +204,7 @@ class helpers {
         SELECT qv.*
         FROM {adleradaptivity_questions} aq
         JOIN {question_references} qr ON qr.itemid = aq.id
-        JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_tasks_id = at.id
+        JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_task_id = at.id
         JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
         
         WHERE at.adleradaptivity_id = ?
@@ -265,7 +265,7 @@ class helpers {
             -- this part is required to filter for questions of this module
             JOIN {question_references} as qr ON qr.questionbankentryid = qbe.id
             JOIN {adleradaptivity_questions} as aq ON aq.id = qr.itemid
-            JOIN {adleradaptivity_tasks} as at ON at.id = aq.adleradaptivity_tasks_id
+            JOIN {adleradaptivity_tasks} as at ON at.id = aq.adleradaptivity_task_id
                                            
             WHERE qbe.idnumber = :question_uuid 
             AND at.adleradaptivity_id = :instance_id
