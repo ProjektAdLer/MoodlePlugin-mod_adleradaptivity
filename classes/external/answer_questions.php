@@ -165,7 +165,7 @@ class answer_questions extends external_api {
         // start processing the questions
         foreach ($questions as $key => $question) {
             // load question object
-            $question['question_object'] = helpers::load_question_by_uuid($question['uuid']);
+            $question['question_object'] = helpers::load_question_by_uuid($question['uuid'], $instance_id);
 
             // switch case over question types. For now only multichoice is supported
             // reformat answer from api format to question type format

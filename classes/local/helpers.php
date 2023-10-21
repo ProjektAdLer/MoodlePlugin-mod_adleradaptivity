@@ -246,11 +246,12 @@ class helpers {
     /** Get question object from the question table for the given adleradaptivity question uuid.
      *
      * @param string $uuid uuid of the adleradaptivity question.
+     * @param int $instance_id instance id of the adleradaptivity activity.
      * @return stdClass question object.
      * @throws moodle_exception if question version is not equal to 1.
      * @throws dml_exception if question is not found or there are multiple results for the same question (multiple versions)
      */
-    public static function load_question_by_uuid($uuid) {
+    public static function load_question_by_uuid(string $uuid, int $instance_id) {
         global $DB;
 
 
@@ -260,12 +261,20 @@ class helpers {
             JOIN {question_versions} as qv ON qv.questionbankentryid = qbe.id
             JOIN {question} as q ON q.id = qv.questionid
             JOIN {qtype_multichoice_options} as qmo ON qmo.questionid = q.id
+                
+            -- this part is required to filter for questions of this module
+            JOIN {question_references} as qr ON qr.questionbankentryid = qbe.id
+            JOIN {adleradaptivity_questions} as aq ON aq.id = qr.itemid
+            JOIN {adleradaptivity_tasks} as at ON at.id = aq.adleradaptivity_tasks_id
+                                           
             WHERE qbe.idnumber = :question_uuid 
+            AND at.adleradaptivity_id = :instance_id
         ";
         $question_versions = $DB->get_records_sql(
             $sql,
             [
-                'question_uuid' => $uuid
+                'question_uuid' => $uuid,
+                'instance_id' => $instance_id,
             ]
         );
 
