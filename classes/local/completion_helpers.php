@@ -112,8 +112,8 @@ class completion_helpers {
 
         $answer_details = [];
 
-        // if there is no attepmt, return null, otherwise return the answer details
-        if ($question_attempt->get_last_step()->get_state()->get_state_class(false) == 'notyetanswered') {
+        // if there is no attempt, return null, otherwise return the answer details
+        if ($question_attempt->get_last_step()->get_fraction() === null) {
             $answer_details = null;
         } else {
             // differentiate between single and multiple choice questions
