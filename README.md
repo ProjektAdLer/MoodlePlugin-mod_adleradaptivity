@@ -1,13 +1,7 @@
 # About this project
 
+Dieses Moodle Modul bildet das Adaptivitätselement aus der 3D Umgebung in moodle ab.
+In Moodle wird keine Adaptivität untertützt, es werden lediglich alle Fragen und Informationen angezeigt
+und können vom Nutzer auch bearbeitet werden. Der Zustand zwischen 3D und Moodle ist dabei identisch.
+
 ![database diagram](db_diagram.png)
-
-some notes for me:
-
-get actual question: 
-- get lines FROM question_version WHERE question_versions.questionbankentryid = question_bank_entries.id
-- get highest question_versions.version
-- from this entry take questionid
-- (optional) get question by questionid
-
- 
