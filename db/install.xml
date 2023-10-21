@@ -37,7 +37,6 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="adleradaptivity_tasks_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity tasks this question is part of"/>
-        <FIELD NAME="question_bank_entries_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Question bank entry this entry relates to. 1:1 relation"/>
         <FIELD NAME="difficulty" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

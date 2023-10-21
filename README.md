@@ -1,37 +1,21 @@
 # About this project
-This is a sample project to provide a minimalistic module demonstration a working version of the following moodle functionalities:
-- an activity module
-- implementation of question_bank/engine 
-  - (obviously) with questions
-  - displaying questions
-  - showing the "question bank" tab in module settings
-  - processing question attempts (individual questions and the whole "quiz")
-- implementation of the completion API
-  - with a custom completion rule
 
-This implementation follows the latest approaches (i think latest changes are from 4.1, this was done based on 4.2.1 release in september 2023).
-It aims on providing a minimalistic, "just working" example that can be used as reference.
-It does not provide a great usability and code quality. It also does not implement "modern" html generation (with templates and so on).
-
-# How to use
-1) install plugin
-2) create a course
-3) add the activity module to the course
-4) enable in the activity module settings "Activity completion" -> "Adaptivity rule"
-5) add some questions to the question bank
-6) view/try the activity module
-
-It will now list just all added questions. My aim was to work with multiplechoice questions, but it should also work with other question types.
-The questions are numbered 1a, 1b, 2a, 2b, ... as a test for custom question numbering (Default is just 1, 2, 3, ...).
-
+![database diagram](db_diagram.png)
 
 some notes for me:
-adleradaptivity_questions -> question_bank_entries
-
-question_bank_entries has uuids for questions
 
 get actual question: 
 - get lines FROM question_version WHERE question_versions.questionbankentryid = question_bank_entries.id
 - get highest question_versions.version
-- form this entry take questionid
+- from this entry take questionid
 - (optional) get question by questionid
+
+
+# Bugs
+- null als answers wenn erste antwort falsch ist bei single choice. \
+Backup: /home/markus/2023-10-08_23-59-45_moodle_backup.tar.zst \
+request: answer_question, 978c2fb5-a947-4d22-8481-5824187d4641, module_id 5, [false, true]
+
+- möglicher fehler: nach einspielen eines backups sagt answer_questions: exception: multiple found
+  
+- wrong naming: adleradaptivity_tasks_id -> adleradaptivity_task_id 

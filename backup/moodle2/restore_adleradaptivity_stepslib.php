@@ -18,10 +18,10 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $paths[] = new restore_path_element('adleradaptivity', '/activity/adleradaptivity');
         $paths[] = new restore_path_element('task', '/activity/adleradaptivity/tasks/task');
 
-        $questions = new restore_path_element('question', '/activity/adleradaptivity/questions/question');
-        $paths[] = $questions;
-        $this->add_question_references($questions, $paths);
-        $this->add_question_set_references($questions, $paths);
+        $question = new restore_path_element('question', '/activity/adleradaptivity/tasks/task/questions/question');
+        $paths[] = $question;
+        $this->add_question_references($question, $paths);
+        $this->add_question_set_references($question, $paths);
 
 
         if ($userinfo) {
@@ -58,7 +58,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $data->adleradaptivity_id = $this->get_new_parentid('adleradaptivity');
 
         $newitemid = $DB->insert_record('adleradaptivity_tasks', $data);
-        $this->set_mapping('adleradaptivity_task', $oldid, $newitemid);
+        $this->set_mapping('task', $oldid, $newitemid);
     }
 
     protected function process_question($data) {
@@ -66,12 +66,11 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
 
         $data = (object)$data;
 
-        $data->optionid = $this->get_mappingid('adleradaptivity_task', $data->adleradaptivity_tasks_id);
+        $data->adleradaptivity_tasks_id = $this->get_new_parentid("task");
         // TODO: question_bank_entries_id mapping
 
         $newitemid = $DB->insert_record('adleradaptivity_questions', $data);
-        // No need to save this mapping as far as nothing depend on it
-        // (child paths, file areas nor links decoder)
+        $this->set_mapping('question', $data->id, $newitemid);
     }
 
     protected function process_adleradaptivity_attempt($data) {
@@ -84,6 +83,24 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
 //
 //        $newitemid = $DB->insert_record('adleradaptivity_attempts', $data);
 //        $this->set_mapping('adleradaptivity_attempt', $oldid, $newitemid);
+    }
+
+    /**
+     * Implementatin of parent class is bugged. It hardcodes quiz module references.
+     * TODO
+     * Process question references which replaces the direct connection to quiz slots to question.
+     *
+     * @param array $data the data from the XML file.
+     */
+    public function process_question_reference($data) {
+        global $DB;
+        $data = (object) $data;
+        $data->usingcontextid = $this->get_mappingid('context', $data->usingcontextid);
+        $data->itemid = $this->get_new_parentid('question');
+        if ($entry = $this->get_mappingid('question_bank_entry', $data->questionbankentryid)) {
+            $data->questionbankentryid = $entry;
+        }
+        $DB->insert_record('question_references', $data);
     }
 
     protected function after_execute() {}

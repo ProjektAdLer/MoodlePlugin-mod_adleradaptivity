@@ -145,21 +145,10 @@ class answer_questions extends external_api {
 
         // validate all questions are in the given module and save question_bank_entry and task in $questions for later use
         foreach ($questions as $key => $question) {
-            // This SQL statement is designed to select all columns from the {tasks} table where there is a matching condition between {questions}, {tasks}, and {question_bank_entries} tables.
-            // The statement performs the following:
-            // 1. Joins the {question_bank_entries} table with the {questions} table where the 'id' of {question_bank_entries} equals 'question_bank_entries_id' of {questions}.
-            // 2. Then, it joins the resultant set with the {tasks} table where 'adleradaptivity_tasks_id' of {questions} equals the 'id' of {tasks}.
-            // 3. It filters the result to include rows where 'idnumber' of {question_bank_entries} is "978c2fb5-a947-4d22-8481-5824187d4641" and 'adleradaptivity_id' of {tasks} is 1.
-            $sql = "
-                SELECT t.*
-                FROM {question_bank_entries} qbe
-                JOIN {adleradaptivity_questions} q ON qbe.id = q.question_bank_entries_id
-                JOIN {adleradaptivity_tasks} t ON q.adleradaptivity_tasks_id = t.id
-                WHERE qbe.idnumber = ? AND t.adleradaptivity_id = ?;
-            ";
-            $adleradaptivity_task = $DB->get_record_sql($sql, [$question['uuid'], $instance_id]);
-            if (!$adleradaptivity_task) {
-                throw new invalid_parameter_exception('Question with uuid ' . $question['uuid'] . ' is not in the given module.');
+            try {
+                $adleradaptivity_task = external_helpers::get_task_by_question_uuid($question['uuid'], $instance_id);
+            } catch (moodle_exception $e) {
+                throw new invalid_parameter_exception('Question with uuid ' . $question['uuid'] . ' does not exist.');
             }
 
             // save $adleradaptivity_task for later use

@@ -153,16 +153,15 @@ class helpers {
         global $DB;
 
         // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
-        // This is achieved by:
-        // 1. Joining `{adleradaptivity_questions}` with `{adleradaptivity_tasks}`
-        // to filter questions associated with a specific task.
-        // 2. Further joining with `{question_versions}` to get the versions
-        // of questions that match the adaptivity task's criteria.
         $sql = "
             SELECT qv.questionid, qv.version, aq.*
-            FROM `{adleradaptivity_questions}` AS aq
-            JOIN `{question_versions}` AS qv ON qv.questionbankentryid = aq.question_bank_entries_id
-            WHERE aq.adleradaptivity_tasks_id = ?;
+            FROM {adleradaptivity_questions} aq
+            JOIN {question_references} qr ON qr.itemid = aq.id
+            JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
+            
+            WHERE aq.adleradaptivity_tasks_id = ?
+            AND qr.component = 'mod_adleradaptivity'
+            AND qr.questionarea = 'question';
         ";
         $question_data = $DB->get_records_sql($sql, [$task_id]);
 
@@ -174,7 +173,7 @@ class helpers {
                     'mod_adleradaptivity',
                     '',
                     '',
-                    'There is a question with version ' . $question_data->version . '. This is not supported by adleradaptivity.'
+                    'There is a question with version ' . $one_question->version . '. This is not supported by adleradaptivity.'
                 );
             }
 
@@ -201,18 +200,17 @@ class helpers {
         $instance_id = $DB->get_field('course_modules', 'instance', ['id' => $cmid]);
 
         // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
-        // This is achieved by:
-        // 1. Joining `{adleradaptivity_questions}` with `{adleradaptivity_tasks}`
-        // to filter questions associated with a specific task.
-        // 2. Further joining with `{question_versions}` to get the versions
-        // of questions that match the adaptivity task's criteria.
         $sql = "
         SELECT qv.*
-        FROM `{adleradaptivity_questions}` AS qa
-        JOIN `{adleradaptivity_tasks}` AS at ON qa.adleradaptivity_tasks_id = at.id
-        JOIN `{question_versions}` AS qv ON qv.questionbankentryid = qa.question_bank_entries_id
+        FROM {adleradaptivity_questions} aq
+        JOIN {question_references} qr ON qr.itemid = aq.id
+        JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_tasks_id = at.id
+        JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
+        
         WHERE at.adleradaptivity_id = ?
-    ";
+        AND qr.component = 'mod_adleradaptivity'
+        AND qr.questionarea = 'question'
+        ";
         $question_versions = $DB->get_records_sql($sql, [$instance_id]);
 
         $questions = [];

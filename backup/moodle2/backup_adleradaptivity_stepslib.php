@@ -27,8 +27,7 @@ class backup_adleradaptivity_activity_structure_step extends backup_questions_ac
 
         $questions = new backup_nested_element('questions');
 
-        $question = new backup_nested_element('question', array('id'), array(
-            'question_bank_entries_id', 'difficulty'));
+        $question = new backup_nested_element('question', array('id'), array('difficulty'));
 
         $attempts = new backup_nested_element('attempts');
 
@@ -52,14 +51,14 @@ class backup_adleradaptivity_activity_structure_step extends backup_questions_ac
                 SELECT aq.* 
                 FROM {adleradaptivity_questions} aq
                 JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_tasks_id = at.id
-                                                WHERE aq.adleradaptivity_tasks_id = :adleradaptivity_tasks_id; 
+                WHERE aq.adleradaptivity_tasks_id = :adleradaptivity_tasks_id; 
             ',
             ['adleradaptivity_tasks_id' => backup::VAR_PARENTID]
         );
 
-        $this->add_question_references($question, 'mod_adleradaptivity', 'slot');
+        $this->add_question_references($question, 'mod_adleradaptivity', 'question');
 
-        $this->add_question_set_references($question, 'mod_adleradaptivity', 'slot');
+        $this->add_question_set_references($question, 'mod_adleradaptivity', 'question');
 
         if ($userinfo) {
             $attempt->set_source_sql('
