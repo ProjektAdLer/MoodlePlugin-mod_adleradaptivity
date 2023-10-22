@@ -124,7 +124,7 @@ class completion_helpers {
                     for ($i = 0; $i < count($answer_order); $i++) {
                         $answer = $question->answers[$answer_order[$i]];
 
-                        $user_chose_this_answer = $response['choice' . $i] == $answer->id;
+                        $user_chose_this_answer = $response['choice' . $i] == "1";
                         $user_answer_is_correct = self::is_multichoice_answer_correct($answer) && $user_chose_this_answer;
                         $answer_details[] = [
                             'checked' => $user_chose_this_answer,

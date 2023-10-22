@@ -42,7 +42,6 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="fk_adleradaptivity_task" TYPE="foreign" FIELDS="adleradaptivity_task_id" REFTABLE="adleradaptivity_tasks" REFFIELDS="id"/>
-        <KEY NAME="fk_question_bank_entries_id" TYPE="foreign" FIELDS="question_bank_entries_id" REFTABLE="question_bank_entries" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="adleradaptivity_attempts" COMMENT="stores relation between a 'question' attempt and a user (looks like the question attempts are user independent)">
