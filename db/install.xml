@@ -25,8 +25,7 @@
         <FIELD NAME="adleradaptivity_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity activity this task is part of"/>
         <FIELD NAME="title" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="User visible title of the task"/>
         <FIELD NAME="uuid" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Unique identifier of the task"/>
-        <FIELD NAME="optional" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Whether this task is optional to complete the module"/>
-        <FIELD NAME="required_difficulty" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="higher is more difficult; condition is: equal or higher"/>
+        <FIELD NAME="required_difficulty" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="higher is more difficult; condition is: equal or higher; null if task is optional"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

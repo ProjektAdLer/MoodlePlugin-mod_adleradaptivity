@@ -4,7 +4,6 @@
 //  question_usages
 //  question_attempts
 
-// TODO: Questions
 
 /**
  * Structure step to restore one adleradaptivity activity
@@ -67,7 +66,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $data = (object)$data;
 
         $data->adleradaptivity_task_id = $this->get_new_parentid("task");
-        // TODO: question_bank_entries_id mapping
+
 
         $newitemid = $DB->insert_record('adleradaptivity_questions', $data);
         $this->set_mapping('question', $data->id, $newitemid);
@@ -108,5 +107,6 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
     protected function inform_new_usage_id($newusageid) {
         // TODO: Implement inform_new_usage_id() method.
         // required for question bank import (questions activity)
+        // I think actually for question_usages (attempts)
     }
 }

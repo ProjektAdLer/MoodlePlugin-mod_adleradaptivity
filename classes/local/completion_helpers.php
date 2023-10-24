@@ -23,29 +23,29 @@ class completion_helpers {
         $task_success = false;
 
         // handle task optional
-        if ($task->optional) {
+        if ($task->required_difficulty == null) {
             $task_success = true;
-        }
-
-        foreach(helpers::load_questions_by_task_id($task->id) as $question) {
-            // get slot of question
-            foreach($quba->get_slots() as $slot) {
-                if ($quba->get_question($slot)->id == $question->questionid) {
-                    $slot_of_question = $slot;
-                    break;
+        } else {
+            foreach (helpers::load_questions_by_task_id($task->id) as $question) {
+                // get slot of question
+                foreach ($quba->get_slots() as $slot) {
+                    if ($quba->get_question($slot)->id == $question->questionid) {
+                        $slot_of_question = $slot;
+                        break;
+                    }
                 }
-            }
-            if (!$slot_of_question) {
-                throw new moodle_exception('question_not_found', 'question', '', null, 'Question for slot not found');
-            }
+                if (!$slot_of_question) {
+                    throw new moodle_exception('question_not_found', 'question', '', null, 'Question for slot not found');
+                }
 
-            // check whether question was answered correctly
-            $question_attempt = $quba->get_question_attempt($slot_of_question);
-            $is_correct = self::check_question_correctly_answered($question_attempt);
+                // check whether question was answered correctly
+                $question_attempt = $quba->get_question_attempt($slot_of_question);
+                $is_correct = self::check_question_correctly_answered($question_attempt);
 
-            // if question was answered correctly and question difficulty is equal or above required_difficulty, set task_success to true
-            if ($is_correct && $question->difficulty >= $task->required_difficulty) {
-                $task_success = true;
+                // if question was answered correctly and question difficulty is equal or above required_difficulty, set task_success to true
+                if ($is_correct && $question->difficulty >= $task->required_difficulty) {
+                    $task_success = true;
+                }
             }
         }
 

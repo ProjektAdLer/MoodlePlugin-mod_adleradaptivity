@@ -23,7 +23,7 @@ class backup_adleradaptivity_activity_structure_step extends backup_questions_ac
         $tasks = new backup_nested_element('tasks');
 
         $task = new backup_nested_element('task', array('id'), array(
-            'title', 'uuid', 'optional', 'required_difficulty'));
+            'title', 'uuid', 'required_difficulty'));
 
         $questions = new backup_nested_element('questions');
 
