@@ -42,13 +42,13 @@ class external_helpers {
      * @return array Array of questions with the fields uuid, status and answers
      * @throws moodle_exception If the question could not be found in the question usage object or answer checking failed.
      */
-    public static function generate_question_response_data(array $questions, question_usage_by_activity $question_usage): array {
+    public static function generate_question_response_data(array $question_uuids, question_usage_by_activity $question_usage): array {
         $response_data = [];
 
-        foreach ($questions as $question) {
-            $question_attempt = $question_usage->get_question_attempt(helpers::get_slot_number_by_uuid($question['uuid'], $question_usage));
+        foreach ($question_uuids as $question_uuid) {
+            $question_attempt = $question_usage->get_question_attempt(helpers::get_slot_number_by_uuid($question_uuid, $question_usage));
             $response_data[] = [
-                'uuid' => $question['uuid'],
+                'uuid' => $question_uuid,
                 'status' => completion_helpers::check_question_correctly_answered($question_attempt) ? 'correct' : 'incorrect',
                 'answers' => json_encode(completion_helpers::get_question_answer_details($question_attempt)),
             ];

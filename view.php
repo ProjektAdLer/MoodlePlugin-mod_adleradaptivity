@@ -1,4 +1,6 @@
 <?php
+global $USER;
+
 /**
  * Prints an instance of mod_adleradaptivity.
  *
@@ -56,28 +58,25 @@ $PAGE->set_context($modulecontext);
 
 // load quiz attempt if attempt parameter is not -1, otherwise create new attempt
 if ($attemptid === -1) {
-    $quba = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $modulecontext);
-    $quba->set_preferred_behaviour("adaptivenopenalty");
-    $questions = helpers::load_questions_by_cmid($cm->id);
-
-    $slots = [];
-    foreach ($questions as $question) {
-        $slots[] = $quba->add_question($question, 1);
-    }
-    //$slots = $quba->get_slots();  // this should be equivalent to defining the slots array from the return values of add_question()
-
-    //$quba->start_question($slot, $options->variant); // should be an alternative for individual questions to start_all_questions()
-    $quba->start_all_questions();
-
-    question_engine::save_questions_usage_by_activity($quba);
+    $quba = helpers::load_or_create_question_usage($cm->id);
+//    question_engine::save_questions_usage_by_activity($quba);
 } else {
-    $quba = question_engine::load_questions_usage_by_activity($attemptid);
-    $slots = $quba->get_slots();
-    // load all questions to fill $questions variable
-    $questions = array();
-    foreach($slots as $slot) {
-        $questions[] = $quba->get_question($slot);
+    // If this page is called with an attemptid, then it is required to check if the user is allowed to edit this attempt.
+    // Only users with the capability 'mod/adleradaptivity:edit_all_attempts' are allowed to edit all attempts.
+    $attempt = $DB->get_record('adleradaptivity_attempts', array('attempt_id' => $attemptid));
+    if ($attempt->userid != $USER->id) {
+        // validate if current user is allowed to edit this attempt because he has the capability 'mod/adleradaptivity:edit_all_attempts'
+        require_capability('mod/adleradaptivity:edit_all_attempts', $modulecontext);
     }
+
+    // The user is allowed to edit this attempt, so load the attempt.
+    $quba = question_engine::load_questions_usage_by_activity($attemptid);
+}
+$slots = $quba->get_slots();
+// load all questions to fill $questions variable
+$questions = array();
+foreach($slots as $slot) {
+    $questions[] = $quba->get_question($slot);
 }
 
 

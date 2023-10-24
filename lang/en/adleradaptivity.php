@@ -12,6 +12,11 @@ $string['modulenameplural'] = 'Adler Adaptivities';
 $string['modulename_help'] = 'Insert modulename help text here.';
 $string['pluginadministration'] = 'Adler Adaptivity administration';
 
+$string['adleradaptivity:addinstance'] = 'Add a new Adler Adaptivity';
+$string['adleradaptivity:view'] = 'View Adler Adaptivity';
+$string['adleradaptivity:edit'] = 'Edit Adler Adaptivity';
+$string['adleradaptivity:edit_all_attempts'] = 'Edit all attempts of all users (Dangerous! It is not traceable that a user with this permission has edited another user\'s attempt.)';
+
 $string['menu_edit_questions'] = 'Edit questions';
 
 $string['form_field_title'] = 'Element title';

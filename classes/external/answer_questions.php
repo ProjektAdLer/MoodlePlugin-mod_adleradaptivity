@@ -165,17 +165,22 @@ class answer_questions extends external_api {
         // start processing the questions
         foreach ($questions as $key => $question) {
             // load question object
-            $question['question_object'] = helpers::load_question_by_uuid($question['uuid'], $instance_id);
+            $question['question_object'] = $quba->get_question(helpers::get_slot_number_by_uuid($question['uuid'], $quba));
 
             // switch case over question types. For now only multichoice is supported
             // reformat answer from api format to question type format
-            switch ($question['question_object']->qtype) {
-                case 'multichoice':
+            switch (get_class($question['question_object']->qtype)) {
+                case 'qtype_multichoice':
                     // process multichoice question
-                    $question['formatted_answer'] = static::format_multichoice_answer($question['answer'], $question['question_object']->single);
+                    $is_single = get_class($question['question_object']) == 'qtype_multichoice_single_question';
+                    $question['formatted_answer'] = static::format_multichoice_answer(
+                        $question['answer'],
+                        $is_single,
+                        count($question['question_object']->answers)
+                    );
                     break;
                 default:
-                    throw new invalid_parameter_exception('Question type ' . $question['task']->question_type . ' is not supported.');
+                    throw new invalid_parameter_exception('Question type ' . get_class($question['question_object']->qtype) . ' is not supported.');
             }
 
             // now the formatted answer can be processed like it came from the web interface
@@ -227,7 +232,7 @@ class answer_questions extends external_api {
         }
 
         // completion state of questions
-        $questions_completion = external_helpers::generate_question_response_data($questions, $quba);
+        $questions_completion = external_helpers::generate_question_response_data(array_column($questions, 'uuid'), $quba);
 
         return [
             'data' => [
@@ -246,6 +251,7 @@ class answer_questions extends external_api {
      *
      * @param string $answer JSON encoded array of booleans
      * @param bool $is_single_choice Whether the question is single choice or not (multiple choice
+     * @param int $number_of_choices Validate the number of choices the question should have. If it is not the same, throw an exception. If it is null, do not validate.
      * @return array answer string in multichoice format
      * @throws invalid_parameter_exception If the answer has invalid format after json_decode
      *
@@ -267,7 +273,7 @@ class answer_questions extends external_api {
      *     'choice4' => "0",
      *  ] // submitted this question
      */
-    private static function format_multichoice_answer(string $answer, bool $is_single_choice) {
+    private static function format_multichoice_answer(string $answer, bool $is_single_choice, int $number_of_choices = null) {
         // Answer shuffling is no problem because it is disabled for all attempts in this module
 
         $answers_array = json_decode($answer);
@@ -275,7 +281,12 @@ class answer_questions extends external_api {
         // Check if decoded value is not only an array, but an array of booleans.
         // if answer is null is no mappable, throw exception
         if (!is_array($answers_array) || !self::all_elements_are_bool($answers_array)) {
-            throw new invalid_parameter_exception('Answer has invalid format: ' . json_encode($answersArray));
+            throw new invalid_parameter_exception('Answer has invalid format: ' . json_encode($answers_array));
+        }
+
+        // if $number_of_choices is set, check if the number of choices is correct
+        if ($number_of_choices !== null && count($answers_array) != $number_of_choices) {
+            throw new invalid_parameter_exception('Answer has invalid number of choices: ' . json_encode($answers_array));
         }
 
         $result = ['-submit' => "1"];

@@ -88,15 +88,13 @@ class get_question_details extends external_api {
         $quba = helpers::load_or_create_question_usage($module_id);
 
         // load all questions in the attempt
-        $questions = [];
+        $question_uuids = [];
         foreach ($quba->get_slots() as $slot) {
-            $questions[] = [
-                'uuid' => $quba->get_question($slot)->idnumber,
-            ];
+            $question_uuids[] = $quba->get_question($slot)->idnumber;
         }
 
         // completion state of questions
-        $questions_completion = external_helpers::generate_question_response_data($questions, $quba);
+        $questions_completion = external_helpers::generate_question_response_data($question_uuids, $quba);
 
 
         return [
