@@ -12,44 +12,75 @@ use question_usage_by_activity;
 use stdClass;
 
 class completion_helpers {
-    /** Check if task is completed. If task is optional, it is considered completed.
+    /**
+     * Check if task is completed.
      *
      * @param question_usage_by_activity $quba The question usage object.
      * @param stdClass $task The task object.
-     * @return bool
+     *
+     * @return string One of the following possible result values:
+     *  - correct
+     *  - incorrect
+     *  - notAttempted
+     *  - optional_notAttempted
+     *  - optional_incorrect
+     *
      * @throws moodle_exception
      */
-    public static function check_task_completed(question_usage_by_activity $quba, stdClass $task): bool {
-        $task_success = false;
+    public static function check_task_status(question_usage_by_activity $quba, stdClass $task): string {
+        $success = false;
+        $attempted = false;
+        $optional = $task->required_difficulty == null;
 
-        // handle task optional
-        if ($task->required_difficulty == null) {
-            $task_success = true;
-        } else {
-            foreach (helpers::load_questions_by_task_id($task->id) as $question) {
-                // get slot of question
-                foreach ($quba->get_slots() as $slot) {
-                    if ($quba->get_question($slot)->id == $question->questionid) {
-                        $slot_of_question = $slot;
-                        break;
-                    }
+        foreach (helpers::load_questions_by_task_id($task->id) as $question) {
+            // get slot of question
+            foreach ($quba->get_slots() as $slot) {
+                if ($quba->get_question($slot)->id == $question->questionid) {
+                    $slot_of_question = $slot;
+                    break;
                 }
-                if (!$slot_of_question) {
-                    throw new moodle_exception('question_not_found', 'question', '', null, 'Question for slot not found');
-                }
+            }
+            if (!$slot_of_question) {
+                throw new moodle_exception('question_not_found', 'question', '', null, 'Question for slot not found');
+            }
 
-                // check whether question was answered correctly
-                $question_attempt = $quba->get_question_attempt($slot_of_question);
-                $is_correct = self::check_question_correctly_answered($question_attempt);
+            // check whether question was answered (correctly)
+            $question_attempt = $quba->get_question_attempt($slot_of_question);
+            $is_correct = self::check_question_correctly_answered($question_attempt);
 
-                // if question was answered correctly and question difficulty is equal or above required_difficulty, set task_success to true
-                if ($is_correct && $question->difficulty >= $task->required_difficulty) {
-                    $task_success = true;
-                }
+            if ($is_correct !== null) {
+                // if one question was answered at all, set the task to attempted
+                $attempted = true;
+            } else {
+                // else continue with the next question
+                continue;
+            }
+
+            // if question was answered correctly and question difficulty is equal or above required_difficulty, set task_success to true
+            // $is_correct can't be null here anymore, just true and false are left
+            if ($is_correct && $question->difficulty >= $task->required_difficulty) {
+                $success = true;
             }
         }
 
-        return $task_success;
+        if (!$attempted)
+        {
+            if ($optional) {
+                return 'optional_notAttempted';
+            } else {
+                return 'notAttempted';
+            }
+        }
+
+        if ($success) {
+            return 'correct';
+        } else {
+            if ($optional) {
+                return 'optional_incorrect';
+            } else {
+                return 'incorrect';
+            }
+        }
     }
 
     /**
@@ -59,13 +90,20 @@ class completion_helpers {
      * question/type/rendererbase.php -> combined_feedback()
      *
      * @param question_attempt $question_attempt The question attempt object.
-     * @return bool True if the question was answered correctly, false otherwise.
+     * @return bool|null True if the question was answered correctly, false otherwise.
      * @throws moodle_exception
      */
-    public static function check_question_correctly_answered(question_attempt $question_attempt): bool {
+    public static function check_question_correctly_answered(question_attempt $question_attempt): ?bool {
         $question = $question_attempt->get_question();
 
-        $response = $question_attempt->get_last_qt_data();
+        $last_step = $question_attempt->get_last_step();
+        // Likely it would be sufficient to use the fraction from the last step for the whole functionality of this method.
+        // But I don't know if there are edge cases where this is not true. Going with the grade_response way might be safer.
+        // But this way does for my knowledge not provide a way to check if the question was not attempted at all.
+        // So I still need to check the fraction of the last step.
+        $not_attempted = $last_step->get_fraction() === null;
+
+        $response = $last_step->get_qt_data();
         // This method calculates the state of the question.
         // It takes the $fractions from the questions and returns the following states
         // fraction <= 0: question_state::$gradedwrong
@@ -74,14 +112,20 @@ class completion_helpers {
         // This should also work just fine for manual grading because this also sets the fraction value like automatic grading.
         list($fraction, $state) = $question->grade_response($response);
 
-        // this returns true if $state is of types question_state::$gradedright or question_state::$mangrright
-        // and therefore is also correct for manual grading, although manual grading is irrelevant here because the
-        // state object used here is calculated above and therefore always of type "automatic grading"
-        return $state->is_correct();
+        if ($not_attempted) {
+            return null;
+        } else {
+            // this returns true if $state is of types question_state::$gradedright or question_state::$mangrright
+            // and therefore is also correct for manual grading, although manual grading is irrelevant here because the
+            // state object used here is calculated above and therefore always of type "automatic grading"
+            return $state->is_correct();
+        }
     }
 
     /**
      * Determines whether an answer of a multichoice question type is judged as correct or not.
+     * Note: it's about a single answer, not the whole question.
+     *
      * It's following the implementation from question/type/multichoice/renderer.php
      * qtype_multichoice_multi_renderer::is_correct() answers with fraction above 0 are considered correct
      * qtype_multichoice_single_renderer::is_correct() as i understand this, the value is always 0 or 1
@@ -125,7 +169,7 @@ class completion_helpers {
                         $answer = $question->answers[$answer_order[$i]];
 
                         $user_chose_this_answer = $response['choice' . $i] == "1";
-                        $user_answer_is_correct = self::is_multichoice_answer_correct($answer) && $user_chose_this_answer;
+                        $user_answer_is_correct = self::is_multichoice_answer_correct($answer) === $user_chose_this_answer;
                         $answer_details[] = [
                             'checked' => $user_chose_this_answer,
                             'user_answer_correct' => $user_answer_is_correct,

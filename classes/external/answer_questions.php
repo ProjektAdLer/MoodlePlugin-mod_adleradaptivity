@@ -225,10 +225,7 @@ class answer_questions extends external_api {
                     continue 2;
                 }
             }
-            $tasks[] = [
-                'uuid' => $question['task']->uuid,
-                'status' => completion_helpers::check_task_completed($quba, $question['task']) ? 'correct' : 'incorrect',
-            ];
+            $tasks[] = external_helpers::generate_task_response_data($quba, $question['task']);
         }
 
         // completion state of questions

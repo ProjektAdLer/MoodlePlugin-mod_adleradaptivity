@@ -64,7 +64,7 @@ if ($attemptid === -1) {
     // If this page is called with an attemptid, then it is required to check if the user is allowed to edit this attempt.
     // Only users with the capability 'mod/adleradaptivity:edit_all_attempts' are allowed to edit all attempts.
     $attempt = $DB->get_record('adleradaptivity_attempts', array('attempt_id' => $attemptid));
-    if ($attempt->userid != $USER->id) {
+    if ($attempt->user_id != $USER->id) {
         // validate if current user is allowed to edit this attempt because he has the capability 'mod/adleradaptivity:edit_all_attempts'
         require_capability('mod/adleradaptivity:edit_all_attempts', $modulecontext);
     }

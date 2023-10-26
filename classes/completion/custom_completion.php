@@ -36,7 +36,9 @@ class custom_completion extends activity_custom_completion {
 
         // check if all tasks are completed
         foreach ($tasks as $task) {
-            if (!completion_helpers::check_task_completed($quba, $task)) {
+            $task_status = completion_helpers::check_task_status($quba, $task);
+            if (in_array($task_status, ['notAttempted', 'incorrect'])) {
+                // the other states correct, optional_notAttempted and optional_incorrect are considered as completed in this context
                 return false;
             }
         }
@@ -49,15 +51,15 @@ class custom_completion extends activity_custom_completion {
      *
      * @param string $rule The completion rule.
      * @return int The completion state.
+     * @throws moodle_exception
      */
     public function get_state(string $rule): int {
         $this->validate_rule($rule);
 
-        switch ($rule) {
-            case 'default_rule':
-                $status = static::check_module_completed();
-                break;
-        }
+        $status = match ($rule) {
+            'default_rule' => static::check_module_completed(),
+            default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid rule: ' . $rule),
+        };
 
         return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }

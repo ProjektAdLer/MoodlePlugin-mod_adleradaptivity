@@ -15,8 +15,8 @@ use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
-use mod_adleradaptivity\local\completion_helpers;
 use mod_adleradaptivity\local\helpers;
+use moodle_exception;
 
 class get_task_details extends external_api {
     public static function execute_parameters(): external_function_parameters {
@@ -68,6 +68,7 @@ class get_task_details extends external_api {
      * @throws invalid_parameter_exception
      * @throws dml_exception
      * @throws restricted_context_exception
+     * @throws moodle_exception
      */
     public static function execute(array $module): array {
         // Parameter validation
@@ -91,10 +92,7 @@ class get_task_details extends external_api {
         // generate response data
         $results = [];
         foreach ($tasks as $task) {
-            $results[] = [
-                'uuid' => $task->uuid,
-                'status' => completion_helpers::check_task_completed($quba, $task) ? 'correct' : 'incorrect',
-            ];
+            $results[] =external_helpers::generate_task_response_data($quba, $task);
         }
 
 

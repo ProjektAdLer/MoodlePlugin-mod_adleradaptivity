@@ -12,6 +12,27 @@ use stdClass;
 
 class external_helpers {
     /**
+     * Generate response data for a task
+     *
+     * @param question_usage_by_activity $quba The question usage object
+     * @param stdClass $task The task object.
+     * @return object with the fields uuid and status (one of correct, incorrect, notAttempted)
+     * @throws moodle_exception
+     */
+    public static function generate_task_response_data(question_usage_by_activity $quba, stdClass $task): object {
+        $status = completion_helpers::check_task_status($quba, $task);
+        return (object) [
+            'uuid' => $task->uuid,
+            'status' => match ($status) {
+                'correct' => 'correct',
+                'incorrect', 'optional_incorrect' => 'incorrect',
+                'notAttempted', 'optional_notAttempted' => 'notAttempted',
+                default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid task status: ' . $status),
+            },
+        ];
+    }
+
+    /**
      * Validates that either module_id or instance_id are set in the parameters and returns the module
      *
      * @param array $module_params The parameters passed to the external function for the module field
@@ -47,9 +68,16 @@ class external_helpers {
 
         foreach ($question_uuids as $question_uuid) {
             $question_attempt = $question_usage->get_question_attempt(helpers::get_slot_number_by_uuid($question_uuid, $question_usage));
+            $status = completion_helpers::check_question_correctly_answered($question_attempt);
+            $question_status = match ($status) {
+                true => 'correct',
+                false => 'incorrect',
+                null => 'notAttempted',
+                default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid question status: ' . $status),
+            };
             $response_data[] = [
                 'uuid' => $question_uuid,
-                'status' => completion_helpers::check_question_correctly_answered($question_attempt) ? 'correct' : 'incorrect',
+                'status' => $question_status,
                 'answers' => json_encode(completion_helpers::get_question_answer_details($question_attempt)),
             ];
         }
@@ -59,6 +87,7 @@ class external_helpers {
 
     /**
      * Get task by question uuid
+     * TODO: not external helper
      *
      * @param string $question_uuid The question uuid
      * @param int $instance_id The instance id of the adleradaptivity activity
