@@ -68,11 +68,12 @@ class helpers {
      *
      * @param int $cmid The course module ID of the adleradaptivity element.
      * @param int|null $userid The user ID; defaults to the current user if not provided.
-     * @return question_usage_by_activity The question usage object.
+     * @param bool $create_new_attempt If true, a new attempt is created if none exists yet.
+     * @return false|question_usage_by_activity
      * @throws dml_exception
      * @throws moodle_exception If multiple question usages are found for the given criteria.
      */
-    public static function load_or_create_question_usage($cmid, $userid = null) {
+    public static function load_or_create_question_usage(int $cmid, int|null $userid = null, bool $create_new_attempt = true): false|question_usage_by_activity {
         global $DB, $USER;
 
         if (!isset($userid)) {
@@ -89,7 +90,11 @@ class helpers {
 
         switch (count($adleradaptivity_attempts)) {
             case 0:
-                // No existing usage found, so generate a new one.
+                // No existing usage found, so generate a new one, except if $create_new_attempt is false.
+                if (!$create_new_attempt) {
+                    return false;
+                }
+
                 $quba = static::generate_new_attempt($cmid);
                 $attempt_id = $quba->get_id();
 

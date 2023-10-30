@@ -24,6 +24,7 @@ use moodle_exception;
 class custom_completion extends activity_custom_completion {
     /**
      * Check element successfully completed.
+     * This method will not create a new attempt if there is none. In this case the module is considered as not completed.
      * TODO: move to helpers
      *
      * @return bool True if the element is completed successfully, false otherwise.
@@ -31,8 +32,13 @@ class custom_completion extends activity_custom_completion {
      * @throws moodle_exception If the question usage cannot be loaded.
      */
     protected function check_module_completed(): bool {
-        $quba = helpers::load_or_create_question_usage($this->cm->id);
+        $quba = helpers::load_or_create_question_usage(intval($this->cm->id), null, false);
         $tasks = helpers::load_tasks_by_instance_id($this->cm->instance);
+
+        // check if there is an attempt, if not the module was not yet started and therefore not completed
+        if ($quba === false) {
+            return false;
+        }
 
         // check if all tasks are completed
         foreach ($tasks as $task) {
