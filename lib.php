@@ -86,10 +86,10 @@ function adleradaptivity_extend_settings_navigation(settings_navigation $setting
 
     require_once($CFG->libdir . '/questionlib.php');
 
-    if (has_capability('mod/adleradaptivity:edit', $settings->get_page()->context)) {
-        $url = new moodle_url('/mod/adleradaptivity/edit_questions.php', ['id' => $settings->get_page()->cm->id]);
-        $adleradaptivity_node->add(get_string('menu_edit_questions', 'adleradaptivity'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('t/edit', ''));
-    }
+//    if (has_capability('mod/adleradaptivity:edit', $settings->get_page()->context)) {
+//        $url = new moodle_url('/mod/adleradaptivity/edit_questions.php', ['id' => $settings->get_page()->cm->id]);
+//        $adleradaptivity_node->add(get_string('menu_edit_questions', 'adleradaptivity'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('t/edit', ''));
+//    }
 
     question_extend_settings_navigation($adleradaptivity_node, $settings->get_page()->cm->context);
 }

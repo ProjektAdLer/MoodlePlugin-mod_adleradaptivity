@@ -8,6 +8,7 @@ global $USER;
  * @copyright   2023 Markus Heck
  */
 
+use mod_adleradaptivity\external\external_helpers;
 use mod_adleradaptivity\local\helpers;
 use qbank_previewquestion\question_preview_options;
 
@@ -76,12 +77,27 @@ $slots = $quba->get_slots();
 // load all questions to fill $questions variable
 $questions = array();
 foreach($slots as $slot) {
-    $questions[] = $quba->get_question($slot);
+    $question = $quba->get_question($slot);
+    $adaptivity_question = helpers::get_adleradaptivity_question_by_question_bank_entries_id($question->questionbankentryid);
+    $questions[] = [
+        'question' => $quba->get_question($slot),
+        'slot' => $slot,
+        'adaptivity_question' => $adaptivity_question,
+        'task' => external_helpers::get_task_by_question_uuid($question->idnumber, $moduleinstance->id)
+    ];
 }
+
+// order questions by task and difficulty
+usort($questions, function($a, $b) {
+    if ($a['task']->id == $b['task']->id) {
+        return $a['adaptivity_question']->difficulty <=> $b['adaptivity_question']->difficulty;
+    }
+    return $a['task']->id <=> $b['task']->id;
+});
 
 
 // not exactly sure about that, probably better doing this in the foreach loop below
-$question = $questions[0];
+$question = $questions[0]['question'];
 $options = new question_preview_options($question);
 $options->load_user_defaults();
 $options->set_from_request();
@@ -90,7 +106,6 @@ $options->set_from_request();
 $actionurl = new moodle_url('/mod/adleradaptivity/processattempt.php', ['id' => $cm->id, 'attempt' => $quba->get_id()]);
 
 
-$displaynumber = 1;
 
 echo $OUTPUT->header();
 
@@ -103,8 +118,32 @@ echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'slots'
 echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'scrollpos', 'value' => '', 'id' => 'scrollpos'));
 echo html_writer::end_tag('div');
 
+// enum with values: 0 = easy, 100 = normal, 200 = hard
+$difficulties = [
+    0 => 'easy',
+    100 => 'normal',
+    200 => 'hard'
+];
+
+
+//$displaynumber = 1;
+
+$prev_task = null;
 // Output the question.
-foreach ($slots as $slot) {
+foreach ($questions as $question) {
+    if ($prev_task === null || $prev_task->id !== $question['task']->id) {
+        // add a heading
+        echo html_writer::start_tag('h3');
+        echo $question['task']->title;
+        echo " ";
+        echo $question['task']->required_difficulty === null ? "optional" : "required difficulty: " . $difficulties[$question['task']->required_difficulty];
+        echo " ";
+
+        echo html_writer::end_tag('h3');
+        // horizontal line
+        echo html_writer::empty_tag('hr');
+        $prev_task = $question['task'];
+    }
 //    // add a heading
 //    echo html_writer::start_tag('h3');
 //    echo "Task x";
@@ -112,8 +151,9 @@ foreach ($slots as $slot) {
 //    // horizontal line
 //    echo html_writer::empty_tag('hr');
 //    echo $quba->render_question($slot, $options, round($displaynumber/2) . ($slot % 2 == 1 ? "a" : "b"));
-    echo $quba->render_question($slot, $options, $displaynumber);
-    $displaynumber++;
+    echo $quba->render_question($question['slot'], $options, $difficulties[$question['adaptivity_question']->difficulty]);
+//    echo $quba->render_question($question['slot'], $options, $displaynumber);
+//    $displaynumber++;
 }
 
 

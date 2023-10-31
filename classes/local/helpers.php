@@ -264,4 +264,24 @@ class helpers {
         }
         throw new moodle_exception('Question with uuid ' . $uuid . ' not found in question usage');
     }
+
+    /**
+     * Get adleradaptivity question by question_bank_entries_id
+     *
+     * @param int $question_bank_entries_id
+     * @return stdClass question object
+     * @throws dml_exception
+     */
+    public static function get_adleradaptivity_question_by_question_bank_entries_id(int $question_bank_entries_id) {
+        global $DB;
+
+        $sql = "
+            SELECT aq.*
+            FROM {adleradaptivity_questions} aq
+            JOIN {question_references} qr ON qr.itemid = aq.id
+            WHERE qr.questionbankentryid = ?
+        ";
+
+        return $DB->get_record_sql($sql, ['questionbankentryid' => $question_bank_entries_id], MUST_EXIST);
+    }
 }
