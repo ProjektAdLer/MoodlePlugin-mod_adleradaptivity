@@ -8,8 +8,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2023103000;
+$plugin->version = 2023110800;
 $plugin->requires = 2021051712.05;  // Moodle version
-$plugin->release = '2.0.0-rc.2';
+$plugin->release = '2.0.0-rc.3';
 $plugin->component = 'mod_adleradaptivity'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_ALPHA;
