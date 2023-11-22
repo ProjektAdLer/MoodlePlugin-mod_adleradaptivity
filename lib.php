@@ -1,6 +1,27 @@
 <?php
 
 use core_completion\api as completion_api;
+use mod_adleradaptivity\local\helpers;
+
+// TODO: taken from mod/readme.md
+//lib.php: any/all functions defined by the module should be in here.
+//constants should be defined using MODULENAME_xxxxxx
+//         functions should be defined using modulename_xxxxxx
+//
+//         There are a number of standard functions:
+//
+//         modulename_add_instance()
+//         modulename_update_instance()
+//         modulename_delete_instance()
+//
+//         modulename_user_complete()
+//         modulename_user_outline()
+//
+//         modulename_cron()
+//
+//         modulename_print_recent_activity()
+//
+
 
 /**
  * Return if the plugin supports $feature.
@@ -61,24 +82,58 @@ function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
     return $DB->update_record('adleradaptivity', $moduleinstance);
 }
 
-/** The [modname]_delete_instance() function is called when the activity
+/** The adleradaptivity_delete_instance() function is called when the activity
  * deletion is confirmed. It is responsible for removing all data associated
  * with the instance.
+ * questions itself are not deleted here as they belong to the course, not to the module. The adleradaptivity_questions are deleted.
  *
- * @param $id
- * @return bool
+ * @param $instance_id int The instance id of the module to delete.
+ * @return bool true if success, false if failed.
+ * @throws dml_transaction_exception if the transaction failed and could not be rolled back.
  */
-function adleradaptivity_delete_instance($id): bool {
-//    global $DB;
-//
-//    $exists = $DB->get_record('adleradaptivity', array('id' => $id));
-//    if (!$exists) {
-//        return false;
-//    }
-//
-//    $DB->delete_records('adleradaptivity', array('id' => $id));
-//
-//    return true;
+function adleradaptivity_delete_instance(int $instance_id): bool {
+    // TODO: https://github.com/ProjektAdLer/MoodlePluginModAdleradaptivity/issues/1
+    global $DB;
+
+    $transaction = $DB->start_delegated_transaction();
+
+    try {
+        // first ensure that the module instance exists
+        $DB->get_record('adleradaptivity', array('id' => $instance_id), '*', MUST_EXIST);
+
+        // load all attempts related to $instance_id
+        $cm = get_coursemodule_from_instance('adleradaptivity', $instance_id, 0, false, MUST_EXIST);
+        $attempts = helpers::load_adleradaptivity_attempt_by_cmid($cm->id);
+        // delete all attempts
+        foreach ($attempts as $attempt) {
+            $DB->delete_records('adleradaptivity_attempts', array('attempt_id' => $attempt->attempt_id));
+            question_engine::delete_questions_usage_by_activity($attempt->attempt_id);
+        }
+
+        // delete the module itself and all related tasks and questions
+        // load required data
+        $adler_tasks = $DB->get_records('adleradaptivity_tasks', array('adleradaptivity_id' => $instance_id));
+        $adler_questions = [];
+        foreach($adler_tasks as $task) {
+            $adler_questions = array_merge($adler_questions, helpers::load_questions_by_task_id($task->id, true));
+        }
+        // perform deletion
+        foreach ($adler_questions as $question) {
+            $DB->delete_records('adleradaptivity_questions', array('id' => $question->id));
+        }
+        foreach ($adler_tasks as $task) {
+            $DB->delete_records('adleradaptivity_tasks', array('id' => $task->id));
+        }
+        $DB->delete_records('adleradaptivity', array('id' => $instance_id));
+
+        $transaction->allow_commit();
+    } catch (Exception $e) {
+        debugging('Could not delete adleradaptivity instance with id ' . $instance_id, E_ERROR);
+        $transaction->rollback($e);
+        return false;
+    }
+
+    return true;
 }
 
 function adleradaptivity_extend_settings_navigation(settings_navigation $settings, navigation_node $adleradaptivity_node) {

@@ -29,16 +29,16 @@ $attemptid = optional_param('attempt', -1, PARAM_INT);
 if ($id) {
     $cm = get_coursemodule_from_id('adleradaptivity', $id, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-    $moduleinstance = $DB->get_record('adleradaptivity', array('id' => $cm->instance), '*', MUST_EXIST);
+    $module_instance = $DB->get_record('adleradaptivity', array('id' => $cm->instance), '*', MUST_EXIST);
 } else {
-    $moduleinstance = $DB->get_record('adleradaptivity', array('id' => $a), '*', MUST_EXIST);
-    $course = $DB->get_record('course', array('id' => $moduleinstance->course), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('adleradaptivity', $moduleinstance->id, $course->id, false, MUST_EXIST);
+    $module_instance = $DB->get_record('adleradaptivity', array('id' => $a), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $module_instance->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('adleradaptivity', $module_instance->id, $course->id, false, MUST_EXIST);
 }
 
 require_login($course, true, $cm);
 
-$modulecontext = context_module::instance($cm->id);
+$module_context = context_module::instance($cm->id);
 
 
 // This probably has to be implemented, but not here and not that way. search for "course_module_viewed" in other modules
@@ -51,9 +51,9 @@ $modulecontext = context_module::instance($cm->id);
 //$event->trigger();
 
 $PAGE->set_url('/mod/adleradaptivity/view.php', array('id' => $cm->id));
-$PAGE->set_title(format_string($moduleinstance->name));
+$PAGE->set_title(format_string($module_instance->name));
 $PAGE->set_heading(format_string($course->fullname));
-$PAGE->set_context($modulecontext);
+$PAGE->set_context($module_context);
 
 
 
@@ -67,7 +67,7 @@ if ($attemptid === -1) {
     $attempt = $DB->get_record('adleradaptivity_attempts', array('attempt_id' => $attemptid));
     if ($attempt->user_id != $USER->id) {
         // validate if current user is allowed to edit this attempt because he has the capability 'mod/adleradaptivity:edit_all_attempts'
-        require_capability('mod/adleradaptivity:edit_all_attempts', $modulecontext);
+        require_capability('mod/adleradaptivity:edit_all_attempts', $module_context);
     }
 
     // The user is allowed to edit this attempt, so load the attempt.
@@ -83,7 +83,7 @@ foreach($slots as $slot) {
         'question' => $quba->get_question($slot),
         'slot' => $slot,
         'adaptivity_question' => $adaptivity_question,
-        'task' => external_helpers::get_task_by_question_uuid($question->idnumber, $moduleinstance->id)
+        'task' => external_helpers::get_task_by_question_uuid($question->idnumber, $module_instance->id)
     ];
 }
 

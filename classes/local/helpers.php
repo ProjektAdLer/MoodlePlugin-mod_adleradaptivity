@@ -151,10 +151,14 @@ class helpers {
     /** Get adleradaptivity questions with moodle question ids for the given adleradaptivity task id.
      *
      * @param int $task_id task id of the adleradaptivity task.
+     * @param bool $ignore_question_version DANGER! whether to ignore the question version. If true,
+     * the question version is not checked. Besides that questions with version != 1 are not supported by adleradaptivity,
+     * deactivating this check might also result in the same question being returned multiple times in different versions.
+     * This switch is intended only for stuff like module deletion.
      * @return array of objects with moodle question id and adleradaptivity question id.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public static function load_questions_by_task_id($task_id) {
+    public static function load_questions_by_task_id(int $task_id, bool $ignore_question_version = false) {
         global $DB;
 
         // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
@@ -172,7 +176,7 @@ class helpers {
 
         $result = [];
         foreach ($question_data as $one_question) {
-            if ($one_question->version != 1) {
+            if (!$ignore_question_version && $one_question->version != 1) {
                 throw new moodle_exception(
                     'question_version_not_one',
                     'mod_adleradaptivity',
