@@ -71,21 +71,14 @@ jobs:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
-        # This has to be run before installing composer dependencies as it will include them otherwise into its results
-        # and moodle-plugin-ci wrapper does not support exclusions
+      - name: PHP Lint
+        if: ${{ always() }}
+        run: moodle-plugin-ci phplint
+
       - name: PHP Copy/Paste Detector
         continue-on-error: true # This step will show errors but will not fail
         if: ${{ always() }}
         run: moodle-plugin-ci phpcpd
-
-      - name: Install plugin dependencies
-        run: |
-          cd moodle/mod/adleradaptivity
-          composer i
-
-      - name: PHP Lint
-        if: ${{ always() }}
-        run: moodle-plugin-ci phplint
 
       - name: PHP Mess Detector
         continue-on-error: true # This step will show errors but will not fail
@@ -117,6 +110,12 @@ jobs:
       - name: Grunt
         if: ${{ always() }}
         run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      # running this just before the tests to make sure that the vendor directory is not included in previous steps
+      - name: Install plugin dependencies
+        run: |
+          cd moodle/mod/adleradaptivity
+          composer i
 
       - name: Init moodle test env
         # if using moodle-plugin-ci for the init phase the phpunit.xml file is replaced with a generated one including files that should not be included
