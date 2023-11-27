@@ -1,0 +1,152 @@
+name: Moodle Plugin CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: 'postgres'
+          POSTGRES_HOST_AUTH_METHOD: 'trust'
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+      mariadb:
+        image: mariadb:10
+        env:
+          MYSQL_USER: 'root'
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
+          MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1']
+        moodle-branch: ['MOODLE_401_STABLE', 'MOODLE_402_STABLE']
+        database: [pgsql, mariadb]
+        experimental: [false]
+        include:
+          - php: '8.1'
+            moodle-branch: 'MOODLE_403_STABLE'
+            database: mariadb
+            experimental: true
+
+    continue-on-error: ${{ matrix.experimental }}
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          path: plugin
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ matrix.extensions }}
+          ini-values: max_input_vars=5000
+          coverage: pcov
+
+      - name: Initialise moodle-plugin-ci
+        run: |
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
+          echo $(cd ci/bin; pwd) >> $GITHUB_PATH
+          echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
+          sudo locale-gen en_AU.UTF-8
+          echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+
+      - name: Install moodle-plugin-ci
+        run: |
+          moodle-plugin-ci install --no-init --plugin ./plugin --db-host=127.0.0.1
+        env:
+          DB: ${{ matrix.database }}
+          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+
+      - name: Install plugin dependencies
+        run: |
+          cd moodle/local/adler
+          composer i
+
+      - name: PHP Lint
+        if: ${{ always() }}
+        run: moodle-plugin-ci phplint
+
+      - name: PHP Copy/Paste Detector
+        continue-on-error: true # This step will show errors but will not fail
+        if: ${{ always() }}
+        run: moodle-plugin-ci phpcpd
+
+      - name: PHP Mess Detector
+        continue-on-error: true # This step will show errors but will not fail
+        if: ${{ always() }}
+        run: moodle-plugin-ci phpmd
+
+#     Coding style for this plugin differs from moodle's coding style in some points
+#      - name: Moodle Code Checker
+#        if: ${{ always() }}
+#        run: moodle-plugin-ci codechecker --max-warnings 0
+
+      - name: Moodle PHPDoc Checker
+        continue-on-error: true
+        if: ${{ always() }}
+        run: moodle-plugin-ci phpdoc
+
+      - name: Validating
+        if: ${{ always() }}
+        run: moodle-plugin-ci validate
+
+      - name: Check upgrade savepoints
+        if: ${{ always() }}
+        run: moodle-plugin-ci savepoints
+
+      - name: Mustache Lint
+        if: ${{ always() }}
+        run: moodle-plugin-ci mustache
+
+      - name: Grunt
+        if: ${{ always() }}
+        run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      - name: Init moodle test env
+        # if using moodle-plugin-ci for the init phase the phpunit.xml file is replaced with a generated one including files that should not be included
+        # https://github.com/moodlehq/moodle-plugin-ci/issues/203
+        if: ${{ always() }}
+        run: |
+          cd moodle
+          php admin/tool/phpunit/cli/init.php
+
+      - name: PHPUnit tests
+        if: ${{ always() }}
+        run: |
+          cd moodle
+          php -d pcov.enabled=1 -d pcov.directory=. vendor/bin/phpunit --coverage-text --configuration local/adler --testdox --coverage-clover local/adler/coverage.xml
+          # restore tests are randomly causing segfaults when run with moodle-plugin-ci, but run totally fine when run with phpunit directly
+          # https://github.com/moodlehq/moodle-plugin-ci/issues/204
+          # moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text -vvv
+
+      - name: Coveralls upload
+        continue-on-error: true
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        if: ${{ matrix.php == '8.1' && matrix.moodle-branch == 'MOODLE_401_STABLE' && matrix.database == 'mariadb' }}
+        run: |
+          cd moodle
+          composer require --dev php-coveralls/php-coveralls
+          cd local/adler
+          # workaround for https://github.com/php-coveralls/php-coveralls/issues/358
+          unset GITHUB_ACTIONS  
+          php ../../vendor/bin/php-coveralls --coverage_clover=coverage.xml -v --json_path coveralls_upload.json --exclude-no-stmt
+
+#     There are no behat tests (yet)
+#      - name: Behat features
+#        if: ${{ always() }}
+#        run: moodle-plugin-ci behat --profile chrome
