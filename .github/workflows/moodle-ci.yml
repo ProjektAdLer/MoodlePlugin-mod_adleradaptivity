@@ -73,7 +73,7 @@ jobs:
 
       - name: Install plugin dependencies
         run: |
-          cd moodle/local/adler
+          cd moodle/mod/adleradaptivity
           composer i
 
       - name: PHP Lint
@@ -128,7 +128,7 @@ jobs:
         if: ${{ always() }}
         run: |
           cd moodle
-          php -d pcov.enabled=1 -d pcov.directory=. vendor/bin/phpunit --coverage-text --configuration local/adler --testdox --coverage-clover local/adler/coverage.xml
+          php -d pcov.enabled=1 -d pcov.directory=. vendor/bin/phpunit --coverage-text --configuration mod/adleradaptivity --testdox --coverage-clover mod/adleradaptivity/coverage.xml
           # restore tests are randomly causing segfaults when run with moodle-plugin-ci, but run totally fine when run with phpunit directly
           # https://github.com/moodlehq/moodle-plugin-ci/issues/204
           # moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text -vvv
@@ -141,7 +141,7 @@ jobs:
         run: |
           cd moodle
           composer require --dev php-coveralls/php-coveralls
-          cd local/adler
+          cd mod/adleradaptivity
           # workaround for https://github.com/php-coveralls/php-coveralls/issues/358
           unset GITHUB_ACTIONS  
           php ../../vendor/bin/php-coveralls --coverage_clover=coverage.xml -v --json_path coveralls_upload.json --exclude-no-stmt

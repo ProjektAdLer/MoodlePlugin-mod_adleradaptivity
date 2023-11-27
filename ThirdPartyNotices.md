@@ -5,3 +5,7 @@ The attached notices are provided for information only.
 Third Party Notices
 ===================
 
+hamcrest/hamcrest-php  v2.0.1   BSD-3-Clause
+
+mockery/mockery        1.5.1    BSD-3-Clause
+
