@@ -101,7 +101,7 @@ class completion_helpers {
         // But I don't know if there are edge cases where this is not true. Going with the grade_response way might be safer.
         // But this way does for my knowledge not provide a way to check if the question was not attempted at all.
         // So I still need to check the fraction of the last step.
-        $not_attempted = $last_step->get_fraction() === null;
+        $not_attempted = !array_key_exists('-submit', $last_step->get_submitted_data());
 
         $response = $last_step->get_qt_data();
         // This method calculates the state of the question.

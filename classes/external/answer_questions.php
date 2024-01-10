@@ -210,7 +210,7 @@ class answer_questions extends external_api {
         $tasks = [];
         foreach ($questions as $question) {
             foreach ($tasks as $task) {
-                if ($task['uuid'] == $question['task']->uuid) {
+                if ($task->uuid == $question['task']->uuid) {
                     continue 2;
                 }
             }
