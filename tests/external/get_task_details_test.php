@@ -13,7 +13,7 @@ require_once($CFG->dirroot . '/question/tests/generator/lib.php');
 /**
  * @runTestsInSeparateProcesses
  */
-class get_question_details_test extends adler_externallib_testcase {
+class get_task_details_test extends adler_externallib_testcase {
     public function test_execute_integration() {
         $task_required = true;
         $singlechoice = false;
@@ -35,20 +35,17 @@ class get_question_details_test extends adler_externallib_testcase {
         // data creation finish
 
         // execute get_question_details
-        $result = get_question_details::execute(['module_id' => $course_data['module']->cmid]);
+        $result = get_task_details::execute(['module_id' => $course_data['module']->cmid]);
 
         // internal data format does not matter for api -> fixing this here
         $result = json_decode(json_encode($result), true);
 
         // execute return paramter validation
-        answer_questions::validate_parameters(get_question_details::execute_returns(), $result);
-
+        get_task_details::validate_parameters(get_task_details::execute_returns(), $result);
 
 
         // verify result
-        $this->assertEquals('correct', $result['data']['questions'][0]['status']);
-        $this->assertEquals('notAttempted', $result['data']['questions'][1]['status']);
-
+        $this->assertEquals('correct', $result['data']['tasks'][0]['status']);
+        $this->assertEquals('notAttempted', $result['data']['tasks'][1]['status']);
     }
-
 }
