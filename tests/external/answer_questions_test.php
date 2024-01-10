@@ -25,7 +25,7 @@ require_once($CFG->dirroot . '/question/tests/generator/lib.php');
 
 
 /**
- * runTestsInSeparateProcesses
+ * @runTestsInSeparateProcesses
  */
 class answer_questions_test extends adler_externallib_testcase {
     public function provide_test_execute_integration_data() {
