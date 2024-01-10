@@ -55,8 +55,8 @@ class helpers {
         // Create SQL to join adleradaptivity_attempts with question_usages based on context ID
         $sql = "
         SELECT aa.*
-        FROM `{adleradaptivity_attempts}` AS aa
-        JOIN `{question_usages}` AS qu ON qu.id = aa.attempt_id
+        FROM {adleradaptivity_attempts} AS aa
+        JOIN {question_usages} AS qu ON qu.id = aa.attempt_id
         WHERE qu.contextid = ?
     ";
         return $DB->get_records_sql($sql, [$modulecontext->id]);
@@ -161,7 +161,7 @@ class helpers {
     public static function load_questions_by_task_id(int $task_id, bool $ignore_question_version = false) {
         global $DB;
 
-        // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
+        // Retrieves question versions from the {question_versions} table based on a specified adaptivity ID.
         $sql = "
             SELECT qv.questionid, qv.version, aq.*
             FROM {adleradaptivity_questions} aq
@@ -208,7 +208,7 @@ class helpers {
         // get instance id from cmid
         $instance_id = $DB->get_field('course_modules', 'instance', ['id' => $cmid]);
 
-        // Retrieves question versions from the `{question_versions}` table based on a specified adaptivity ID.
+        // Retrieves question versions from the {question_versions} table based on a specified adaptivity ID.
         $sql = "
         SELECT qv.*
         FROM {adleradaptivity_questions} aq
