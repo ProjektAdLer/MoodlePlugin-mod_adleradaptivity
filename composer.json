@@ -1,5 +1,5 @@
 {
-  "name": "projekt-adler/local_adler",
+  "name": "projekt-adler/mod_adleradaptivity",
   "description": "Main plugin for the Adler project",
   "require": {},
   "require-dev": {
