@@ -4,112 +4,218 @@ namespace mod_adleradaptivity\external;
 
 use completion_info;
 use context_module;
+use invalid_parameter_exception;
 use local_adler\lib\adler_externallib_testcase;
 use Mockery;
 use mod_adleradaptivity\local\helpers;
+use moodle_database;
+use moodle_exception;
+use question_bank;
+use question_engine;
 use question_usage_by_activity;
+use ReflectionClass;
 use ReflectionProperty;
+use stdClass;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php');
 
+require_once($CFG->dirroot . '/question/engine/tests/helpers.php');  // TODO: still required?
+require_once($CFG->dirroot . '/question/tests/generator/lib.php');
+
+
 /**
- * @runTestsInSeparateProcesses
+ * runTestsInSeparateProcesses
  */
 class answer_questions_test extends adler_externallib_testcase {
-    public function provide_test_execute_data() {
+    public function provide_test_execute_integration_data() {
         return [
-            'success with data' => [
-                'element' => [
-                    'module' => [
-                        'module_id' => 1,
-                    ],
-                    'questions' => [[
-                        'uuid' => 'uuid',
-                        'answer' => "[false, false, true, false]",
-                    ]]
-                ],
-                'expected_result' => [
-
-                ],
-                'expect_exception' => false,
-                'task_exists' => true,
-            ]
+            'question correct' => [
+                'q1' => 'correct',
+                'q2' => 'none',
+                'task_required' => true,
+                'expected_result' => 'correct',
+            ],
+            'question incorrect nothing chosen' => [
+                'q1' => 'all_false',
+                'q2' => 'none',
+                'task_required' => true,
+                'expected_result' => 'incorrect',
+            ],
+            'question incorrect all chosen' => [
+                'q1' => 'all_true',
+                'q2' => 'none',
+                'task_required' => true,
+                'expected_result' => 'incorrect',
+            ],
+            'question partially correct' => [
+                'q1' => 'partially_correct',
+                'q2' => 'none',
+                'task_required' => true,
+                'expected_result' => 'incorrect',
+            ],
+            'question correct with 2nd unanswered question' => [
+                'q1' => 'correct',
+                'q2' => 'unanswered',
+                'task_required' => true,
+                'expected_result' => 'correct',
+            ],
+            'question correct with 2nd answered question' => [
+                'q1' => 'correct',
+                'q2' => 'answered',
+                'task_required' => true,
+                'expected_result' => 'correct',
+            ],
+            'optional task incorrect answer' => [
+                'q1' => 'incorrect',
+                'q2' => 'none',
+                'task_required' => false,
+                'expected_result' => 'correct_question_wrong',
+            ],
         ];
     }
 
     /**
-     * @dataProvider provide_test_execute_data
+     * @dataProvider provide_test_execute_integration_data
      */
-    public function test_execute($element, $expected_result, $expect_exception, $task_exists) {
+    public function test_execute_integration(string $q1, string $q2, bool $task_required, string $expected_result) {
         global $DB;
 
-        // create mocks
-        $context_module = Mockery::mock(context_module::class);
-        $external_helpers = Mockery::mock('overload:' . external_helpers::class);
-        $helpers = Mockery::mock('overload:' . helpers::class);
-        $answer_questions = Mockery::mock(answer_questions::class)->shouldAllowMockingProtectedMethods()->makePartial();
+        $adleradaptivity_generator = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity');
 
-        // inject context_module mock
-        $context_module_reflected_property = new ReflectionProperty(answer_questions::class, 'context_module');
-        /** @noinspection PhpExpressionResultUnusedInspection */
-        $context_module_reflected_property->setAccessible(true);
-        $context_module_reflected_property->setValue($answer_questions, $context_module->mockery_getName());
+        $uuid = '75c248df-562f-40f7-9819-ebbeb078954b';
+        $uuid2 = '75c248df-562f-40f7-9819-ebbeb0789540';
+
+        // create user, course and enrol user
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        // sign in as user
+        $this->setUser($user);
+
+        // create adleradaptivity module
+        $adleradaptivity_module = $this->getDataGenerator()->create_module('adleradaptivity', ['course' => $course->id, 'completion' => 2]);
+        $adleradaptivity_task = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => $task_required ? 100 : null]);
+        $adleradaptivity_task2 = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => null, 'uuid' => 'uuid2', 'name' => 'task2']);
+        $adleradaptivity_question = $adleradaptivity_generator->create_mod_adleradaptivity_question($adleradaptivity_task->id);
+        if ($q2 != 'none') {
+            $adleradaptivity_question2 = $adleradaptivity_generator->create_mod_adleradaptivity_question($adleradaptivity_task->id, ['difficulty' => 200]);
+        }
+
+        // create question
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $qcat1 = $generator->create_question_category(['name' => 'My category', 'sortorder' => 1, 'idnumber' => 'myqcat']);
+        $q1_generated = $generator->create_question('multichoice', null, ['name' => 'q1', 'category' => $qcat1->id, 'idnumber' => $uuid]);
+        $question1 = question_bank::load_question($q1_generated->id);
+        if ($q2 != 'none') {
+            $q2_generated = $generator->create_question('multichoice', null, ['name' => 'q2', 'category' => $qcat1->id, 'idnumber' => $uuid2]);
+            $question2 = question_bank::load_question($q2_generated->id);
+        }
+
+        // patch q1 answers to give penalty if wrong
+        $answers = $question1->answers;
+        foreach ($answers as $answer) {
+            $answer->fraction = $answer->fraction <= 0 ? -.5 : $answer->fraction;
+            $DB->update_record('question_answers', $answer);
+        }
+        question_bank::notify_question_edited($question1->id);
+
+        // create question reference
+        $questionreferences = new stdClass();
+        $questionreferences->usingcontextid = context_module::instance($adleradaptivity_module->cmid)->id;
+        $questionreferences->component = 'mod_adleradaptivity';
+        $questionreferences->questionarea = 'question';
+        $questionreferences->itemid = $adleradaptivity_question->id;
+        $questionreferences->questionbankentryid = $question1->questionbankentryid;
+        $questionreferences->version = 1;
+        $DB->insert_record('question_references', $questionreferences);
+        if ($q2 != 'none') {
+            $questionreferences2 = new stdClass();
+            $questionreferences2->usingcontextid = context_module::instance($adleradaptivity_module->cmid)->id;
+            $questionreferences2->component = 'mod_adleradaptivity';
+            $questionreferences2->questionarea = 'question';
+            $questionreferences2->itemid = $adleradaptivity_question2->id;
+            $questionreferences2->questionbankentryid = $question2->questionbankentryid;
+            $questionreferences2->version = 1;
+            $DB->insert_record('question_references', $questionreferences2);
+        }
 
 
-        // mock validate_module_params_and_get_module
-        $external_helpers->shouldReceive('validate_module_params_and_get_module')->once()->andReturn((object)['id' => 1, 'instance' => 1]);
-
-        // mock context check
-        $context_module->shouldReceive('instance')->once()->andReturn('context');
-        $answer_questions->shouldReceive('validate_context')->once()->andReturn(1);
-
-        // mock validate_and_enhance_questions
-        $answer_questions->shouldReceive('validate_and_enhance_questions')->once()->andReturn(['questions']);
-
-        // mock load_or_create_question_usage
-        // first create fake mock question usage object
-        $question_usage = Mockery::mock(question_usage_by_activity::class);
-        // then mock load_or_create_question_usage
-        $helpers->shouldReceive('load_or_create_question_usage')->once()->andReturn($question_usage);
-
-        // mock process_questions
-        // first create fake mock completion_info object
-        $completion_info = Mockery::mock(completion_info::class);
-        // then mock process_questions
-        $answer_questions->shouldReceive('process_questions')->once()->andReturn($completion_info);
-
-        // mock determine_module_completion_status
-        $answer_questions->shouldReceive('determine_module_completion_status')->once()->andReturn('completion_status');
-
-        // mock get_tasks_completion_data
-        $answer_questions->shouldReceive('get_tasks_completion_data')->once()->andReturn([['uuid'=>'uuid', 'status'=>'status']]);
-
-        // mock external_helpers::generate_question_response_data
-        $external_helpers->shouldReceive('generate_question_response_data')->once()->andReturn([['uuid'=>'uuid', 'status'=>'status', 'answers'=>'answers']]);
-
-
-        // call method to test
-        $result = $answer_questions::execute($element['module'], $element['questions']);
-
-        // pass result through response validation check
-        $answer_questions->validate_parameters($answer_questions::execute_returns(), $result);
+        // generate answer data
+        $answerdata_q1 = [];
+        $partially_one_correct_chosen = false;
+        foreach ($question1->answers as $answer) {
+            switch ($q1) {
+                case 'correct':
+                    $answerdata_q1[] = $answer->fraction > 0;
+                    break;
+                case 'incorrect':
+                    $answerdata_q1[] = $answer->fraction <= 0;
+                    break;
+                case 'all_true':
+                    $answerdata_q1[] = true;
+                    break;
+                case 'all_false':
+                    $answerdata_q1[] = false;
+                    break;
+                case 'partially_correct':
+                    if ($partially_one_correct_chosen) {
+                        $answerdata_q1[] = $answer->fraction == 0;
+                    } else {
+                        $answerdata_q1[] = $answer->fraction > 0;
+                        $partially_one_correct_chosen = true;
+                    }
+                    break;
+                default:
+                    throw new moodle_exception('invalid_test_data', 'adleradaptivity');
+            }
+        }
 
 
-        // check result
-        $this->assertEqualsCanonicalizing([
-            'data' => [
-                'module' => [
-                    'module_id' => 1,
-                    'instance_id' => 1,
-                    'status' => 'completion_status',
-                ],
-                'tasks' => [['uuid'=>'uuid', 'status'=>'status']],
-                'questions' => [['uuid'=>'uuid', 'status'=>'status', 'answers'=>'answers']],
+        // generate parameters
+        $param_module = [
+            'instance_id' => $adleradaptivity_module->id,
+        ];
+        $param_questions = [
+            [
+                'uuid' => $uuid,
+                'answer' => json_encode($answerdata_q1),
             ]
-        ], $result);
+        ];
+        if ($q2 == 'answered') {
+            $param_questions[] = [
+                'uuid' => $uuid2,
+                'answer' => json_encode([true, false, false, false]),
+            ];
+        }
+
+        // execute
+        $result = answer_questions::execute($param_module, $param_questions);
+
+        // internal data format does not matter for api -> fixing this here
+        $result = json_decode(json_encode($result), true);
+
+        // execute return paramter validation
+        answer_questions::validate_parameters(answer_questions::execute_returns(), $result);
 
 
+        // validate
+        $this->assertEquals($adleradaptivity_module->cmid, $result['data']['module']['module_id']);
+        if ($expected_result == 'correct') {
+            $this->assertEquals('correct', $result['data']['module']['status']);
+            $this->assertEquals('correct', $result['data']['tasks']['0']['status']);
+            $this->assertEquals('correct', $result['data']['questions']['0']['status']);
+        } else if ($expected_result == 'incorrect') {
+            $this->assertEquals('incorrect', $result['data']['module']['status']);
+            $this->assertEquals('incorrect', $result['data']['tasks']['0']['status']);
+            $this->assertEquals('incorrect', $result['data']['questions']['0']['status']);
+        } else if ($expected_result == 'correct_question_wrong') {
+            $this->assertEquals('correct', $result['data']['module']['status']);
+            $this->assertEquals('incorrect', $result['data']['tasks']['0']['status']);
+            $this->assertEquals('incorrect', $result['data']['questions']['0']['status']);
+        } else {
+            throw new moodle_exception('invalid_test_data', 'adleradaptivity');
+        }
     }
 
 }
