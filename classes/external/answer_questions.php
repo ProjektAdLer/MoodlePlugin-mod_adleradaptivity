@@ -312,7 +312,7 @@ class answer_questions extends external_api {
      * @throws dml_transaction_exception
      * @throws dml_exception
      */
-    protected static function process_questions(array &$questions, int $time_at_request_start, stdClass $module, moodle_database $DB, question_usage_by_activity $quba): completion_info {
+    protected static function process_questions(array $questions, int $time_at_request_start, stdClass $module, moodle_database $DB, question_usage_by_activity $quba): completion_info {
         // start delegating transaction
         $transaction = $DB->start_delegated_transaction();
 
@@ -325,7 +325,6 @@ class answer_questions extends external_api {
         question_engine::save_questions_usage_by_activity($quba);
 
         // Update completion state
-        $course = get_course($module->course);
         $completion = self::update_module_completion($module, $DB);
 
         // allow commit
