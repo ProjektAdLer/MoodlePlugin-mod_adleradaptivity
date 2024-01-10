@@ -14,10 +14,11 @@ use dml_transaction_exception;
 use external_api;
 use external_function_parameters;
 use external_multiple_structure;
-use external_value;
 use external_single_structure;
+use external_value;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\helpers;
+use mod_adleradaptivity\moodle_core;
 use moodle_database;
 use moodle_exception;
 use question_engine;
@@ -25,7 +26,7 @@ use question_usage_by_activity;
 use stdClass;
 
 class answer_questions extends external_api {
-    private static string $context_module = context_module::class;
+    private static string $question_engine = question_engine::class;
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
@@ -139,13 +140,13 @@ class answer_questions extends external_api {
 
         $params = self::validate_parameters(self::execute_parameters(), ['module' => $module, 'questions' => $questions]);
         $module = external_helpers::validate_module_params_and_get_module($params['module']);
-        $context = self::$context_module::instance($module->id);
+        $context = context_module::instance($module->id);
         static::validate_context($context);
 
-        $questions = static::validate_and_enhance_questions($questions, $module->instance);
+        $questions = self::validate_and_enhance_questions($questions, $module->instance);
 
         $quba = helpers::load_or_create_question_usage($module->id);
-        $completion = static::process_questions($questions, $time_at_request_start, $module, $DB, $quba);
+        $completion = self::process_questions($questions, $time_at_request_start, $module, $DB, $quba);
 
         $module_completion_status = static::determine_module_completion_status($completion, $module);
         $tasks_completion_data = static::get_tasks_completion_data($questions, $quba);
@@ -322,7 +323,7 @@ class answer_questions extends external_api {
         }
 
         // save current questions usage
-        question_engine::save_questions_usage_by_activity($quba);
+        self::$question_engine::save_questions_usage_by_activity($quba);
 
         // Update completion state
         $completion = self::update_module_completion($module, $DB);
@@ -348,7 +349,7 @@ class answer_questions extends external_api {
         switch ($question_type_class) {
             case 'qtype_multichoice':
                 $is_single = get_class($question['question_object']) == 'qtype_multichoice_single_question';
-                $question['formatted_answer'] = static::format_multichoice_answer(
+                $question['formatted_answer'] = self::format_multichoice_answer(
                     $question['answer'],
                     $is_single,
                     count($question['question_object']->answers)
@@ -374,7 +375,7 @@ class answer_questions extends external_api {
      * @throws moodle_exception If completion is not enabled for the module.
      */
     private static function update_module_completion(stdClass $module, moodle_database $DB): completion_info {
-        $course = get_course($module->course);
+        $course = moodle_core::get_course($module->course);
         $completion = new completion_info($course);
 
         if ($completion->is_enabled($module)) {
