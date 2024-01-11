@@ -31,14 +31,14 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.1']
-        moodle-branch: ['MOODLE_401_STABLE', 'MOODLE_402_STABLE']
+        moodle-branch: ['MOODLE_401_STABLE', 'MOODLE_402_STABLE', 'MOODLE_403_STABLE']
         database: [pgsql, mariadb]
         experimental: [false]
-        include:
-          - php: '8.1'
-            moodle-branch: 'MOODLE_403_STABLE'
-            database: mariadb
-            experimental: true
+#        include:
+#          - php: '8.1'
+#            moodle-branch: 'MOODLE_403_STABLE'
+#            database: mariadb
+#            experimental: true
 
     continue-on-error: ${{ matrix.experimental }}
 
