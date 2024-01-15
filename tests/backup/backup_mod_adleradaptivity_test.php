@@ -9,6 +9,9 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php'
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class backup_mod_adleradaptivity_test extends adler_testcase {
     public function test_backup() {
         $task_required = true;
