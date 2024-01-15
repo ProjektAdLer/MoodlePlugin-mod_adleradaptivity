@@ -85,8 +85,8 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
     }
 
     /**
-     * Implementatin of parent class is bugged. It hardcodes quiz module references.
-     * TODO
+     * Implementation of parent class is bugged. It hardcoded quiz module references.
+     *
      * Process question references which replaces the direct connection to quiz slots to question.
      *
      * @param array $data the data from the XML file.
