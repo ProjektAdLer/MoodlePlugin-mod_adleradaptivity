@@ -1,5 +1,7 @@
 # About this project
 
+[![Coverage Status](https://coveralls.io/repos/github/ProjektAdLer/MoodlePluginModAdleradaptivity/badge.svg?branch=main)](https://coveralls.io/github/ProjektAdLer/MoodlePluginModAdleradaptivity?branch=main)
+
 Dieses Moodle Modul bildet das Adaptivitätselement aus der 3D Umgebung in moodle ab.
 In Moodle wird keine Adaptivität untertützt, es werden lediglich alle Fragen und Informationen angezeigt
 und können vom Nutzer auch bearbeitet werden. Der Zustand zwischen 3D und Moodle ist dabei identisch.
