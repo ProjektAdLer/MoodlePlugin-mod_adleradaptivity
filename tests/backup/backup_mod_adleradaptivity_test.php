@@ -13,6 +13,8 @@ require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
  * @runTestsInSeparateProcesses
  */
 class backup_mod_adleradaptivity_test extends adler_testcase {
+    private ?array $course_data = null;
+
     public function setUp(): void {
         parent::setUp();
 
