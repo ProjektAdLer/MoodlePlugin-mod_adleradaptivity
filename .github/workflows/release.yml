@@ -75,4 +75,4 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           title: 'New release of ${{ github.repository }}, Version ${{ github.ref_name }}'
-          description: '<${{ github.event.release.html_url }}>\n\n${{ github.event.release.body | head -n 7 }}\n...'
+          description: "<${{ github.event.release.html_url }}>\n\n${{ github.event.release.body | head -n 7 }}\n..."
