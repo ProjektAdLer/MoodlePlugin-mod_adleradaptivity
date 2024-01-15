@@ -2,7 +2,7 @@
 
 namespace mod_adleradaptivity\external;
 
-use local_adler\lib\adler_externallib_testcase;
+use mod_adleradaptivity\lib\adler_externallib_testcase;
 use moodle_exception;
 
 global $CFG;

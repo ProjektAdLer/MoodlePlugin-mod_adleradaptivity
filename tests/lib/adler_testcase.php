@@ -1,6 +1,6 @@
 <?php
 
-namespace local_adler\lib;
+namespace mod_adleradaptivity\lib;
 
 global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
