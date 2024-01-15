@@ -13,7 +13,9 @@ require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
  * @runTestsInSeparateProcesses
  */
 class backup_mod_adleradaptivity_test extends adler_testcase {
-    public function test_backup() {
+    public function setUp(): void {
+        parent::setUp();
+
         $task_required = true;
         $singlechoice = false;
         $q2 = false;
@@ -21,34 +23,36 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
 
         // cheap way of creating test data
         // create course with test questions and user
-        $course_data = external_test_helpers::create_course_with_test_questions($this->getDataGenerator(), $task_required, $singlechoice, $q2 != 'none');
+        $this->course_data = external_test_helpers::create_course_with_test_questions($this->getDataGenerator(), $task_required, $singlechoice, $q2 != 'none');
 
         // sign in as user
-        $this->setUser($course_data['user']);
+        $this->setUser($this->course_data['user']);
 
         // generate answer data
-        $answerdata = external_test_helpers::generate_answer_question_parameters($q1, $q2, $course_data);
+        $answerdata = external_test_helpers::generate_answer_question_parameters($q1, $q2, $this->course_data);
 
         $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);
 
         // data creation finish
 
         // Create a backup of the module.
-        $bc = new backup_controller(
+        $this->bc = new backup_controller(
             backup::TYPE_1ACTIVITY,
-            $course_data['module']->cmid,
+            $this->course_data['module']->cmid,
             backup::FORMAT_MOODLE,
             backup::INTERACTIVE_NO,
             backup::MODE_GENERAL,
             2
         );
-        $bc->execute_plan();
-        $bc->destroy();
+        $this->bc->execute_plan();
+        $this->bc->destroy();
+    }
 
+    public function test_backup() {
         // Get xml from backup.
-        $module_xml = $this->get_xml_from_backup($bc);
-        $adleradaptivity_xml = $this->get_xml_from_backup($bc, 'adleradaptivity');
-        $completion_xml = $this->get_xml_from_backup($bc, 'completion');
+        $module_xml = $this->get_xml_from_backup($this->bc);
+        $adleradaptivity_xml = $this->get_xml_from_backup($this->bc, 'adleradaptivity');
+        $completion_xml = $this->get_xml_from_backup($this->bc, 'completion');
 
         // validate xml values
         $this->assertEquals('adleradaptivity', $module_xml->modulename);
@@ -59,6 +63,57 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
         $this->assertEquals('1', count($adleradaptivity_xml->adleradaptivity->attempts->attempt));
 
         $this->assertEquals('1', count($completion_xml->completion->completionstate));
+    }
+
+    public function test_restore() {
+        global $DB;
+
+        // delete course
+        delete_course($this->course_data['course']->id);
+        $this->assertCount(0, $DB->get_records('adleradaptivity_questions'));
+        $this->assertCount(0, $DB->get_records('course_modules'));
+
+        // create user with restore capabilities
+        $admin_user = $this->getDataGenerator()->create_user();
+        // assign role admin
+        $context = context_system::instance();
+        role_assign(1, $admin_user->id, $context);
+
+
+        // restore course
+        $courseid = restore_dbops::create_new_course('', '', $this->course_data['course']->category);
+
+        $backup_file_path = $this->bc->get_results()['backup_destination']->copy_content_to_temp();
+        $foldername = restore_controller::get_tempdir_name($courseid, $this->course_data['user']->id);
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $tempdir = make_backup_temp_directory($foldername);
+        $files = $fp->extract_to_pathname($backup_file_path, $tempdir);
+
+        $rc = new restore_controller(
+            $foldername,
+            $courseid,
+            backup::INTERACTIVE_NO,
+            backup::MODE_GENERAL,
+            $admin_user->id,
+            backup::TARGET_NEW_COURSE
+        );
+        $rc->execute_precheck();
+        $rc->execute_plan();
+        $rc->destroy();
+
+        // get restored course
+        $restored_course = get_course($courseid);
+        // get modules of $restored_course
+        $restored_modules = get_course_mods($restored_course->id);
+        // get first element
+        $restored_module = reset($restored_modules);
+        // get restored questions from question engine
+        $restored_adler_questions = $DB->get_records('adleradaptivity_questions');
+
+
+        // verify restored course
+        $this->assertEquals('adleradaptivity', $restored_module->modname);
+        $this->assertCount(2, $restored_adler_questions);
 
     }
 

@@ -92,6 +92,7 @@ class external_test_helpers {
                 'adleradaptivity_question' => $adleradaptivity_question2,
             ] : null,
             'module' => $adleradaptivity_module,
+            'course' => $course,
         ];
     }
 
