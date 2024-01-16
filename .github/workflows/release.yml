@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: update release version.php
         run: |
@@ -55,42 +53,16 @@ jobs:
           file: /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz
           tag: ${{ github.ref_name }}
 
-      - name: Bump Version in main
-        run: |
-          git reset --hard
-          git checkout main
-          cli/bump_version.py && cli/bump_version.py
-      
-          # Extract the current release version, increment the last digit, and update the release
-          RELEASE_VERSION=$(sed -n "s/^\$plugin->release\s=\s'\(.*\)';/\1/p" version.php)
-          LAST_DIGIT=$(echo "${RELEASE_VERSION}" | grep -oE '[0-9]+$')
-          INCREMENTED_LAST_DIGIT=$(($LAST_DIGIT + 1))
-          NEW_RELEASE_VERSION=$(echo "${RELEASE_VERSION}" | sed "s/[0-9]*$/${INCREMENTED_LAST_DIGIT}/")
-          sed -i "s/^\$plugin->release\s=\s'[^']*';/\$plugin->release = '${NEW_RELEASE_VERSION}-dev';/" version.php
-      
-          # Set maturity to MATURITY_ALPHA
-          sed -i "s/^\$plugin->maturity\s=\sMATURITY_STABLE;/\$plugin->maturity = MATURITY_ALPHA;/" version.php
-          
-          # Set git user
-          git config --global user.email "51326311+Glutamat42@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          
-          git add version.php
-          git commit -m "update version.php to ${NEW_RELEASE_VERSION}-dev"
-          git push
-
-      - name: Prepare shortened release body (description)
+      - name: Prepare release body (description)
         id: prep_body
         run: |
-          SHORT_BODY=$(echo "${{ github.event.release.body }}" | head -n 7)
-          echo "SHORT_BODY=${SHORT_BODY}" >> $GITHUB_ENV
+          echo "${{ github.event.release.body }}" > changes.md
 
       - name: Discord notification
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: |
-            New release of ${{ github.repository }}, Version ${{ github.ref_name }}
-            <${{ github.event.release.html_url }}>
-            ${{ env.SHORT_BODY }}
+          username: GitHub Releases
+          message: "New release of **${{ github.repository }}**\nVersion: ${{ github.ref_name }} (${{github.event.release.name}})\n<${{ github.event.release.html_url }}>"
+          file: changes.md

@@ -1,6 +1,14 @@
 name: Moodle Plugin CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'  # This includes all branches
+    tags-ignore:
+      - '**'  # This excludes all tags
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   test:
