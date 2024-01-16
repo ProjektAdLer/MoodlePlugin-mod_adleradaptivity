@@ -60,17 +60,23 @@ jobs:
           git reset --hard
           git checkout main
           cli/bump_version.py && cli/bump_version.py
-          # append -dev to $plugin->release
-          sed -i "s/^\$plugin->release\s=\s'[^']*';/\$plugin->release = '${{ github.ref_name }}-dev';/" version.php
-          # set maturity to MATURITY_ALPHA
+      
+          # Extract the current release version, increment the last digit, and update the release
+          RELEASE_VERSION=$(sed -n "s/^\$plugin->release\s=\s'\(.*\)';/\1/p" version.php)
+          LAST_DIGIT=$(echo "${RELEASE_VERSION}" | grep -oE '[0-9]+$')
+          INCREMENTED_LAST_DIGIT=$(($LAST_DIGIT + 1))
+          NEW_RELEASE_VERSION=$(echo "${RELEASE_VERSION}" | sed "s/[0-9]*$/${INCREMENTED_LAST_DIGIT}/")
+          sed -i "s/^\$plugin->release\s=\s'[^']*';/\$plugin->release = '${NEW_RELEASE_VERSION}-dev';/" version.php
+      
+          # Set maturity to MATURITY_ALPHA
           sed -i "s/^\$plugin->maturity\s=\sMATURITY_STABLE;/\$plugin->maturity = MATURITY_ALPHA;/" version.php
           
-          # set git user
+          # Set git user
           git config --global user.email "51326311+Glutamat42@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
           git add version.php
-          git commit -m "update version.php to ${{ github.ref_name }}-dev"
+          git commit -m "update version.php to ${NEW_RELEASE_VERSION}-dev"
           git push
 
       - name: Prepare shortened release body (description)
@@ -84,5 +90,7 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          title: 'New release of ${{ github.repository }}, Version ${{ github.ref_name }}'
-          description: '<${{ github.event.release.html_url }}>\n\n${{ env.SHORT_BODY }}\n...'
+          message: |
+            New release of ${{ github.repository }}, Version ${{ github.ref_name }}
+            <${{ github.event.release.html_url }}>
+            ${{ env.SHORT_BODY }}
