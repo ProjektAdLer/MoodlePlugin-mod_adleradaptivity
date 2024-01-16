@@ -10,6 +10,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->version = 2024011603;
 $plugin->requires = 2022112800;  // Moodle version
-$plugin->release = '42.0.9-dev';
+$plugin->release = '4.0.0-dev';
 $plugin->component = 'mod_adleradaptivity'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_ALPHA;
