@@ -1,6 +1,8 @@
 name: Moodle Plugin CI
 
-on: [release]
+on:
+  release:
+    types: [created]
 
 jobs:
   release:
@@ -12,6 +14,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: update release version.php
         run: |
@@ -35,8 +39,8 @@ jobs:
 
       - name: Create release archives
         run: |
-          tar -czf /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz *
-          zip -r /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip *
+          tar --exclude='.git' -czf /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz *
+          zip -x .git -r /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip *
 
       - name: Upload release archives
         uses: svenstaro/upload-release-action@v2
@@ -69,7 +73,7 @@ jobs:
           git commit -m "update version.php to ${{ github.ref_name }}-dev"
           git push
 
-      - name: Prepare shortened release body
+      - name: Prepare shortened release body (description)
         id: prep_body
         run: |
           SHORT_BODY=$(echo "${{ github.event.release.body }}" | head -n 7)
