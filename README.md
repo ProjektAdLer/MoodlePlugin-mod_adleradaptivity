@@ -8,6 +8,11 @@ und können vom Nutzer auch bearbeitet werden. Der Zustand zwischen 3D und Moodl
 
 ![database diagram](db_diagram.png)
 
+## Dependencies
+> [!CAUTION]
+> Dieses Plugin kann nur in Verwendung mit dem gesamten AdLer Projekt verwendet werden. Es funktioniert zwar theoretisch standalone,
+> es ist aber nicht vorgesehen, Elemente über Moodle anzulegen/zu bearbeiten, wodurch es für sich alleine nicht sinnvoll nutzbar ist. 
+
 
 ## Kompabilität
 Die minimal notwendige Moodle Version ist auf 4.1.0 gesetzt, daher wird die Installation auf älteren Versionen nicht funktionieren.
@@ -24,3 +29,13 @@ Folgende Versionen werden unterstützt (mit mariadb und postresql getestet):
 | MOODLE_403_STABLE       | 8.1         |
 | MOODLE_403_STABLE       | 8.2         |
 
+## Development
+Um die question bank für ein Adaptivitätsmodul anzuzeigen, den folgenden Code in `/lib.php` einfügen:
+```php
+function adleradaptivity_extend_settings_navigation(settings_navigation $settings, navigation_node $adleradaptivity_node) {
+    global $CFG;
+    require_once($CFG->libdir . '/questionlib.php');
+    question_extend_settings_navigation($adleradaptivity_node, $settings->get_page()->cm->context);
+}
+```
+Dieser ist regulär nicht enthalten, da das Bearbeiten der Fragen in der Fragen in AdLer über Moodle nicht erlaubt ist.

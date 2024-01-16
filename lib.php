@@ -46,6 +46,8 @@ function adleradaptivity_supports($feature) {
  * creation form is submitted. This function is only called when adding
  * an activity and should contain any logic required to add the activity.
  *
+ *
+ *
  * @param $instancedata
  * @param $mform
  * @return int
@@ -72,14 +74,7 @@ function adleradaptivity_add_instance($instancedata, $mform = null): int {
  * @return bool
  */
 function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
-    global $DB;
-
-//    old_module = DB->get_record('adleradaptivity', array('id' => $moduleinstance->instance));
-
-    $moduleinstance->timemodified = time();
-    $moduleinstance->id = $moduleinstance->instance;
-
-    return $DB->update_record('adleradaptivity', $moduleinstance);
+    throw new moodle_exception('unsupported', 'adleradaptivity', '', 'update_instance() is not supported');
 }
 
 /** The adleradaptivity_delete_instance() function is called when the activity
@@ -114,7 +109,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         // load required data
         $adler_tasks = $DB->get_records('adleradaptivity_tasks', array('adleradaptivity_id' => $instance_id));
         $adler_questions = [];
-        foreach($adler_tasks as $task) {
+        foreach ($adler_tasks as $task) {
             $adler_questions = array_merge($adler_questions, helpers::load_questions_by_task_id($task->id, true));
         }
         // perform deletion
@@ -135,31 +130,6 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
 
     return true;
 }
-
-function adleradaptivity_extend_settings_navigation(settings_navigation $settings, navigation_node $adleradaptivity_node) {
-    global $CFG;
-
-    require_once($CFG->libdir . '/questionlib.php');
-
-//    if (has_capability('mod/adleradaptivity:edit', $settings->get_page()->context)) {
-//        $url = new moodle_url('/mod/adleradaptivity/edit_questions.php', ['id' => $settings->get_page()->cm->id]);
-//        $adleradaptivity_node->add(get_string('menu_edit_questions', 'adleradaptivity'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('t/edit', ''));
-//    }
-
-    question_extend_settings_navigation($adleradaptivity_node, $settings->get_page()->cm->context);
-}
-
-// Could not find out where this function is called (in 4.2.1). My guess is this was required before and is now obsolete with
-// the introduction of the custom_completion class. Sadly, I could not find any documentation about this assumption.
-///**
-// * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
-// *
-// * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
-// * @return array $descriptions the array of descriptions for the custom rules.
-// */
-//function mod_adleradaptivity_get_completion_active_rule_descriptions($cm) {
-//    return ['Lorem ipsum'];
-//}
 
 
 /**
@@ -183,6 +153,7 @@ function adleradaptivity_get_coursemodule_info($coursemodule) {
     $result = new cached_cm_info();
     $result->name = $cm->name;
 
+    // TODO
 //    // This populates the description field in the course overview
 //    if ($coursemodule->showdescription) {
 //        // Convert intro to html. Do not filter cached version, filters run at display time.

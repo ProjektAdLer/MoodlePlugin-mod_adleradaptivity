@@ -19,7 +19,4 @@ $string['adleradaptivity:edit_all_attempts'] = 'Alle attempts aller nutzer bearb
 
 $string['menu_edit_questions'] = 'Fragen bearbeiten';
 
-$string['form_field_title'] = 'Elementtitel';
-$string['form_field_intro'] = 'Beschreibung (derzeit nicht genutzt, aber von Moodle als erforderliches Feld vorgeschrieben)';
-$string['form_field_adleradaptivity_rule_help'] = 'Einige Hilfetexte';
-$string['form_field_adleradaptivity_rule'] = 'Adler Adaptivitätslogik';
+$string['editing_not_supported'] = 'Bearbeiten von Adler Adaptivitätselementen ist nicht unterstützt. Änderungen Ausschließlich über das Authorentool vornehmen.';
