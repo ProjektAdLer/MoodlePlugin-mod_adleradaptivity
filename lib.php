@@ -1,6 +1,7 @@
 <?php
 
 use core_completion\api as completion_api;
+use local_logging\logger;
 use mod_adleradaptivity\local\helpers;
 
 // TODO: taken from mod/readme.md
@@ -87,7 +88,8 @@ function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
  * @throws dml_transaction_exception if the transaction failed and could not be rolled back.
  */
 function adleradaptivity_delete_instance(int $instance_id): bool {
-    // TODO: https://github.com/ProjektAdLer/MoodlePluginModAdleradaptivity/issues/1
+    $logger = new logger('mod_adleradaptivity', 'lib.php');
+
     global $DB;
 
     $transaction = $DB->start_delegated_transaction();
@@ -123,7 +125,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
 
         $transaction->allow_commit();
     } catch (Exception $e) {
-        debugging('Could not delete adleradaptivity instance with id ' . $instance_id, E_ERROR);
+        $logger->error('Could not delete adleradaptivity instance with id ' . $instance_id);
         $transaction->rollback($e);
         return false;
     }
