@@ -4,28 +4,6 @@ namespace mod_adleradaptivity\local;
 
 require_once($CFG->libdir . '/questionlib.php');
 
-//function adleradaptivity_add_question($question_id, $module, $db=null) {
-//    if ($db == null) {
-//        global $DB;
-//        $db = $DB;
-//    }
-//
-//    if (!isset($quiz->cmid)) {
-//        $module = get_coursemodule_from_instance('adleradaptivity', $module->id, $module->course);
-//    }
-//
-//    // Make sue the question is of the "multichoice" type, other types are not supported by adler adaptivity
-//    $questiontype = $DB->get_field('question', 'qtype', ['id' => $question_id]);
-//    if ($questiontype != 'multichoice') {
-//        throw new coding_exception(
-//            'Question with id ' . $question_id . ' is not of type "multichoice", but "' . $questiontype . '"'
-//        );
-//    }
-//
-//    $transaction = $db->start_delegated_transaction();
-//
-//
-//}
 use context_module;
 use dml_exception;
 use dml_missing_record_exception;
@@ -202,7 +180,7 @@ class helpers {
      * @return array of question_definition objects.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public static function load_questions_by_cmid($cmid, $allow_shuffle=false) {
+    public static function load_questions_by_cmid($cmid, $allow_shuffle = false) {
         global $DB;
 
         // get instance id from cmid
@@ -267,6 +245,45 @@ class helpers {
             }
         }
         throw new moodle_exception('Question with uuid ' . $uuid . ' not found in question usage');
+    }
+
+    /**
+     * Get task by question uuid
+     *
+     * @param string $question_uuid The question uuid
+     * @param int $instance_id The instance id of the adleradaptivity activity
+     * @returns stdClass The task object
+     * @throws moodle_exception If the task could not be found or if there are multiple results.
+     */
+    public static function get_task_by_question_uuid(string $question_uuid, int $instance_id): stdClass {
+        global $DB;
+
+        // uuid is stored in question_bank_entries table.
+        // connection to adleradaptivity_questions over question_references
+        // quesiton_references need additional filtering for entries of this module.
+        // filter for questionarea is currently not really neaded as this feature is not used here.
+        // version has to be 1 as quesiton versioning is not supported by this module.
+        $sql = "
+            SELECT t.*
+            FROM {question_bank_entries} qbe
+            JOIN {question_references} qr ON qbe.id = qr.questionbankentryid
+            JOIN {adleradaptivity_questions} aq ON qr.itemid = aq.id
+            JOIN {adleradaptivity_tasks} t ON aq.adleradaptivity_task_id = t.id
+            
+            WHERE qr.component = 'mod_adleradaptivity'
+            AND qr.questionarea = 'question'
+            AND qr.version = 1
+            AND qbe.idnumber = :question_uuid
+            AND t.adleradaptivity_id = :instance_id;
+        ";
+
+        $task = $DB->get_record_sql(
+            $sql,
+            ['question_uuid' => $question_uuid, 'instance_id' => $instance_id],
+            MUST_EXIST
+        );
+
+        return $task;
     }
 
     /**

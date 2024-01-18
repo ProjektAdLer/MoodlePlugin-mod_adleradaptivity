@@ -25,7 +25,6 @@ class custom_completion extends activity_custom_completion {
     /**
      * Check element successfully completed.
      * This method will not create a new attempt if there is none. In this case the module is considered as not completed.
-     * TODO: move to helpers
      *
      * @return bool True if the element is completed successfully, false otherwise.
      * @throws dml_exception If the database query fails.

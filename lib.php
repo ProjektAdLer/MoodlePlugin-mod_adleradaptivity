@@ -4,25 +4,6 @@ use core_completion\api as completion_api;
 use local_logging\logger;
 use mod_adleradaptivity\local\helpers;
 
-// TODO: taken from mod/readme.md
-//lib.php: any/all functions defined by the module should be in here.
-//constants should be defined using MODULENAME_xxxxxx
-//         functions should be defined using modulename_xxxxxx
-//
-//         There are a number of standard functions:
-//
-//         modulename_add_instance()
-//         modulename_update_instance()
-//         modulename_delete_instance()
-//
-//         modulename_user_complete()
-//         modulename_user_outline()
-//
-//         modulename_cron()
-//
-//         modulename_print_recent_activity()
-//
-
 
 /**
  * Return if the plugin supports $feature.
@@ -168,3 +149,52 @@ function adleradaptivity_get_coursemodule_info($coursemodule) {
     }
     return $result;
 }
+
+// --------
+// methods required according to mod/README.md
+
+
+///**
+// * Given a course and a date, prints a summary of all the new
+// * files posted in folder resources since that date
+// *
+// * @uses CONTEXT_MODULE
+// * @param object $course
+// * @param bool $viewfullnames capability
+// * @param int $timestart
+// * @return bool success
+// */
+//function adleradaptivity_print_recent_activity($course, $viewfullnames, $timestart) {}
+
+
+//The functions xxx_user_outline() and xxx_user_complete() have been removed from the majority of core modules (see MDL-41286),
+//except for those that require unique functionality. These functions are used by the outline report, but now if they no longer
+//exist, the default behaviour is chosen, which supports the legacy and standard log storages introduced in 2.7 (see MDL-41266).
+//It is highly recommended you remove these functions from your module if they are simply performing the default behaviour.
+//
+///**
+// *  Print a detailed representation of what a user has done with
+// *  a given particular instance of this module, for user activity reports.
+// *
+// * @param $course
+// * @param $user
+// * @param $mod
+// * @param stdClass $adleradaptivity database record of the module instance
+// * @return void
+// */
+//function adleradaptivity_user_complete($course, $user, $mod, $adleradaptivity) {}
+//
+///**
+// * Return a small object with summary information about what a
+// * user has done with a given particular instance of this module
+// * Used for user activity reports.
+// * $return->time = the time they did it
+// * $return->info = a short text description
+// *
+// * @param stdClass $course
+// * @param stdClass $user
+// * @param cm_info|stdClass $mod
+// * @param stdClass $feedback
+// * @return stdClass
+// */
+//function feedback_user_outline($course, $user, $mod, $feedback) {}

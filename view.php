@@ -83,7 +83,7 @@ foreach($slots as $slot) {
         'question' => $quba->get_question($slot),
         'slot' => $slot,
         'adaptivity_question' => $adaptivity_question,
-        'task' => external_helpers::get_task_by_question_uuid($question->idnumber, $module_instance->id)
+        'task' => helpers::get_task_by_question_uuid($question->idnumber, $module_instance->id)
     ];
 }
 

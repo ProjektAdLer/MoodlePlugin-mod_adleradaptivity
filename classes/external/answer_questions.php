@@ -176,7 +176,7 @@ class answer_questions extends external_api {
     protected static function validate_and_enhance_questions(array $questions, string $instance_id): array {
         foreach ($questions as $key => $question) {
             try {
-                $task = external_helpers::get_task_by_question_uuid($question['uuid'], $instance_id);
+                $task = helpers::get_task_by_question_uuid($question['uuid'], $instance_id);
                 $questions[$key]['task'] = $task;
             } catch (moodle_exception $e) {
                 throw new invalid_parameter_exception('Question with uuid ' . $question['uuid'] . ' does not exist.');

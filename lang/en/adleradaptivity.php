@@ -17,6 +17,4 @@ $string['adleradaptivity:view'] = 'View Adler Adaptivity';
 $string['adleradaptivity:edit'] = 'Edit Adler Adaptivity';
 $string['adleradaptivity:edit_all_attempts'] = 'Edit all attempts of all users (Dangerous! It is not traceable that a user with this permission has edited another user\'s attempt.)';
 
-$string['menu_edit_questions'] = 'Edit questions';
-
 $string['editing_not_supported'] = 'Editing Adler adaptivity elements is not supported. Only make changes via the authoring tool.';

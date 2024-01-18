@@ -2,6 +2,7 @@
 
 // required file per moodle doc https://docs.moodle.org/dev/Activity_modules#index.php
 // no idea where it is called (did not care about that yet)
+// "  index.php: a page to list all instances in a course"
 
 require_once('../../config.php');
 
