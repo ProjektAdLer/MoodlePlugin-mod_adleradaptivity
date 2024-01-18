@@ -39,3 +39,6 @@ function adleradaptivity_extend_settings_navigation(settings_navigation $setting
 }
 ```
 Dieser ist regulär nicht enthalten, da das Bearbeiten der Fragen in der Fragen in AdLer über Moodle nicht erlaubt ist.
+
+## Potential future improvements
+- [ ] Trigger event when a task is successfully completed (also backup/restore logic). ATM the only purpose of this event would be an entry in the audit log.

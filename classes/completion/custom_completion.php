@@ -86,10 +86,9 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-        $minattempts = $this->cm->customdata['customcompletionrules']['default_rule'] ?? 0;
-        $description['default_rule'] = "blub default_rule blub";
-
-        return $description;
+        return [
+            'default_rule' => get_string('rule_description_default_rule', 'adleradaptivity'),
+        ];
     }
 
     /**
@@ -99,7 +98,6 @@ class custom_completion extends activity_custom_completion {
      */
     public function get_sort_order(): array {
         return [
-//            'completionview',
             'default_rule',
         ];
     }

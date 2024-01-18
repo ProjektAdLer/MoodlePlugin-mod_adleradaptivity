@@ -18,7 +18,6 @@ class backup_adleradaptivity_activity_structure_step extends backup_questions_ac
         // Define each element separated
         $adleradaptivity = new backup_nested_element('adleradaptivity', array('id'), array(
             'name', 'intro', 'introformat', 'adleradaptivity_element_intro', 'timemodified'));
-        // TODO: course field (probably added later)
 
         $tasks = new backup_nested_element('tasks');
 

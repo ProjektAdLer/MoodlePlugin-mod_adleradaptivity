@@ -18,3 +18,4 @@ $string['adleradaptivity:edit'] = 'Edit Adler Adaptivity';
 $string['adleradaptivity:edit_all_attempts'] = 'Edit all attempts of all users (Dangerous! It is not traceable that a user with this permission has edited another user\'s attempt.)';
 
 $string['editing_not_supported'] = 'Editing Adler adaptivity elements is not supported. Only make changes via the authoring tool.';
+$string['rule_description_default_rule'] = 'Complete adaptivity element';

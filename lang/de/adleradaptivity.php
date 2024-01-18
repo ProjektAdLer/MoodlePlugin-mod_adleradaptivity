@@ -18,3 +18,4 @@ $string['adleradaptivity:edit'] = 'Adler Adaptivitätselement bearbeiten';
 $string['adleradaptivity:edit_all_attempts'] = 'Alle attempts aller nutzer bearbeiten (Gefährlich! Es ist nicht nachvollziehbar dass ein Nutzer mit dieser Berechtigung einen Attempt eines anderen Nutzers bearbeitet hat.)';
 
 $string['editing_not_supported'] = 'Bearbeiten von Adler Adaptivitätselementen ist nicht unterstützt. Änderungen Ausschließlich über das Authorentool vornehmen.';
+$string['rule_description_default_rule'] = 'Adaptivitätselement abschließen';
