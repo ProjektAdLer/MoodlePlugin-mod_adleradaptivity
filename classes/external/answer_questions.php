@@ -326,7 +326,7 @@ class answer_questions extends external_api {
         self::$question_engine::save_questions_usage_by_activity($quba);
 
         // Update completion state
-        $completion = self::update_module_completion($module, $DB);
+        $completion = self::update_module_completion($module);
 
         // allow commit
         $transaction->allow_commit();
@@ -370,11 +370,10 @@ class answer_questions extends external_api {
      * Updates the completion status of the module.
      *
      * @param stdClass $module Moodle module instance.
-     * @param moodle_database $DB Moodle database instance.
      * @return completion_info Completion information after update.
      * @throws moodle_exception If completion is not enabled for the module.
      */
-    private static function update_module_completion(stdClass $module, moodle_database $DB): completion_info {
+    private static function update_module_completion(stdClass $module): completion_info {
         $course = moodle_core::get_course($module->course);
         $completion = new completion_info($course);
 

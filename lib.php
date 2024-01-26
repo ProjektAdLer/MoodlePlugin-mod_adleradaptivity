@@ -138,16 +138,18 @@ function adleradaptivity_get_coursemodule_info($coursemodule) {
     $result = new cached_cm_info();
     $result->name = $cm->name;
 
-    // TODO
-//    // This populates the description field in the course overview
-//    if ($coursemodule->showdescription) {
-//        // Convert intro to html. Do not filter cached version, filters run at display time.
-//        $result->content = format_module_intro('forum', $forum, $coursemodule->id, false);
-//    }
+    // This populates the description field in the course overview
+    if ($coursemodule->showdescription) {
+        $result->content = format_module_intro('adleradaptivity', $cm, $coursemodule->id, false);
+    }
 
-    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    // for some inexplicable reason moodle requires an object for each custom rule defined in get_defined_custom_rules(),
+    // otherwise they at least don't fully work or even don't work at all.
+    // If missing the completion requirement (completion rule) is not shown in the "completion list" in course overview and
+    // completing the activity that has this rule active did not work in a short test.
+    // As I don't have any data to append to the course_module object for my rule I just use some random data.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $result->customdata['customcompletionrules']['default_rule'] = "blubbb";
+        $result->customdata['customcompletionrules']['default_rule'] = "some random string to make the completion rule work";
     }
     return $result;
 }
