@@ -9,7 +9,7 @@ use mod_adleradaptivity\local\helpers;
  * Return if the plugin supports $feature.
  *
  * @param string $feature Constant representing the feature.
- * @return true | null True if the feature is supported, null otherwise.
+ * @return string|true|null True if the feature is supported, null otherwise. Or a string for FEATURE_MOD_PURPOSE (moodle logic ...)
  */
 function adleradaptivity_supports($feature) {
     switch ($feature) {
@@ -19,6 +19,8 @@ function adleradaptivity_supports($feature) {
         case FEATURE_MOD_INTRO:
         case FEATURE_BACKUP_MOODLE2:
             return true;
+        case FEATURE_MOD_PURPOSE:  # new since moodle 4.0 https://moodledev.io/docs/4.1/devupdate#activity-icons
+            return MOD_PURPOSE_ASSESSMENT;
         default:
             return null;
     }
@@ -152,11 +154,17 @@ function adleradaptivity_get_coursemodule_info($coursemodule) {
 
 // --------
 // methods required according to mod/README.md
-
-
+// --------
+// The following ones are actually not required and not implemented as they are not needed for the functionality of this module.
+//
+//
 ///**
-// * Given a course and a date, prints a summary of all the new
-// * files posted in folder resources since that date
+// * Given a course and a date, prints a summary of the recent activity happened in this module.
+// * As mod_quiz does not implement this method i assume it is not required.
+// *
+// * It is shown eg in in the "recent activity" sidebar block.
+// * The actual output of this method (what is shown in the "recent activity") is outputted via echo.
+// * Return value is just "success"
 // *
 // * @uses CONTEXT_MODULE
 // * @param object $course
@@ -164,9 +172,11 @@ function adleradaptivity_get_coursemodule_info($coursemodule) {
 // * @param int $timestart
 // * @return bool success
 // */
-//function adleradaptivity_print_recent_activity($course, $viewfullnames, $timestart) {}
-
-
+//function adleradaptivity_print_recent_activity($course, $viewfullnames, $timestart) {
+//    echo "(The recent activity of this modul)>";
+//    return true;
+//}
+//
 //The functions xxx_user_outline() and xxx_user_complete() have been removed from the majority of core modules (see MDL-41286),
 //except for those that require unique functionality. These functions are used by the outline report, but now if they no longer
 //exist, the default behaviour is chosen, which supports the legacy and standard log storages introduced in 2.7 (see MDL-41266).
