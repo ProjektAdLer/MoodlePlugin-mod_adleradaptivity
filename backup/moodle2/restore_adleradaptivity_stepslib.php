@@ -112,6 +112,12 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $this->current_adleradaptivity_attempt = clone($data);
     }
 
+    /**
+     * This is called after the question_usages are inserted into the database.
+     * It is used to insert the adleradaptivity attempt with the attempt_id of the newly created question usage into the database.
+     *
+     * @param int $newusageid the id of the newly created question usage.
+     */
     protected function inform_new_usage_id($newusageid) {
         global $DB;
 
@@ -126,12 +132,6 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $newitemid = $DB->insert_record('adleradaptivity_attempts', $data);
 
         // Save adleradaptivity attempt id mapping
-        $this->set_mapping('adleradaptivity', $oldid, $newitemid, false);
-
-
-
-        // TODO: Implement inform_new_usage_id() method.
-        // required for question bank import (questions activity)
-        // I think actually for question_usages (attempts)
+        $this->set_mapping('adleradaptivity', $oldid, $newitemid);
     }
 }
