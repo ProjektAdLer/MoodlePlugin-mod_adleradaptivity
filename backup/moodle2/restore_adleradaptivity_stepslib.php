@@ -1,14 +1,11 @@
 <?php
 
-// TODO: Attempts
-//  question_usages
-//  question_attempts
-
-
 /**
  * Structure step to restore one adleradaptivity activity
  */
 class restore_adleradaptivity_activity_structure_step extends restore_questions_activity_structure_step {
+
+    private ?object $current_adleradaptivity_attempt;
 
     protected function define_structure() {
         $paths = [];
@@ -24,7 +21,11 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
 
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('adleradaptivity_attempt', '/activity/adleradaptivity/attempts/attempt');
+            $adleradaptivity_attempt = new restore_path_element('adleradaptivity_attempt', '/activity/adleradaptivity/attempts/attempt');
+            $paths[] = $adleradaptivity_attempt;
+
+            // Add states and sessions
+            $this->add_question_usages($adleradaptivity_attempt, $paths);
         }
 
         // Return the paths wrapped into standard activity structure
@@ -72,18 +73,6 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $this->set_mapping('question', $data->id, $newitemid);
     }
 
-    protected function process_adleradaptivity_attempt($data) {
-        // TODO: Implement process_adleradaptivity_attempt() method.
-//        global $DB;
-//
-//        $data = (object)$data;
-//
-//        $data->adleradaptivityid = $this->get_new_parentid('adleradaptivity');
-//
-//        $newitemid = $DB->insert_record('adleradaptivity_attempts', $data);
-//        $this->set_mapping('adleradaptivity_attempt', $oldid, $newitemid);
-    }
-
     /**
      * Implementation of parent class is bugged. It hardcoded quiz module references.
      *
@@ -93,7 +82,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
      */
     public function process_question_reference($data) {
         global $DB;
-        $data = (object) $data;
+        $data = (object)$data;
         $data->usingcontextid = $this->get_mappingid('context', $data->usingcontextid);
         $data->itemid = $this->get_new_parentid('question');
         if ($entry = $this->get_mappingid('question_bank_entry', $data->questionbankentryid)) {
@@ -102,9 +91,45 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $DB->insert_record('question_references', $data);
     }
 
-    protected function after_execute() {}
+    protected function after_execute() {
+    }
+
+    protected function process_adleradaptivity_attempt($data) {
+        $data = (object)$data;
+
+        // Get user mapping, return early if no mapping found for the quiz attempt.
+        $olduserid = $data->user_id;
+        $data->user_id = $this->get_mappingid('user', $olduserid, 0);
+        if ($data->user_id === 0) {
+            $this->log('Mapped user ID not found for user ' . $olduserid . ', adleradaptivity ' . $this->get_new_parentid('adleradaptivity') .
+                ', attempt ' . $data->attempt . '. Skipping adleradaptivity attempt', backup::LOG_INFO);
+
+            $this->current_adleradaptivity_attempt = null;
+            return;
+        }
+
+        // The data is actually inserted into the database later in inform_new_usage_id.
+        $this->current_adleradaptivity_attempt = clone($data);
+    }
 
     protected function inform_new_usage_id($newusageid) {
+        global $DB;
+
+        $data = $this->current_adleradaptivity_attempt;
+        if ($data === null) {
+            return;
+        }
+
+        $oldid = $data->id;
+        $data->attempt_id = $newusageid;
+
+        $newitemid = $DB->insert_record('adleradaptivity_attempts', $data);
+
+        // Save adleradaptivity attempt id mapping
+        $this->set_mapping('adleradaptivity', $oldid, $newitemid, false);
+
+
+
         // TODO: Implement inform_new_usage_id() method.
         // required for question bank import (questions activity)
         // I think actually for question_usages (attempts)

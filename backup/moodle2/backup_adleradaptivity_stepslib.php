@@ -11,7 +11,6 @@
 class backup_adleradaptivity_activity_structure_step extends backup_questions_activity_structure_step {
 
     protected function define_structure() {
-
         // To know if we are including userinfo
         $userinfo = $this->get_setting_value('userinfo');
 
@@ -32,6 +31,11 @@ class backup_adleradaptivity_activity_structure_step extends backup_questions_ac
 
         $attempt = new backup_nested_element('attempt', array('id'), array(
             'attempt_id', 'user_id'));
+
+        // This module is using questions, so produce the related question states and sessions
+        // attaching them to the $attempt element based on 'attempt_id' matching.
+        $this->add_question_usages($attempt, 'attempt_id');
+
 
         // Build the tree
         $adleradaptivity->add_child($tasks);

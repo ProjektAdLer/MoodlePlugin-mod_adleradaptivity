@@ -69,6 +69,7 @@ function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
  * @param $instance_id int The instance id of the module to delete.
  * @return bool true if success, false if failed.
  * @throws dml_transaction_exception if the transaction failed and could not be rolled back.
+ * @throws dml_exception
  */
 function adleradaptivity_delete_instance(int $instance_id): bool {
     $logger = new logger('mod_adleradaptivity', 'lib.php');
