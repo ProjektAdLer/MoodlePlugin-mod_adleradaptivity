@@ -42,24 +42,7 @@ class get_question_details extends external_api {
         return new external_function_parameters([
             'data' => new external_single_structure(
                 [
-                    'questions' => new external_multiple_structure(
-                        new external_single_structure(
-                            [
-                                "uuid" => new external_value(
-                                    PARAM_TEXT,
-                                    "UUID of the question"
-                                ),
-                                "status" => new external_value(
-                                    PARAM_TEXT,
-                                    "Status of the question, one of correct, incorrect, notAttempted"
-                                ),
-                                "answers" => new external_value(
-                                    PARAM_TEXT,
-                                    "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'user_answer_correct'. null if the question was not attempted."
-                                ),
-                            ]
-                        )
-                    )
+                    'questions' => external_helpers::get_external_structure_question_response()
                 ]
             )
         ]);

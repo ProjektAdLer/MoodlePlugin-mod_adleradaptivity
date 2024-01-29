@@ -43,12 +43,8 @@ class get_question_details_test extends adler_externallib_testcase {
         // execute return paramter validation
         answer_questions::validate_parameters(get_question_details::execute_returns(), $result);
 
-
-
         // verify result
         $this->assertEquals('correct', $result['data']['questions'][0]['status']);
         $this->assertEquals('notAttempted', $result['data']['questions'][1]['status']);
-
     }
-
 }

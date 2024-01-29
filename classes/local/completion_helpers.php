@@ -46,7 +46,7 @@ class completion_helpers {
 
             // check whether question was answered (correctly)
             $question_attempt = $quba->get_question_attempt($slot_of_question);
-            $is_correct = self::check_question_correctly_answered($question_attempt);
+            $is_correct = self::check_question_last_answer_correct($question_attempt);
 
             if ($is_correct !== null) {
                 // if one question was answered at all, set the task to attempted
@@ -84,16 +84,43 @@ class completion_helpers {
     }
 
     /**
+     * Check if question was answered correctly at least once.
+     * For explanations see check_question_last_answer_correct()
+     *
+     * @param question_attempt $question_attempt
+     * @return bool|null
+     */
+    public static function check_question_answered_correctly_once(question_attempt $question_attempt): ?bool {
+        // check if not attempted
+        if (self::check_question_last_answer_correct($question_attempt) === null) {
+            return null;
+        }
+
+        $question = $question_attempt->get_question();
+
+        for ($i = 0; $i < $question_attempt->get_num_steps(); $i++) {
+            $step = $question_attempt->get_step($i);
+            $response = $step->get_qt_data();
+            list($fraction, $state) = $question->grade_response($response);
+
+            if ($state->is_correct()) {
+                return true;  // Correct response found in one of the tries
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if question was answered correctly.
      * load correct question state. The one in the database is garbage.
      * It has to be recalculated every time it is required. The following code was originally taken from
      * question/type/rendererbase.php -> combined_feedback()
      *
      * @param question_attempt $question_attempt The question attempt object.
-     * @return bool|null True if the question was answered correctly, false otherwise.
+     * @return bool|null True if the question was answered correctly, false if not. Null if the question was not attempted at all.
      * @throws moodle_exception
      */
-    public static function check_question_correctly_answered(question_attempt $question_attempt): ?bool {
+    public static function check_question_last_answer_correct(question_attempt $question_attempt): ?bool {
         $question = $question_attempt->get_question();
 
         $last_step = $question_attempt->get_last_step();

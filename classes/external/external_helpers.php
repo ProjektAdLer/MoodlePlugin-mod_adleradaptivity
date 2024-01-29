@@ -3,6 +3,9 @@
 namespace mod_adleradaptivity\external;
 
 use coding_exception;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\completion_helpers;
 use mod_adleradaptivity\local\helpers;
@@ -58,7 +61,7 @@ class external_helpers {
     /**
      * Generates request response data for questions
      *
-     * @param array $questions Array of questions. They have to be part of the $question_usage object. Only the field uuid is required.
+     * @param array $question_uuids Array of questions. They have to be part of the $question_usage object.
      * @param question_usage_by_activity $question_usage The question usage object
      * @return array Array of questions with the fields uuid, status and answers
      * @throws moodle_exception If the question could not be found in the question usage object or answer checking failed.
@@ -68,20 +71,54 @@ class external_helpers {
 
         foreach ($question_uuids as $question_uuid) {
             $question_attempt = $question_usage->get_question_attempt(helpers::get_slot_number_by_uuid($question_uuid, $question_usage));
-            $status = completion_helpers::check_question_correctly_answered($question_attempt);
-            $question_status = match ($status) {
+            $status_last_try = completion_helpers::check_question_last_answer_correct($question_attempt);
+            $status_last_try_text = match ($status_last_try) {
                 true => 'correct',
                 false => 'incorrect',
                 null => 'notAttempted',
-                default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid question status: ' . $status),
+                default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid question status: ' . $status_last_try),
             };
+            $status_best_try = completion_helpers::check_question_answered_correctly_once($question_attempt);
+            $status_best_try_text = match ($status_best_try) {
+                true => 'correct',
+                false => 'incorrect',
+                null => 'notAttempted',
+                default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid question status: ' . $status_best_try),
+            };
+
             $response_data[] = [
                 'uuid' => $question_uuid,
-                'status' => $question_status,
+                'status' => $status_last_try_text,
+                'status_best_try' => $status_best_try_text,
                 'answers' => json_encode(completion_helpers::get_question_answer_details($question_attempt)),
             ];
         }
 
         return $response_data;
+    }
+
+    public static function get_external_structure_question_response() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                [
+                    "uuid" => new external_value(
+                        PARAM_TEXT,
+                        "UUID of the question"
+                    ),
+                    "status" => new external_value(
+                        PARAM_TEXT,
+                        "Status of the question, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                    ),
+                    "status_best_try" => new external_value(
+                        PARAM_TEXT,
+                        "Status of the best try of the question, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                    ),
+                    "answers" => new external_value(
+                        PARAM_TEXT,
+                        "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'user_answer_correct'. null if the question was not attempted."
+                    ),
+                ]
+            )
+        );
     }
 }

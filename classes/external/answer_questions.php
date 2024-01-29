@@ -81,7 +81,7 @@ class answer_questions extends external_api {
                             ),
                             "status" => new external_value(
                                 PARAM_TEXT,
-                                "Status of the Task, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                                "Status of the Module, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
                             ),
                         ]
                     ),
@@ -99,25 +99,7 @@ class answer_questions extends external_api {
                             ]
                         )
                     ),
-                    'questions' => new external_multiple_structure(
-                        new external_single_structure(
-                            [
-                                "uuid" => new external_value(
-                                    PARAM_TEXT,
-                                    "UUID of the question"
-                                ),
-                                "status" => new external_value(
-                                    PARAM_TEXT,
-                                    "Status of the Task, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
-                                ),
-                                "answers" => new external_value(
-                                    PARAM_TEXT,
-                                    "JSON encoded data containing the question answer. For example for a multiple choice question: array of objects with the fields 'checked' and 'user_answer_correct'. null if the question was not attempted."
-                                ),
-                                // TODO two status: status_current_try and status_highest_attempt
-                            ]
-                        )
-                    ),
+                    'questions' => external_helpers::get_external_structure_question_response(),
                 ]
             )
         ]);
@@ -187,6 +169,7 @@ class answer_questions extends external_api {
 
     /**
      * Determines the completion status of the module.
+     * This is the completion state of the module, saved in the database and not with the currently submitted answers.
      *
      * @param completion_info $completion Completion information object.
      * @param stdClass $module Moodle module instance.
