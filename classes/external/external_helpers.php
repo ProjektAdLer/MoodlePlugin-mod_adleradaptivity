@@ -2,6 +2,8 @@
 
 namespace mod_adleradaptivity\external;
 
+require_once($CFG->dirroot . '/lib/externallib.php');
+
 use coding_exception;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
