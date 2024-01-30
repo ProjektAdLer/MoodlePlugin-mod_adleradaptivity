@@ -62,10 +62,16 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
 
         $this->assertArrayHasKey('name', (array)$adleradaptivity_xml->adleradaptivity);
         $this->assertArrayHasKey('tasks', (array)$adleradaptivity_xml->adleradaptivity);
-        $this->assertEquals('2', count($adleradaptivity_xml->adleradaptivity->tasks->task));
-        $this->assertEquals('1', count($adleradaptivity_xml->adleradaptivity->attempts->attempt));
+        $this->assertCount('2', $adleradaptivity_xml->adleradaptivity->tasks->task);
+        $this->assertCount('1', $adleradaptivity_xml->adleradaptivity->attempts->attempt);
+        // check attempts
+        $this->assertArrayHasKey('attempts', (array)$adleradaptivity_xml->adleradaptivity);
+        $this->assertCount('1', $adleradaptivity_xml->adleradaptivity->attempts->attempt);
+        $this->assertArrayHasKey('question_usage', (array)$adleradaptivity_xml->adleradaptivity->attempts->attempt[0]);
 
-        $this->assertEquals('1', count($completion_xml->completion->completionstate));
+
+        // check completion xml
+        $this->assertCount('1', $completion_xml->completion->completionstate);
     }
 
     public function test_restore() {
@@ -113,11 +119,22 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
         // get restored questions from question engine
         $restored_adler_questions = $DB->get_records('adleradaptivity_questions');
 
-
         // verify restored course
         $this->assertEquals('adleradaptivity', $restored_module->modname);
         $this->assertCount(2, $restored_adler_questions);
 
+        // now verify attempt restore
+
+        // just loading the attempt objects from db already confirms that the attempt was restored
+        // get restored question_usage
+        $restored_module_context_id = context_module::instance($restored_module->id)->id;
+        $restored_question_usages = $DB->get_records('question_usages', ['contextid' => $restored_module_context_id]);
+        $restored_question_usages = reset($restored_question_usages);
+        // get adleradaptivity attempt object
+        $restored_adler_attempt = $DB->get_record('adleradaptivity_attempts', ['attempt_id' => $restored_question_usages->id]);
+
+        // just check that the object is not empty
+        $this->assertArrayHasKey('attempt_id', (array)$restored_adler_attempt);
     }
 
     /** Get parsed xml from backup controller object.
