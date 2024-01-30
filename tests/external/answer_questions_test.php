@@ -3,6 +3,7 @@
 namespace mod_adleradaptivity\external;
 
 use mod_adleradaptivity\lib\adler_externallib_testcase;
+use mod_adleradaptivity\local\completion_helpers;
 use moodle_exception;
 
 global $CFG;
@@ -125,17 +126,17 @@ class answer_questions_test extends adler_externallib_testcase {
             'successful 1' => [
                 'attempt1' => 'correct',
                 'attempt2' => 'incorrect',
-                'expected_result' => api_constants::STATUS_CORRECT,
+                'expected_result' => completion_helpers::STATUS_CORRECT,
             ],
             'successful 2' => [
                 'attempt1' => 'correct',
                 'attempt2' => 'none',
-                'expected_result' => api_constants::STATUS_CORRECT,
+                'expected_result' => completion_helpers::STATUS_CORRECT,
             ],
             'incorrect' => [
                 'attempt1' => 'incorrect',
                 'attempt2' => 'none',
-                'expected_result' => api_constants::STATUS_INCORRECT,
+                'expected_result' => completion_helpers::STATUS_INCORRECT,
             ],
         ];
     }
