@@ -17,6 +17,7 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use invalid_parameter_exception;
+use mod_adleradaptivity\local\completion_helpers;
 use mod_adleradaptivity\local\helpers;
 use mod_adleradaptivity\moodle_core;
 use moodle_database;
@@ -81,7 +82,7 @@ class answer_questions extends external_api {
                             ),
                             "status" => new external_value(
                                 PARAM_TEXT,
-                                "Status of the Module, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                                "Status of the Module, one of". completion_helpers::STATUS_CORRECT . ", " . completion_helpers::STATUS_INCORRECT . ", " . completion_helpers::STATUS_NOT_ATTEMPTED
                             ),
                         ]
                     ),
@@ -94,7 +95,7 @@ class answer_questions extends external_api {
                                 ),
                                 "status" => new external_value(
                                     PARAM_TEXT,
-                                    "Status of the Task, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                                    "Status of the Task, one of". completion_helpers::STATUS_CORRECT . ", " . completion_helpers::STATUS_INCORRECT . ", " . completion_helpers::STATUS_NOT_ATTEMPTED
                                 ),
                             ]
                         )
@@ -178,8 +179,8 @@ class answer_questions extends external_api {
     protected static function determine_module_completion_status(completion_info $completion, stdClass $module): string {
         $completionState = $completion->get_data($module)->completionstate;
         return ($completionState == COMPLETION_COMPLETE || $completionState == COMPLETION_COMPLETE_PASS)
-            ? api_constants::STATUS_CORRECT
-            : api_constants::STATUS_INCORRECT;
+            ? completion_helpers::STATUS_CORRECT
+            : completion_helpers::STATUS_INCORRECT;
     }
 
     /**

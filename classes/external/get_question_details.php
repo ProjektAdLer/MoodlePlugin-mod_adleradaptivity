@@ -10,7 +10,6 @@ use context_module;
 use core_external\restricted_context_exception;
 use external_api;
 use external_function_parameters;
-use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;

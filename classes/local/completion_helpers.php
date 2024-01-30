@@ -12,6 +12,20 @@ use question_usage_by_activity;
 use stdClass;
 
 class completion_helpers {
+
+    const STATUS_CORRECT = 'correct';
+    const STATUS_INCORRECT = 'incorrect';
+    const STATUS_NOT_ATTEMPTED = 'notAttempted';
+    /**
+     * This status is only available for tasks, not for questions or the whole module.
+     */
+    const STATUS_OPTIONAL_NOT_ATTEMPTED = 'optional_notAttempted';
+    /**
+     * This status is only available for tasks, not for questions or the whole module.
+     */
+    const STATUS_OPTIONAL_INCORRECT = 'optional_incorrect';
+
+
     /**
      * Check if task is completed.
      *
@@ -19,11 +33,11 @@ class completion_helpers {
      * @param stdClass $task The task object.
      *
      * @return string One of the following possible result values:
-     *  - correct
-     *  - incorrect
-     *  - notAttempted
-     *  - optional_notAttempted
-     *  - optional_incorrect
+     *  - TASK_STATUS_CORRECT
+     *  - TASK_STATUS_INCORRECT
+     *  - TASK_STATUS_NOT_ATTEMPTED
+     *  - TASK_STATUS_OPTIONAL_NOT_ATTEMPTED
+     *  - TASK_STATUS_OPTIONAL_INCORRECT
      *
      * @throws moodle_exception
      */
@@ -66,19 +80,19 @@ class completion_helpers {
         if (!$attempted)
         {
             if ($optional) {
-                return 'optional_notAttempted';
+                return self::STATUS_OPTIONAL_NOT_ATTEMPTED;
             } else {
-                return 'notAttempted';
+                return self::STATUS_NOT_ATTEMPTED;
             }
         }
 
         if ($success) {
-            return 'correct';
+            return self::STATUS_CORRECT;
         } else {
             if ($optional) {
-                return 'optional_incorrect';
+                return self::STATUS_OPTIONAL_INCORRECT;
             } else {
-                return 'incorrect';
+                return self::STATUS_INCORRECT;
             }
         }
     }

@@ -26,12 +26,12 @@ class external_helpers {
      */
     public static function generate_task_response_data(question_usage_by_activity $quba, stdClass $task): object {
         $status = completion_helpers::check_task_status($quba, $task);
-        return (object) [
+        return (object)[
             'uuid' => $task->uuid,
             'status' => match ($status) {
-                'correct' => 'correct',
-                'incorrect', 'optional_incorrect' => 'incorrect',
-                'notAttempted', 'optional_notAttempted' => 'notAttempted',
+                completion_helpers::STATUS_CORRECT => completion_helpers::STATUS_CORRECT,
+                completion_helpers::STATUS_INCORRECT, completion_helpers::STATUS_OPTIONAL_INCORRECT => completion_helpers::STATUS_INCORRECT,
+                completion_helpers::STATUS_NOT_ATTEMPTED, completion_helpers::STATUS_OPTIONAL_NOT_ATTEMPTED => completion_helpers::STATUS_NOT_ATTEMPTED,
                 default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid task status: ' . $status),
             },
         ];
@@ -75,16 +75,16 @@ class external_helpers {
             $question_attempt = $question_usage->get_question_attempt(helpers::get_slot_number_by_uuid($question_uuid, $question_usage));
             $status_last_try = completion_helpers::check_question_last_answer_correct($question_attempt);
             $status_last_try_text = match ($status_last_try) {
-                true => 'correct',
-                false => 'incorrect',
-                null => 'notAttempted',
+                true => completion_helpers::STATUS_CORRECT,
+                false => completion_helpers::STATUS_INCORRECT,
+                null => completion_helpers::STATUS_NOT_ATTEMPTED,
                 default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid question status: ' . $status_last_try),
             };
             $status_best_try = completion_helpers::check_question_answered_correctly_once($question_attempt);
             $status_best_try_text = match ($status_best_try) {
-                true => 'correct',
-                false => 'incorrect',
-                null => 'notAttempted',
+                true => completion_helpers::STATUS_CORRECT,
+                false => completion_helpers::STATUS_INCORRECT,
+                null => completion_helpers::STATUS_NOT_ATTEMPTED,
                 default => throw new moodle_exception('invalid_parameter_exception', 'adleradaptivity', '', null, 'Invalid question status: ' . $status_best_try),
             };
 
@@ -109,11 +109,11 @@ class external_helpers {
                     ),
                     "status" => new external_value(
                         PARAM_TEXT,
-                        "Status of the question, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                        "Status of the question, one of" . completion_helpers::STATUS_CORRECT . ", " . completion_helpers::STATUS_INCORRECT . ", " . completion_helpers::STATUS_NOT_ATTEMPTED
                     ),
                     "status_best_try" => new external_value(
                         PARAM_TEXT,
-                        "Status of the best try of the question, one of". api_constants::STATUS_CORRECT . ", " . api_constants::STATUS_INCORRECT . ", " . api_constants::STATUS_NOT_ATTEMPTED
+                        "Status of the best try of the question, one of" . completion_helpers::STATUS_CORRECT . ", " . completion_helpers::STATUS_INCORRECT . ", " . completion_helpers::STATUS_NOT_ATTEMPTED
                     ),
                     "answers" => new external_value(
                         PARAM_TEXT,
