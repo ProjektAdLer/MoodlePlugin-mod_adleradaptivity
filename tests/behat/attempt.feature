@@ -17,27 +17,20 @@ Feature: Attempt an adleradaptivity
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
-#    And the following "questions" exist:
-#      | questioncategory | qtype | template          | name | questiontext   |
-#      | Test questions   | multichoice | one_of_four |TF1  | First question |
     And the following "activities" exist:
       | activity        | name             | intro                  | course |
       | adleradaptivity | Adler Activity 1 | Adler Activity 1 Intro | C1     |
-#      | activity | name   | intro              | course | idnumber | grade | navmethod  |
-#      | adleradaptivity     | Adleradaptivity 1 | Adleradaptivity 1 description | C1     | dleradaptivity1    | 100   | free       |
-#      | quiz     | Quiz 2 | Quiz 2 description | C1     | quiz2    | 6     | free       |
-#      | quiz     | Quiz 3 | Quiz 3 description | C1     | quiz3    | 100   | free       |
-#      | quiz     | Quiz 4 | Quiz 4 description | C1     | quiz4    | 100   | sequential |
     And adleradaptivity "Adler Activity 1" contains the following tasks:
       | title | required_difficulty |
       | Task1 | 0                   |
       | Task2 | 100                 |
-    And adleradaptivity_task "Task1" contains the following alderadaptivity_questions:
-      | questioncategory | name | Task  | difficulty |
-      | Test questions   | Q1   | Task1 | 0          |
-      | Test questions   | Q2   | Task1 | 100        |
-      | Test questions   | Q3   | Task1 | 200        |
-      | Test questions   | Q3   | Task2 | 0          |
+    And the following adleradaptivity questions are added:
+      | task_title | question_category | question_name | difficulty |
+      | Task1      | Test questions    | Q1            | 0          |
+      | Task1      | Test questions    | Q2            | 100        |
+      | Task1      | Test questions    | Q3            | 200        |
+      | Task2      | Test questions    | Q4            | 0          |
+
 
 
 

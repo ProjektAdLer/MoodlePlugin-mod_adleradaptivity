@@ -82,7 +82,6 @@ class behat_mod_adleradaptivity extends behat_question_base {
     public function adleradaptivity_contains_the_following_tasks(string $adleradaptivityname, TableNode $data) {
         global $DB;
 
-        $adleradaptivity_instance = $this->get_adleradaptivity_by_name($adleradaptivityname);
         $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
 
 
@@ -90,10 +89,68 @@ class behat_mod_adleradaptivity extends behat_question_base {
 
         foreach ($data->getHash() as $taskdata) {
             $taskdata['uuid'] = $taskdata['title'];
-            $task = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_cm->instance, $taskdata);
+            $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_cm->instance, $taskdata);
         }
 
         echo json_encode($data);
+    }
+
+    /**
+     * Create adler questions for the specified adleradaptivity task.
+     *
+     * The first row should be column names:
+     * | task_title | question_category | question_name | difficulty | singlechoice |
+     * The first three are required. The others are optional.
+     *
+     * task              the name of the task to add the question to.
+     * question_category the category of the question.
+     * question_name     the name of the question.
+     * difficulty        the difficulty of the question.
+     * singlechoice      whether the question is single choice or multiple choice.
+     *
+     * Then the following rows should be the data for the questions.
+     *
+     * @param TableNode $data information about the questions to add.
+     *
+     * @Given /^the following adleradaptivity questions are added:$/
+     */
+    public function the_following_adleradaptivity_questions_are_added(TableNode $data) {
+        global $DB;
+
+        $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
+
+        foreach ($data->getHash() as $questiondata) {
+            // get existing task from $data['task_title']
+            $task = $DB->get_record_sql(
+                "SELECT * FROM {adleradaptivity_tasks} WHERE " . $DB->sql_compare_text('title') . " = ?",
+                [$questiondata['task_title']]
+            );
+            // get existing adleradaptivity cm from $task
+            $adleradaptivity_cm = get_coursemodule_from_instance('adleradaptivity', $task->adleradaptivity_id);
+            // get existing qcat from $data['question_category']
+            $qcat = $DB->get_record('question_categories', ['name' => $questiondata['question_category']], '*', MUST_EXIST);
+
+            // create adleradaptivity question
+            $adleradaptivity_question = $adleradaptivity_generator->create_mod_adleradaptivity_question($task->id, [
+                'difficulty' => $questiondata['difficulty'] ?? 100,
+            ]);
+
+            // create moodle question
+            $question = $adleradaptivity_generator->create_moodle_question(
+                $qcat->id,
+                $questiondata['singlechoice'] ?? false,
+                $questiondata['question_name'],
+                $questiondata['uuid'] ?? $questiondata['question_name']
+            );
+
+            // create question reference
+            $adleradaptivity_generator->create_question_reference(
+                $adleradaptivity_question->id,
+                $question->questionbankentryid,
+                $adleradaptivity_cm->id
+            );
+        }
+        echo "Created question: ";
     }
 
 //    ATM not required by this plugin

@@ -20,8 +20,6 @@ class external_test_helpers {
      * @return array Returns an array containing the user, the first question (q1), and the second question (q2) if it was created.
      */
     public static function create_course_with_test_questions(testing_data_generator $generator, $task_required = true, $singlechoice = false, $q2 = false) {
-        global $DB;
-
         $adleradaptivity_generator = $generator->get_plugin_generator('mod_adleradaptivity');
 
         $uuid = '75c248df-562f-40f7-9819-ebbeb078954b';
@@ -44,39 +42,15 @@ class external_test_helpers {
         // create question
         $generator = $generator->get_plugin_generator('core_question');
         $qcat = $generator->create_question_category(['name' => 'My category', 'sortorder' => 1, 'idnumber' => 'myqcat']);
-        $q1_generated = $generator->create_question('multichoice', $singlechoice ? 'one_of_four' : null, ['name' => 'q1', 'category' => $qcat->id, 'idnumber' => $uuid]);
-        $question1 = question_bank::load_question($q1_generated->id);
+        $question1 = $adleradaptivity_generator->create_moodle_question($qcat->id, $singlechoice, 'q1', $uuid);
         if ($q2) {
-            $q2_generated = $generator->create_question('multichoice', $singlechoice ? 'one_of_four' : null, ['name' => 'q2', 'category' => $qcat->id, 'idnumber' => $uuid2]);
-            $question2 = question_bank::load_question($q2_generated->id);
+            $question2 = $adleradaptivity_generator->create_moodle_question($qcat->id, $singlechoice, 'q2', $uuid2);
         }
 
-        // patch q1 answers to give penalty if wrong
-        $answers = $question1->answers;
-        foreach ($answers as $answer) {
-            $answer->fraction = $answer->fraction <= 0 ? -.5 : $answer->fraction;
-            $DB->update_record('question_answers', $answer);
-        }
-        question_bank::notify_question_edited($question1->id);
-
-        // create question reference
-        $questionreferences = new stdClass();
-        $questionreferences->usingcontextid = context_module::instance($adleradaptivity_module->cmid)->id;
-        $questionreferences->component = 'mod_adleradaptivity';
-        $questionreferences->questionarea = 'question';
-        $questionreferences->itemid = $adleradaptivity_question->id;
-        $questionreferences->questionbankentryid = $question1->questionbankentryid;
-        $questionreferences->version = 1;
-        $DB->insert_record('question_references', $questionreferences);
+//      create question reference
+        $adleradaptivity_generator->create_question_reference($adleradaptivity_question->id, $question1->questionbankentryid, $adleradaptivity_module->cmid);
         if ($q2) {
-            $questionreferences2 = new stdClass();
-            $questionreferences2->usingcontextid = context_module::instance($adleradaptivity_module->cmid)->id;
-            $questionreferences2->component = 'mod_adleradaptivity';
-            $questionreferences2->questionarea = 'question';
-            $questionreferences2->itemid = $adleradaptivity_question2->id;
-            $questionreferences2->questionbankentryid = $question2->questionbankentryid;
-            $questionreferences2->version = 1;
-            $DB->insert_record('question_references', $questionreferences2);
+            $adleradaptivity_generator->create_question_reference($adleradaptivity_question2->id, $question2->questionbankentryid, $adleradaptivity_module->cmid);
         }
 
         return [

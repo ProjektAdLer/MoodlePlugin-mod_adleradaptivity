@@ -46,6 +46,60 @@ class mod_adleradaptivity_generator extends testing_module_generator {
         return $new_object;
     }
 
+    /**
+     * Create a question reference for a given moodle questionbank entry and adleradaptivity question
+     * on a given adleradaptivity module.
+     *
+     * @param int $adleradaptivity_question_id The id of the adleradaptivity question.
+     * @param int $questionbank_entry_id The id of the moodle questionbank entry.
+     * @param int $cmid The id of the adleradaptivity module.
+     * @param bool $insert If true, the question reference will be inserted into the database.
+     * @return object Returns the question reference object.
+     */
+    public function create_question_reference(int $adleradaptivity_question_id, int $questionbank_entry_id, int $cmid, bool $insert = true) {
+        global $DB;
+        $new_object = (object)[
+            'usingcontextid' => context_module::instance($cmid)->id,
+            'component' => 'mod_adleradaptivity',
+            'questionarea' => 'question',
+            'itemid' => $adleradaptivity_question_id,
+            'questionbankentryid' => $questionbank_entry_id,
+            'version' => 1,
+        ];
+
+        if ($insert) {
+            $new_object->id = $DB->insert_record('question_references', $new_object);
+        }
+        return $new_object;
+    }
+
+    /**
+     * Create a moodle core question for the adleradaptivity module.
+     *
+     * @param int $question_category_id The id of the question category to add the question to.
+     * @param bool $singlechoice If true, the question will be a single choice question. If false, the question will be a multiple choice question.
+     * @param string $name The name of the question.
+     * @param string $uuid The uuid of the question.
+     *
+     * @return question_definition Returns the question object.
+     */
+    public function create_moodle_question(int $question_category_id, bool $singlechoice, string $name, string $uuid) {
+        global $DB;
+        $generator = $this->datagenerator->get_plugin_generator('core_question');
+        $q_generated = $generator->create_question('multichoice', $singlechoice ? 'one_of_four' : null, ['name' => $name, 'category' => $question_category_id, 'idnumber' => $uuid]);
+        $question = question_bank::load_question($q_generated->id);
+
+        // patch question answers to give penalty if wrong
+        $answers = $question->answers;
+        foreach ($answers as $answer) {
+            $answer->fraction = $answer->fraction <= 0 ? -.5 : $answer->fraction;
+            $DB->update_record('question_answers', $answer);
+        }
+        question_bank::notify_question_edited($question->id);
+
+        return $question;
+    }
+
     public function create_mod_adleradaptivity_attempt(int $attempt_id, int $user_id, bool $insert = true) {
         global $DB;
         $default_params = [
