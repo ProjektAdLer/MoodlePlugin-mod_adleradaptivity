@@ -31,18 +31,13 @@ Feature: Attempt an adleradaptivity
       | Task1      | Test questions    | Q3            | 200        |
       | Task2      | Test questions    | Q4            | 0          |
 
-
-
-
-
-
 #  @javascript
   Scenario: Attempt a quiz with a single unnamed section, review and re-attempt
-    Given user "student" has attempted "Quiz 1" with responses:
-      | slot | response |
-      | 1    | True     |
-      | 2    | False    |
-    When I am on the "Quiz 1" "mod_quiz > View" page logged in as "student"
+#    Given user "student" has attempted "Quiz 1" with responses:
+#      | slot | response |
+#      | 1    | True     |
+#      | 2    | False    |
+    When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
     And I follow "Review"
     Then I should see "Started on"
     And I should see "State"
@@ -53,6 +48,3 @@ Feature: Attempt an adleradaptivity
     And I should see "25.00 out of 100.00"
     And I follow "Finish review"
     And I press "Re-attempt quiz"
-
-
-
