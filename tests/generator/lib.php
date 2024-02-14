@@ -4,7 +4,6 @@ global $CFG;
 
 class mod_adleradaptivity_generator extends testing_module_generator {
     public function create_instance($record = null, array $options = null) {
-        global $DB;
         $default_params = [
             'name' => 'name',
             'intro' => 'intro',
