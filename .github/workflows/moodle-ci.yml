@@ -100,7 +100,7 @@ jobs:
 #     Coding style for this plugin differs from moodle's coding style in some points
 #      - name: Moodle Code Checker
 #        if: ${{ always() }}
-#        run: moodle-plugin-ci codechecker --max-warnings 0
+#        run: moodle-plugin-ci phpcs --max-warnings 0
 
       - name: Moodle PHPDoc Checker
         continue-on-error: true
@@ -132,11 +132,7 @@ jobs:
       - name: PHPUnit tests
         if: ${{ always() }}
         run: |
-          cd moodle
-          php -d pcov.enabled=1 -d pcov.directory=. vendor/bin/phpunit --coverage-text --configuration mod/adleradaptivity --testdox --coverage-clover mod/adleradaptivity/coverage.xml
-          # restore tests are randomly causing segfaults when run with moodle-plugin-ci, but run totally fine when run with phpunit directly
-          # https://github.com/moodlehq/moodle-plugin-ci/issues/204
-          # moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --coverage-text -vvv
+          moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --testdox --coverage-pcov --coverage-text -vvv
 
       - name: Coveralls upload
         continue-on-error: true
