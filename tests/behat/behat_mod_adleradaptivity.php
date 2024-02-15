@@ -20,6 +20,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * @throws Exception with a meaningful error message if the specified page cannot be found.
      */
     protected function resolve_page_url(string $page): moodle_url {
+//        TODO
 //        switch (strtolower($page)) {
 //            default:
 //                throw new Exception('Unrecognised quiz page type "' . $page . '."');
@@ -38,10 +39,19 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * @throws Exception with a meaningful error message if the specified page cannot be found.
      */
     protected function resolve_page_instance_url(string $type, string $identifier): moodle_url {
+        switch (strtolower($type)) {
+            case 'view':
+                return new moodle_url(
+                    '/mod/adleradaptivity/view.php',
+                    ['id' => $this->get_cm_by_adleradaptivity_name($identifier)->id]
+                );
+            default:
+                throw new Exception('Unrecognised quiz page type "' . $type . '."');
+        }
     }
 
     /**
-     * Get a adleradaptivity instnace by name.
+     * Get an adleradaptivity instance by name.
      *
      * @param string $name adleradaptivity name.
      * @return stdClass the corresponding DB row.
