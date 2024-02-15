@@ -56,6 +56,8 @@ $PAGE->set_title(format_string($module_instance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($module_context);
 
+echo "❌ This module is not completed yet";
+
 
 
 // load quiz attempt if attempt parameter is not -1, otherwise create new attempt
