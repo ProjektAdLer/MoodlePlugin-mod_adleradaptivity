@@ -7,6 +7,7 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 require_once(__DIR__ . '/../../../../question/tests/behat/behat_question_base.php');
 
 use Behat\Gherkin\Node\TableNode;
+use Behat\MinkExtension\Context\MinkContext;
 
 class behat_mod_adleradaptivity extends behat_question_base {
     /**
@@ -73,14 +74,95 @@ class behat_mod_adleradaptivity extends behat_question_base {
     }
 
     /**
+     * Checks, that element with specified CSS exists on page
+     * Example: Then I should see a "body" element
+     * Example: And I should see a "body" element
+     *
+     * @Then /^(?:|I )should see an? "(?P<element>[^"]*)" element$/
+     */
+    public function assertElementOnPage($element) {
+        $this->assertSession()->elementExists('css', $element);
+    }
+
+    /**
+     * Checks, that element with specified CSS does not exist on page
+     * Example: Then I should not see a "body" element
+     *
+     * @Then /^(?:|I )should not see an? "(?P<element>[^"]*)" element$/
+     */
+    public function assertElementNotOnPage($element) {
+        $this->assertSession()->elementNotExists('css', $element);
+    }
+
+    /**
+     * Checks, that element with specified CSS exists exactly the specified number of times on page
+     * Example: Then I should see 3 "div" elements
+     *
+     * @Then /^I should see "(?P<num>\d+)" "(?P<element>[^"]*)" elements?$/
+     */
+    public function assertNumElementsOnPage($num, $element) {
+        $this->assertSession()->elementsCount('css', $element, $num);
+    }
+
+    /**
+     * Submits a given question with a specified outcome (correctness).
+     *
+     * @param string $questionname the name of the question to submit.
+     * @param string $outcome the outcome of the question. Allowed values are 'correct' and 'incorrect'.
+     *
+     * @When /^I submit question "([^"]*)" with an? "([^"]*)" answer$/
+     */
+    public function i_submit_question_with_an_answer(string $questionname, string $outcome) {
+//        TODO implement
+//        $this->submit_question($questionname, $outcome);
+    }
+
+    /**
+     * Create question usages (attempts) for the specified adleradaptivity and user.
+     * The first row has to be column names:
+     * | question_name | correct |
+     * The first two are required.
+     *
+     * question_name the unique name of the question.
+     * correct       whether the question was answered correctly. Allowed values are 'yes' and 'no'.
+     *
+     * Then the following rows should be the data for the question usages.
+     *
+     * @param string $adleradaptivityname the name of the adleradaptivity to add question usages to.
+     * @param string $username the username of the user to add question usages for.
+     * @param TableNode $data information about the question usages to add.
+     *
+     * @Given /^user "([^"]*)" has attempted "([^"]*)" with results:$/
+     */
+    public function user_has_attempted_with_results(string $username, string $adleradaptivityname, TableNode $data) {
+// TODO implement
+        //        global $DB;
+//
+//        $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
+//        $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
+//
+//        $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
+//
+//        foreach ($data->getHash() as $questiondata) {
+//            $question = $DB->get_record('question', ['name' => $questiondata['question_name']], '*', MUST_EXIST);
+//            $adleradaptivity_question = $DB->get_record('adleradaptivity_questions', ['questionid' => $question->id], '*', MUST_EXIST);
+//
+//            $adleradaptivity_generator->create_mod_adleradaptivity_attempt($adleradaptivity_cm->instance, $user->id, [
+//                'questionid' => $adleradaptivity_question->id,
+//                'correct' => $questiondata['correct'] === 'yes',
+//            ]);
+//        }
+    }
+
+    /**
      * Create adler tasks on the specified adleradaptivity element.
      *
-     * The first row should be column names:
+     * The first row has to be column names:
      * | title | required_difficulty |
      * The first one is required. The others are optional.
      *
      * title                unique name of the task.
-     * required_difficulty  required difficulty for the task.
+     * required_difficulty  required difficulty for the task. Empty string or null for optional tasks.
      *
      * Then the following rows should be the data for the tasks.
      *
@@ -99,6 +181,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
 
         foreach ($data->getHash() as $taskdata) {
             $taskdata['uuid'] = $taskdata['title'];
+            $taskdata['required_difficulty'] = strlen($taskdata['required_difficulty']) == 0 || $taskdata['required_difficulty'] == 'null' ? null : $taskdata['required_difficulty'];
             $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_cm->instance, $taskdata);
         }
 
@@ -108,7 +191,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
     /**
      * Create adler questions for the specified adleradaptivity task.
      *
-     * The first row should be column names:
+     * The first row has to be column names:
      * | task_title | question_category | question_name | difficulty | singlechoice |
      * The first three are required. The others are optional.
      *
