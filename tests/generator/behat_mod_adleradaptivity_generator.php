@@ -1,5 +1,4 @@
 <?php
-use behat_generator_base;
 
 defined('MOODLE_INTERNAL') || die();
 

@@ -5,9 +5,13 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 require_once(__DIR__ . '/../../../../question/tests/behat/behat_question_base.php');
+require_once(__DIR__ . '/../external/external_test_helpers.php');  // TODO: this should be autoloaded. maybe it does not because the tests folder does not follow default auload folder structure
+
 
 use Behat\Gherkin\Node\TableNode;
-use Behat\MinkExtension\Context\MinkContext;
+use mod_adleradaptivity\external\answer_questions;
+use mod_adleradaptivity\external\external_test_helpers;
+use mod_adleradaptivity\local\helpers;
 
 class behat_mod_adleradaptivity extends behat_question_base {
     /**
@@ -114,17 +118,17 @@ class behat_mod_adleradaptivity extends behat_question_base {
      */
     public function i_submit_question_with_an_answer(string $questionname, string $outcome) {
 //        TODO implement
-//        $this->submit_question($questionname, $outcome);
+
     }
 
     /**
      * Create question usages (attempts) for the specified adleradaptivity and user.
      * The first row has to be column names:
-     * | question_name | correct |
+     * | question_name | answer |
      * The first two are required.
      *
      * question_name the unique name of the question.
-     * correct       whether the question was answered correctly. Allowed values are 'yes' and 'no'.
+     * answer       whether the question was answered correctly. Allowed values are 'correct', 'incorrect', 'all_true', 'all_false' and 'partially_correct'.
      *
      * Then the following rows should be the data for the question usages.
      *
@@ -135,23 +139,64 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * @Given /^user "([^"]*)" has attempted "([^"]*)" with results:$/
      */
     public function user_has_attempted_with_results(string $username, string $adleradaptivityname, TableNode $data) {
-// TODO implement
-        //        global $DB;
-//
-//        $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
-//        $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
-//
-//        $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
-//
-//        foreach ($data->getHash() as $questiondata) {
-//            $question = $DB->get_record('question', ['name' => $questiondata['question_name']], '*', MUST_EXIST);
-//            $adleradaptivity_question = $DB->get_record('adleradaptivity_questions', ['questionid' => $question->id], '*', MUST_EXIST);
-//
-//            $adleradaptivity_generator->create_mod_adleradaptivity_attempt($adleradaptivity_cm->instance, $user->id, [
-//                'questionid' => $adleradaptivity_question->id,
-//                'correct' => $questiondata['correct'] === 'yes',
-//            ]);
-//        }
+// TODO refactor methods from "main" code as they are (now) also used in test code
+        global $DB;
+
+        // load adleradaptivity cm
+        $adleradaptivity_id = $DB->get_field('adleradaptivity', 'id', ['name' => $adleradaptivityname], MUST_EXIST);
+        $cmid = $DB->get_field('course_modules', 'id', ['instance' => $adleradaptivity_id, 'module' => $DB->get_field('modules', 'id', ['name' => 'adleradaptivity'])], MUST_EXIST);
+        $module = get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
+
+        // get current user
+        $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
+        // login as $user. This is required for completion as I cannot pass a user id in the custom completion rule
+        advanced_testcase::setUser($user->id);
+
+        // generate moodle and adleradaptivity attempt
+        $quba = helpers::load_or_create_question_usage($cmid);
+
+        // answer questions
+        foreach ($data->getHash() as $questiondata) {
+            // get question_definition object
+            $question_id = $DB->get_field('question', 'id', ['name' => $questiondata['question_name']], MUST_EXIST);
+            $question_definition = question_bank::load_question($question_id);
+            // generate answer
+            $answer = json_encode(external_test_helpers::gernerate_question_answers_for_single_question($questiondata['answer'], $question_definition));
+
+            // answer question
+            answer_questions::process_single_question(
+                [
+                    'uuid' => $question_definition->idnumber,
+                    'answer' => $answer,
+                ],
+                time(),
+                $quba);
+        }
+
+        // save current questions usage
+        question_engine::save_questions_usage_by_activity($quba);
+        // Update completion state
+        answer_questions::update_module_completion($module);
+
+
+        return;
+//        ----------------
+
+
+        $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
+        $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
+
+        $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
+
+        foreach ($data->getHash() as $questiondata) {
+            $question = $DB->get_record('question', ['name' => $questiondata['question_name']], '*', MUST_EXIST);
+            $adleradaptivity_question = $DB->get_record('adleradaptivity_questions', ['questionid' => $question->id], '*', MUST_EXIST);
+
+            $adleradaptivity_generator->create_mod_adleradaptivity_attempt($adleradaptivity_cm->instance, $user->id, [
+                'questionid' => $adleradaptivity_question->id,
+                'correct' => $questiondata['correct'] === 'yes',
+            ]);
+        }
     }
 
     /**
@@ -192,7 +237,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * Create adler questions for the specified adleradaptivity task.
      *
      * The first row has to be column names:
-     * | task_title | question_category | question_name | difficulty | singlechoice |
+     * | task_title | question_category | question_name | difficulty | singlechoice | questiontext |
      * The first three are required. The others are optional.
      *
      * task              the name of the task to add the question to.
@@ -200,6 +245,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * question_name     the name of the question.
      * difficulty        the difficulty of the question.
      * singlechoice      whether the question is single choice or multiple choice.
+     * questiontext      the text of the question.
      *
      * Then the following rows should be the data for the questions.
      *

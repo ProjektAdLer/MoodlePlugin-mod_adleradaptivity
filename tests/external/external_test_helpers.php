@@ -2,9 +2,8 @@
 
 namespace mod_adleradaptivity\external;
 
-use context_module;
 use moodle_exception;
-use question_bank;
+use question_definition;
 use stdClass;
 use testing_data_generator;
 
@@ -70,12 +69,18 @@ class external_test_helpers {
         ];
     }
 
-    public static function generate_answer_question_parameters(String $q1, String $q2, array $course_data) {
-        // generate answer data
+    /**
+     *
+     * @param String $answer_type How to answer the question. Can be 'correct', 'incorrect', 'all_true', 'all_false', 'partially_correct'.
+     * @param stdClass $question
+     * @return array Returns an array of booleans representing the answers to the question.
+     * @throws moodle_exception
+     */
+    public static function gernerate_question_answers_for_single_question(String $answer_type, question_definition $question) {
         $answerdata_q1 = [];
         $partially_one_correct_chosen = false;
-        foreach ($course_data['q1']['question']->answers as $answer) {
-            switch ($q1) {
+        foreach ($question->answers as $answer) {
+            switch ($answer_type) {
                 case 'correct':
                     $answerdata_q1[] = $answer->fraction > 0;
                     break;
@@ -100,8 +105,10 @@ class external_test_helpers {
                     throw new moodle_exception('invalid_test_data', 'adleradaptivity');
             }
         }
+        return $answerdata_q1;
+    }
 
-
+    public static function generate_answer_question_parameters(String $q1, String $q2, array $course_data) {
         // generate parameters
         $param_module = [
             'instance_id' => $course_data['module']->id,
@@ -109,7 +116,7 @@ class external_test_helpers {
         $param_questions = [
             [
                 'uuid' => $course_data['q1']['uuid'],
-                'answer' => json_encode($answerdata_q1),
+                'answer' => json_encode(self::gernerate_question_answers_for_single_question($q1, $course_data['q1']['question']))
             ]
         ];
         if ($q2 == 'answered') {
