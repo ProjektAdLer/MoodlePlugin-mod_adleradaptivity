@@ -83,10 +83,22 @@ class mod_adleradaptivity_generator extends testing_module_generator {
      *
      * @return question_definition Returns the question object.
      */
-    public function create_moodle_question(int $question_category_id, bool $singlechoice, string $name, string $uuid) {
+    public function create_moodle_question(int $question_category_id, bool $singlechoice, string $name, string $uuid, string|null $question_text = null) {
         global $DB;
         $generator = $this->datagenerator->get_plugin_generator('core_question');
-        $q_generated = $generator->create_question('multichoice', $singlechoice ? 'one_of_four' : null, ['name' => $name, 'category' => $question_category_id, 'idnumber' => $uuid]);
+        $question_override_parameter = [
+            'name' => $name,
+            'category' => $question_category_id,
+            'idnumber' => $uuid,
+        ];
+        if ($question_text) {
+            $question_override_parameter['questiontext'] = ['text' => $question_text, 'format' => FORMAT_HTML];
+        }
+
+        $q_generated = $generator->create_question(
+            'multichoice',
+            $singlechoice ? 'one_of_four' : null,
+            $question_override_parameter);
         $question = question_bank::load_question($q_generated->id);
 
         // patch question answers to give penalty if wrong

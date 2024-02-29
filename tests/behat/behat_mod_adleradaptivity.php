@@ -242,7 +242,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      *
      * task              the name of the task to add the question to.
      * question_category the category of the question.
-     * question_name     the name of the question.
+     * question_name     the name of the question. This value is also used as questiontext as it is the value used to reference questions via other behat steps. Additionally, it is used as the uuid for the question.
      * difficulty        the difficulty of the question.
      * singlechoice      whether the question is single choice or multiple choice.
      * questiontext      the text of the question.
@@ -279,7 +279,8 @@ class behat_mod_adleradaptivity extends behat_question_base {
                 $qcat->id,
                 $questiondata['singlechoice'] ?? false,
                 $questiondata['question_name'],
-                $questiondata['uuid'] ?? $questiondata['question_name']
+                $questiondata['uuid'] ?? $questiondata['question_name'],
+                $questiondata['question_name'] ?? null
             );
 
             // create question reference

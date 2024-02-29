@@ -51,6 +51,7 @@ Feature: View an adleradaptivity
     And I should see "1" ".behat_task-incorrect" element
     And I should see "1" ".behat_task-optional-incorrect" element
 
+  @javascript
   Scenario: Display attempt sufficient to complete the module
     Given user "student" has attempted "Adler Activity 1" with results:
       | question_name | answer  |

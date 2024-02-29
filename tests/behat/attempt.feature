@@ -23,39 +23,41 @@ Feature: Attempt an adleradaptivity
     And adleradaptivity "Adler Activity 1" contains the following tasks:
       | title | required_difficulty |
       | Task1 | 100                 |
-#    TODO: do it like the_following_entities_exist
     And the following adleradaptivity questions are added:
-      | task_title | question_category | question_name | difficulty | questiontext |
-      | Task1      | Test questions    | Q1            | 0          | Q1           |
-      | Task1      | Test questions    | Q2            | 100        | Q2           |
-      | Task1      | Test questions    | Q3            | 200        | Q3           |
+      | task_title | question_category | question_name | difficulty |
+      | Task1      | Test questions    | Q1            | 0          |
+      | Task1      | Test questions    | Q2            | 100        |
+      | Task1      | Test questions    | Q3            | 200        |
 
   @javascript
   Scenario: Attempt a question with an correct answer
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
 #    Question is: which numbers are odd?
-    And I click on "One" "checkbox" in the "Q2" "question"
-    And I click on "Three" "checkbox" in the "Q2" "question"
+    And I click on "One" "qtype_multichoice > Answer" in the "Q2" "question"
+    And I click on "Three" "qtype_multichoice > Answer" in the "Q2" "question"
     And I click on "Check" "button" in the "Q2" "question"
-
-#    And I submit question "Q2" with a "correct" answer
     Then I should see a ".behat_module-success" element
     And I should see a ".behat_task-correct" element
 
-
+  @javascript
   Scenario: Attempt a question with an incorrect answer
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
-    And I submit question "Q2" with an "incorrect" answer
+    And I click on "Two" "qtype_multichoice > Answer" in the "Q2" "question"
+    And I click on "Check" "button" in the "Q2" "question"
     Then I should see a ".behat_module-failure" element
     And I should see a ".behat_task-incorrect" element
 
+  @javascript
   Scenario: Attempt a question with a wrong answer that was previously correct and completed the task
     Given user "student" has attempted "Adler Activity 1" with results:
       | question_name | answer  |
       | Q2            | correct |
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
-    And I submit question "Q2" with an "incorrect" answer
+    And I click on "Two" "qtype_multichoice > Answer" in the "Q2" "question"
+    And I click on "Check" "button" in the "Q2" "question"
     Then I should see a ".behat_module-success" element
     And I should see a ".behat_task-correct" element
-#    TODO: check that the currently shown answer is marked wrong
+#    question is still considered correct, as it was answered correctly before, but the current answer is wrong
+    And I should see a ".behat_question-status-success" element
+    And I should see "Partially correct"
 
