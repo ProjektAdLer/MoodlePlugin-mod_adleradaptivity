@@ -3,7 +3,6 @@
 namespace mod_adleradaptivity\local\output\pages;
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/adleradaptivity/lib.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->dirroot . '/mod/adleradaptivity/locallib.php');
 
@@ -11,9 +10,11 @@ use bootstrap_renderer;
 use coding_exception;
 use context_module;
 use core\context;
+use core\context\module;
 use dml_exception;
 use local_logging\logger;
-use moodle_database;
+use mod_adleradaptivity\local\db\adleradaptivity_repository;
+use mod_adleradaptivity\local\db\moodle_core_repository;
 use moodle_exception;
 use moodle_page;
 use question_engine;
@@ -23,22 +24,34 @@ use required_capability_exception;
 use stdClass;
 
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
-use mod_adleradaptivity\local\db\question_repository;
-use mod_adleradaptivity\local\db\task_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
 
-// TODO: phpdocs
-
+/**
+ * Handles the rendering of the adleradaptivity module's view page.
+ * It's responsibilities are the same as view.php in other plugins.
+ */
 class view_page {
-    private moodle_database $db;  // TODO: no db here
     private moodle_page $page;
     private bootstrap_renderer $output;
     private stdClass $user;
-    private task_repository $task_repository;
-    private question_repository $question_repository;
+    private adleradaptivity_task_repository $task_repository;
+    private adleradaptivity_question_repository $question_repository;
     private adleradaptivity_attempt_repository $adleradaptivity_attempt_repository;
-    private logger $logger;  // TODO: use logger
+    private adleradaptivity_repository $adleradaptivity_repository;
+    private moodle_core_repository $moodle_core_repository;
+    private logger $logger;
 
+    /**
+     * Constructs and completely renders the page
+     *
+     * @throws coding_exception
+     * @throws require_login_exception
+     * @throws required_capability_exception
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
     public function __construct() {
         // setup variables
         $this->setup_instance_variables();
@@ -55,14 +68,14 @@ class view_page {
         $adleradaptivity_attempt = $this->adleradaptivity_attempt_repository->get_adleradaptivity_attempt_by_quba_id($quba->get_id());
 
         // now having enough information to check permissions to access/edit the attempt
-        $this->check_attempt_permissions($course, $cm, $module_context, $adleradaptivity_attempt);
+        $this->check_attempt_permissions($module_context, $adleradaptivity_attempt);
 
         // continue setting up variables
         $tasks = $this->load_tasks_with_questions_sorted_by_difficulty($quba, $module_instance);
 
 
         // Trigger course_module_viewed event and completion.
-        adleradaptivity_view($module_instance, $course, $cm, $module_context);  // TODO: is this actually required (as it looks like is is a requierd method in locallib.php)?
+        adleradaptivity_view($module_instance, $course, $cm, $module_context);
 
 
         // generating the output
@@ -71,26 +84,27 @@ class view_page {
     }
 
     private function setup_instance_variables(): void {
-        global $DB, $PAGE, $OUTPUT, $USER;
-        $this->db = $DB;
+        global $PAGE, $OUTPUT, $USER;
         $this->page = $PAGE;
         $this->output = $OUTPUT;
         $this->user = $USER;
 
-        $this->task_repository = new task_repository();
-        $this->question_repository = new question_repository();
+        $this->task_repository = new adleradaptivity_task_repository();
+        $this->question_repository = new adleradaptivity_question_repository();
         $this->adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
+        $this->moodle_core_repository = new moodle_core_repository();
+        $this->adleradaptivity_repository = new adleradaptivity_repository();
 
         $this->logger = new logger('mod_adleradaptivity', 'view_page.php');
     }
 
     /**
-     * Sorts the questions in the tasks by difficulty.
+     * Sorts questions within each task by difficulty.
      *
      * @param array $tasks The tasks to sort ($tasks[].questions[].difficulty).
      * @return array The sorted tasks.
      */
-    public static function sort_questions_in_tasks_by_difficulty(array $tasks): array {
+    private static function sort_questions_in_tasks_by_difficulty(array $tasks): array {
         $sorted_tasks = [];
         foreach ($tasks as $key => $task) {
             usort($task['questions'], function ($a, $b) {
@@ -103,23 +117,30 @@ class view_page {
     }
 
     /**
-     * Checks if the user has the necessary permissions to view the page with the given parameters.
+     * Checks if the user has the necessary permissions to view or edit the specified attempt.
      *
-     * // TODO documentation
+     * @param context $module_context Permission checks will be executed on that context
      * @param null|stdClass $adleradaptivity_attempt The adler attempt object (DB object), null if no attempt is specified.
      * @throws moodle_exception If the user does not have the necessary permissions.
      */
-    public function check_attempt_permissions(stdClass $course, stdClass $cm, context $module_context, null|stdClass $adleradaptivity_attempt): void {
+    private function check_attempt_permissions(context $module_context, null|stdClass $adleradaptivity_attempt): void {
         if ($this->is_user_accessing_his_own_attempt($adleradaptivity_attempt)) {
-            $this->logger->trace('No attempt id specified or specified attempt is the users own attempt -> user will use his own attempt');
+            $this->logger->trace('No attempt id specified or specified attempt is the users own attempt -> user will use his own attempt, adler attempt id:' . $adleradaptivity_attempt->id);
             require_capability('mod/adleradaptivity:create_and_edit_own_attempt', $module_context);
         } else {
-            $this->logger->info('User tries to open an attempt that is not his own, id:' . $adleradaptivity_attempt->attempt_id);
+            $this->logger->info('User tries to open an attempt that is not his own, adler attempt id:' . $adleradaptivity_attempt->id);
             require_capability('mod/adleradaptivity:view_and_edit_all_attempts', $module_context);
+            // TODO: this attempt might not be an attempt of this module -> check that
         }
     }
 
-    public function render_page($tasks, $quba, $cm, $course): void {
+    /**
+     * @param array $tasks The tasks and questions to display on the page.
+     * @param question_usage_by_activity $quba
+     * @param stdClass $cm course module (in moodle coursemodule form)
+     * @param stdClass $course The course (DB) object
+     */
+    private function render_page(array $tasks, question_usage_by_activity $quba, stdClass $cm, stdClass $course): void {
         $renderer = $this->page->get_renderer('mod_adleradaptivity', 'view');
 
         echo $this->output->header();
@@ -128,6 +149,8 @@ class view_page {
     }
 
     /**
+     * @param int $attempt_id The attempt id as specified in the request, -1 if no attempt id was provided
+     * @param stdClass $cm course module (in moodle form)
      * @return question_usage_by_activity
      * @throws dml_exception
      * @throws moodle_exception
@@ -135,51 +158,67 @@ class view_page {
     private function load_or_create_question_usage_by_attempt_id(int $attempt_id, stdClass $cm): question_usage_by_activity {
         // Load quiz attempt if attempt parameter is not -1, otherwise create new attempt
         if ($attempt_id === -1) {
+            $this->logger->trace('No attempt specified, loading existing attempt if exists or creating new one');
             $quba = helpers::load_or_create_question_usage($cm->id);
         } else {
             // Load the attempt
+            $this->logger->trace('Loading existing attempt. Attempt ID: ' . $attempt_id);
             $quba = question_engine::load_questions_usage_by_activity($attempt_id);
         }
         return $quba;
     }
 
     /**
-     * @return array
+     * @return array An array containing the processed attempt ID, course module, course, and module instance objects.
      * @throws coding_exception
      * @throws dml_exception
+     * @throws moodle_exception
      */
     private function process_request_parameters(): array {
         $cmid = optional_param('id', 0, PARAM_INT);
+        if ($cmid == 0) {
+            throw new moodle_exception('invalidcoursemodule', 'adleradaptivity');
+        }
 
         $attempt_id = optional_param('attempt', -1, PARAM_INT);
+        if ($attempt_id == 0) {
+            throw new moodle_exception('invalidattemptid', 'adleradaptivity');
+        }
 
         $cm = get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
-        $course = $this->db->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-        $module_instance = $this->db->get_record('adleradaptivity', array('id' => $cm->instance), '*', MUST_EXIST);
+        $course = $this->moodle_core_repository->get_course_by_course_id($cm->course);
+        $module_instance = $this->adleradaptivity_repository->get_instance_by_instance_id($cm->instance);
         return array($attempt_id, $cm, $course, $module_instance);
     }
 
     /**
-     * @param mixed $cm
-     * @param mixed $module_instance
-     * @param mixed $course
-     * @param bool|context\module $module_context
+     * @param stdClass $cm
+     * @param stdClass $module_instance adleradaptivity db object
+     * @param stdClass $course
+     * @param module $module_context
      * @return void
      * @throws coding_exception
      */
-    private function define_page_meta_information(mixed $cm, mixed $module_instance, mixed $course, bool|context\module $module_context): void {
+    private function define_page_meta_information(stdClass $cm, stdClass $module_instance, stdClass $course, module $module_context): void {
         $this->page->set_url('/mod/adleradaptivity/view.php', array('id' => $cm->id));
         $this->page->set_title(format_string($module_instance->name));
         $this->page->set_heading(format_string($course->fullname));
         $this->page->set_context($module_context);
     }
 
-    private function load_tasks_with_questions(question_usage_by_activity $quba, mixed $module_instance): array {
+    /**
+     * @param question_usage_by_activity $quba
+     * @param stdClass $module_instance adleradaptivity db object
+     * @return array
+     * @throws dml_exception
+     * @throws moodle_exception
+     */
+    private function load_tasks_with_questions(question_usage_by_activity $quba, stdClass $module_instance): array {
         $slots = $quba->get_slots();
 
         $tasks = [];  // This will be an array of tasks, each containing its questions
         foreach ($slots as $slot) {
-            $tasks = $this->insert_question_from_slot_into_tasks_array($quba, $slot, $module_instance, $tasks);
+            $this->insert_question_from_slot_into_tasks_array($quba, $slot, $module_instance, $tasks);
         }
         return $tasks;
     }
@@ -188,26 +227,25 @@ class view_page {
      * Load the tasks with their questions, questions are sorted by difficulty inside each task.
      *
      * @param question_usage_by_activity $quba
-     * @param mixed $module_instance
+     * @param stdClass $module_instance adleradaptivity db object
      * @return array
      * @throws dml_exception
      * @throws moodle_exception
      */
-    private function load_tasks_with_questions_sorted_by_difficulty(question_usage_by_activity $quba, mixed $module_instance): array {
+    private function load_tasks_with_questions_sorted_by_difficulty(question_usage_by_activity $quba, stdClass $module_instance): array {
         $tasks = $this->load_tasks_with_questions($quba, $module_instance);
         return view_page::sort_questions_in_tasks_by_difficulty($tasks);
     }
 
     /**
      * @param question_usage_by_activity $quba
-     * @param mixed $slot
-     * @param mixed $module_instance
-     * @param array $tasks
-     * @return array
+     * @param int $slot question bank "id"
+     * @param stdClass $module_instance adleradaptivity db object
+     * @param array $tasks The reference to the tasks array the question will be inserted into.
      * @throws dml_exception
      * @throws moodle_exception
      */
-    private function insert_question_from_slot_into_tasks_array(question_usage_by_activity $quba, mixed $slot, mixed $module_instance, array $tasks): array {
+    private function insert_question_from_slot_into_tasks_array(question_usage_by_activity $quba, int $slot, stdClass $module_instance, array &$tasks): void {
         $question = $quba->get_question($slot);
         $adaptivity_question = $this->question_repository->get_adleradaptivity_question_by_question_bank_entries_id($question->questionbankentryid);
         $task = $this->task_repository->get_task_by_question_uuid($question->idnumber, $module_instance->id);
@@ -225,28 +263,26 @@ class view_page {
             'slot' => $slot,
             'difficulty' => $adaptivity_question->difficulty
         ];
-        return $tasks;
     }
 
     /**
-     * @param stdClass|null $adleradaptivity_attempt
-     * @return bool
+     * @param stdClass|null $adleradaptivity_attempt db object
+     * @return bool True if accessing their own attempt, false otherwise.
      */
     private function is_user_accessing_his_own_attempt(?stdClass $adleradaptivity_attempt): bool {
         return $adleradaptivity_attempt === null || $adleradaptivity_attempt->user_id == $this->user->id;
     }
 
     /**
-     * @param mixed $course
-     * @param mixed $cm
-     * @param $module_context
-     * @return void
-     * @throws require_login_exception
-     * @throws required_capability_exception
+     * @param stdClass $course db object
+     * @param stdClass $cm moodle cm object
+     * @param module $module_context
      * @throws coding_exception
      * @throws moodle_exception
+     * @throws require_login_exception
+     * @throws required_capability_exception
      */
-    private function check_basic_permissions(mixed $course, mixed $cm, $module_context): void {
+    private function check_basic_permissions(stdClass $course, stdClass $cm, module $module_context): void {
         require_login($course, false, $cm);
         require_capability('mod/adleradaptivity:view', $module_context);
     }

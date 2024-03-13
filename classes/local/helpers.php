@@ -7,6 +7,7 @@ require_once($CFG->libdir . '/questionlib.php');
 use context_module;
 use dml_exception;
 use dml_missing_record_exception;
+use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use moodle_exception;
 use question_bank;
 use question_engine;
@@ -32,11 +33,11 @@ class helpers {
 
         // Create SQL to join adleradaptivity_attempts with question_usages based on context ID
         $sql = "
-        SELECT aa.*
-        FROM {adleradaptivity_attempts} AS aa
-        JOIN {question_usages} AS qu ON qu.id = aa.attempt_id
-        WHERE qu.contextid = ?
-    ";
+            SELECT aa.*
+            FROM {adleradaptivity_attempts} AS aa
+            JOIN {question_usages} AS qu ON qu.id = aa.attempt_id
+            WHERE qu.contextid = ?
+        ";
         return $DB->get_records_sql($sql, [$modulecontext->id]);
     }
 
@@ -79,7 +80,9 @@ class helpers {
                 $adleradaptivity_attempt = new stdClass();
                 $adleradaptivity_attempt->attempt_id = $attempt_id;
                 $adleradaptivity_attempt->user_id = $userid;
-                $DB->insert_record('adleradaptivity_attempts', $adleradaptivity_attempt);
+
+                $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
+                $adleradaptivity_attempt_repository->create_adleradaptivity_attempt($adleradaptivity_attempt);
                 break;
             case 1:
                 // One usage found, so load it.
@@ -245,64 +248,5 @@ class helpers {
             }
         }
         throw new moodle_exception('Question with uuid ' . $uuid . ' not found in question usage');
-    }
-
-    /**
-     * Get task by question uuid
-     *
-     * @param string $question_uuid The question uuid
-     * @param int $instance_id The instance id of the adleradaptivity activity
-     * @returns stdClass The task object
-     * @throws moodle_exception If the task could not be found or if there are multiple results.
-     */
-    public static function get_task_by_question_uuid(string $question_uuid, int $instance_id): stdClass {
-        global $DB;
-
-        // uuid is stored in question_bank_entries table.
-        // connection to adleradaptivity_questions over question_references
-        // quesiton_references need additional filtering for entries of this module.
-        // filter for questionarea is currently not really neaded as this feature is not used here.
-        // version has to be 1 as quesiton versioning is not supported by this module.
-        $sql = "
-            SELECT t.*
-            FROM {question_bank_entries} qbe
-            JOIN {question_references} qr ON qbe.id = qr.questionbankentryid
-            JOIN {adleradaptivity_questions} aq ON qr.itemid = aq.id
-            JOIN {adleradaptivity_tasks} t ON aq.adleradaptivity_task_id = t.id
-            
-            WHERE qr.component = 'mod_adleradaptivity'
-            AND qr.questionarea = 'question'
-            AND qr.version = 1
-            AND qbe.idnumber = :question_uuid
-            AND t.adleradaptivity_id = :instance_id;
-        ";
-
-        $task = $DB->get_record_sql(
-            $sql,
-            ['question_uuid' => $question_uuid, 'instance_id' => $instance_id],
-            MUST_EXIST
-        );
-
-        return $task;
-    }
-
-    /**
-     * Get adleradaptivity question by question_bank_entries_id
-     *
-     * @param int $question_bank_entries_id
-     * @return stdClass question object
-     * @throws dml_exception
-     */
-    public static function get_adleradaptivity_question_by_question_bank_entries_id(int $question_bank_entries_id) {
-        global $DB;
-
-        $sql = "
-            SELECT aq.*
-            FROM {adleradaptivity_questions} aq
-            JOIN {question_references} qr ON qr.itemid = aq.id
-            WHERE qr.questionbankentryid = ?
-        ";
-
-        return $DB->get_record_sql($sql, ['questionbankentryid' => $question_bank_entries_id], MUST_EXIST);
     }
 }

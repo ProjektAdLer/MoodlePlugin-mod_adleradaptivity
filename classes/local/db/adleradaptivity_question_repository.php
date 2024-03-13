@@ -6,18 +6,7 @@ use dml_exception;
 use moodle_database;
 use stdClass;
 
-class question_repository {
-    private moodle_database $db;
-
-    public function __construct($db = null) {
-        if (is_null($db)) {
-            global $DB;
-            $this->db = $DB;
-        } else {
-            $this->db = $db;
-        }
-    }
-
+class adleradaptivity_question_repository extends base_repository {
     /**
      * Get adleradaptivity question by question_bank_entries_id
      *

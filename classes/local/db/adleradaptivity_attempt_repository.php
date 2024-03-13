@@ -6,18 +6,7 @@ use dml_exception;
 use moodle_database;
 use stdClass;
 
-class adleradaptivity_attempt_repository {
-    private moodle_database $db;
-
-    public function __construct($db = null) {
-        if (is_null($db)) {
-            global $DB;
-            $this->db = $DB;
-        } else {
-            $this->db = $db;
-        }
-    }
-
+class adleradaptivity_attempt_repository extends base_repository {
     /**
      * Get adleradaptivity attempt by moodle attempt / quba id
      *

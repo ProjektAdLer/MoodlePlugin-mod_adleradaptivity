@@ -6,18 +6,7 @@ use moodle_database;
 use moodle_exception;
 use stdClass;
 
-class task_repository {
-    private moodle_database $db;
-
-    public function __construct($db = null) {
-        if (is_null($db)) {
-            global $DB;
-            $this->db = $DB;
-        } else {
-            $this->db = $db;
-        }
-    }
-
+class adleradaptivity_task_repository extends base_repository {
     /**
      * Get task by question uuid
      *

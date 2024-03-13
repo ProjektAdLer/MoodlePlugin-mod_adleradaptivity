@@ -3,6 +3,7 @@
 namespace mod_adleradaptivity\local\output\pages;
 
 use mod_adleradaptivity\lib\adler_testcase;
+use ReflectionClass;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php');
@@ -34,7 +35,12 @@ class view_test extends adler_testcase {
             ]
         ];
 
-        $sorted_tasks = view_page::sort_questions_in_tasks_by_difficulty($tasks);
+        // Make the method to test accessible
+        $reflection = new ReflectionClass(view_page::class);
+        $method = $reflection->getMethod('sort_questions_in_tasks_by_difficulty');
+        $method->setAccessible(true);
+        // Invoke the method and store the result
+        $sorted_tasks = $method->invoke(null, $tasks);
 
         // verify response
         $this->assertEquals(0, $sorted_tasks[1]['questions'][0]['difficulty'], 'Not sorted correctly');
