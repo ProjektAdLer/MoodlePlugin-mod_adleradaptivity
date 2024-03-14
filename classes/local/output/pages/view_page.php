@@ -12,6 +12,7 @@ use context_module;
 use core\context;
 use core\context\module;
 use dml_exception;
+use invalid_parameter_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
 use mod_adleradaptivity\local\db\moodle_core_repository;
@@ -130,7 +131,6 @@ class view_page {
         } else {
             $this->logger->info('User tries to open an attempt that is not his own, adler attempt id:' . $adleradaptivity_attempt->id);
             require_capability('mod/adleradaptivity:view_and_edit_all_attempts', $module_context);
-            // TODO: this attempt might not be an attempt of this module -> check that
         }
     }
 
@@ -163,7 +163,12 @@ class view_page {
         } else {
             // Load the attempt
             $this->logger->trace('Loading existing attempt. Attempt ID: ' . $attempt_id);
-            $quba = question_engine::load_questions_usage_by_activity($attempt_id);
+            if ($cm->id == helpers::get_cmid_for_question_usage($attempt_id)) {
+                // can only happen if attempt id was specified, otherwise only a valid one will be loaded
+                $quba = question_engine::load_questions_usage_by_activity($attempt_id);
+            } else {
+                throw new invalid_parameter_exception('Specified attempt is not for this cm. Attempt ID: ' . $attempt_id);
+            }
         }
         return $quba;
     }
