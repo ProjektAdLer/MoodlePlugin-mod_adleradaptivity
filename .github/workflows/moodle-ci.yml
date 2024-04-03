@@ -134,20 +134,17 @@ jobs:
       - name: PHPUnit tests
         if: ${{ always() }}
         run: |
+          # "pending completion" coveralls issue also appeared directly using phpunit command
           moodle-plugin-ci phpunit --fail-on-warning --coverage-clover --testdox --coverage-pcov --coverage-text -vvv
 
       - name: Coveralls upload
         continue-on-error: true
         env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         if: ${{ matrix.php == '8.1' && matrix.moodle-branch == 'MOODLE_401_STABLE' && matrix.database == 'mariadb' }}
         run: |
-          cd moodle
-          composer require --dev php-coveralls/php-coveralls
-          cd mod/adleradaptivity
-          # workaround for https://github.com/php-coveralls/php-coveralls/issues/358
-          unset GITHUB_ACTIONS  
-          php ../../vendor/bin/php-coveralls --coverage_clover=coverage.xml -v --json_path coveralls_upload.json --exclude-no-stmt
+          # "pending completion" coveralls issue also appeared directly using php-coveralls
+          moodle-plugin-ci coveralls-upload
 
       - name: Behat features
         if: ${{ always() }}
