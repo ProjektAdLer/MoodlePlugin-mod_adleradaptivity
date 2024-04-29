@@ -50,9 +50,18 @@ class behat_mod_adleradaptivity extends behat_question_base {
                     '/mod/adleradaptivity/view.php',
                     ['id' => $this->get_cm_by_adleradaptivity_name($identifier)->id]
                 );
+            case 'index':
+                return new moodle_url('/mod/adleradaptivity/index.php',
+                    ['id' => $this->get_course_by_course_name($identifier)->id]
+                );
             default:
                 throw new Exception('Unrecognised quiz page type "' . $type . '."');
         }
+    }
+
+    protected function get_course_by_course_name(string $course_name)  {
+        global $DB;
+        return $DB->get_record('course', ['fullname' => $course_name], '*', MUST_EXIST);
     }
 
     /**
@@ -67,7 +76,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
     }
 
     /**
-     * Get a quiz cm from the quiz name.
+     * Get an adleradaptivity cm from the adleradaptivity name.
      *
      * @param string $name quiz name.
      * @return stdClass cm from get_coursemodule_from_instance.
@@ -78,9 +87,40 @@ class behat_mod_adleradaptivity extends behat_question_base {
     }
 
     /**
+     * Checks, that current page PATH matches regular expression
+     * Example: Then the url should match "superman is dead"
+     * Example: Then the uri should match "log in"
+     * Example: And the url should match "log in"
+     *
+     * Taken from MinkExtension
+     *
+     * @Then /^the (?i)url(?-i) should match (?P<pattern>"(?:[^"]|\\")*")$/
+     */
+    public function assertUrlRegExp($pattern)
+    {
+        $this->assertSession()->addressMatches($this->fixStepArgument($pattern));
+    }
+
+    /**
+     * Returns fixed step argument (with \\" replaced back to ")
+     *
+     * Taken from MinkExtension
+     *
+     * @param string $argument
+     *
+     * @return string
+     */
+    protected function fixStepArgument($argument)
+    {
+        return str_replace('\\"', '"', $argument);
+    }
+
+    /**
      * Checks, that element with specified CSS exists on page
      * Example: Then I should see a "body" element
      * Example: And I should see a "body" element
+     *
+     * Taken from MinkExtension
      *
      * @Then /^(?:|I )should see an? "(?P<element>[^"]*)" element$/
      */
@@ -91,6 +131,8 @@ class behat_mod_adleradaptivity extends behat_question_base {
     /**
      * Checks, that element with specified CSS does not exist on page
      * Example: Then I should not see a "body" element
+     *
+     * Taken from MinkExtension
      *
      * @Then /^(?:|I )should not see an? "(?P<element>[^"]*)" element$/
      */
@@ -106,19 +148,6 @@ class behat_mod_adleradaptivity extends behat_question_base {
      */
     public function assertNumElementsOnPage($num, $element) {
         $this->assertSession()->elementsCount('css', $element, $num);
-    }
-
-    /**
-     * Submits a given question with a specified outcome (correctness).
-     *
-     * @param string $questionname the name of the question to submit.
-     * @param string $outcome the outcome of the question. Allowed values are 'correct' and 'incorrect'.
-     *
-     * @When /^I submit question "([^"]*)" with an? "([^"]*)" answer$/
-     */
-    public function i_submit_question_with_an_answer(string $questionname, string $outcome) {
-//        TODO implement
-
     }
 
     /**
@@ -177,26 +206,6 @@ class behat_mod_adleradaptivity extends behat_question_base {
         question_engine::save_questions_usage_by_activity($quba);
         // Update completion state
         answer_questions::update_module_completion($module);
-
-
-        return;
-//        ----------------
-
-
-        $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
-        $user = $DB->get_record('user', ['username' => $username], '*', MUST_EXIST);
-
-        $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
-
-        foreach ($data->getHash() as $questiondata) {
-            $question = $DB->get_record('question', ['name' => $questiondata['question_name']], '*', MUST_EXIST);
-            $adleradaptivity_question = $DB->get_record('adleradaptivity_questions', ['questionid' => $question->id], '*', MUST_EXIST);
-
-            $adleradaptivity_generator->create_mod_adleradaptivity_attempt($adleradaptivity_cm->instance, $user->id, [
-                'questionid' => $adleradaptivity_question->id,
-                'correct' => $questiondata['correct'] === 'yes',
-            ]);
-        }
     }
 
     /**
