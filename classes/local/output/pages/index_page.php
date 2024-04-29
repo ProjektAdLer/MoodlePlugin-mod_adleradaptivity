@@ -2,7 +2,7 @@
 
 namespace mod_adleradaptivity\local\output\pages;
 
-global $CFG;
+global $CFG;  // TODO remove and maybe require_once('../../config.php'); also
 
 use bootstrap_renderer;
 use coding_exception;
@@ -40,7 +40,6 @@ use mod_adleradaptivity\local\helpers;
 class index_page {
     private moodle_page $page;
     private bootstrap_renderer $output;
-    private logger $logger;
 
     /**
      * Constructs and completely renders the page
@@ -74,8 +73,6 @@ class index_page {
         global $PAGE, $OUTPUT;
         $this->page = $PAGE;
         $this->output = $OUTPUT;
-
-        $this->logger = new logger('mod_adleradaptivity', 'index_page.php');
     }
 
     /**
@@ -84,57 +81,11 @@ class index_page {
      * @throws moodle_exception
      */
     private function render_page(stdClass $course): void {
+        $renderer = $this->page->get_renderer('mod_adleradaptivity', 'index');
+
         echo $this->output->header();
-        echo $this->output->heading(get_string('modulenameplural', 'adleradaptivity'), 2);
-
-        // Get all the appropriate data.
-        if (!$adleradaptivitys = get_all_instances_in_course('adleradaptivity', $course)) {
-            notice(get_string('thereareno', 'moodle', get_string('modulenameplural', 'adleradaptivity')), "../../course/view.php?id=$course->id");
-            die;
-        }
-
-        // Configure table for displaying the list of instances.
-        $headings = [];
-        $align = [];
-
-        if (course_format_uses_sections($course->format)) {
-            $headings[] = get_string('sectionname', 'format_' . $course->format);
-            $align[] = 'left';
-        }
-
-        $headings[] = get_string('name');
-        $align[] = 'left';
-
-        $table = new html_table();
-        $table->head = $headings;
-        $table->align = $align;
-
-        // Populate the table with the list of instances.
-        foreach ($adleradaptivitys as $adleradaptivity) {
-            $row = new html_table_row();
-
-            if (course_format_uses_sections($course->format)) {
-                $row->cells[] = get_section_name($course, $adleradaptivity->section);
-            }
-
-            $row->cells[] = html_writer::link(
-                new moodle_url('/mod/adleradaptivity/view.php', ['id' => $adleradaptivity->coursemodule]),
-                format_string($adleradaptivity->name)
-            );
-
-            $table->data[] = $row;
-        }
-
-        // Display the table.
-        echo html_writer::table($table);
-
+        echo $renderer->render_page($course);
         echo $this->output->footer();
-
-//        $renderer = $this->page->get_renderer('mod_adleradaptivity', 'view');
-//
-//        echo $this->output->header();
-//        echo $renderer->render_module_view_page($tasks, $quba, $cm, $course);
-//        echo $this->output->footer();
     }
 
     /**

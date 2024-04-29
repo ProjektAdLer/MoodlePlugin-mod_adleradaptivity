@@ -1,0 +1,26 @@
+{{! This is the Mustache template for the index page }}
+
+<h2>{{ module_name_plural }}</h2>
+
+
+<table class="generaltable">
+    <thead>
+    <tr>
+        {{#course_format_uses_sections}}
+            <th>{{ column_title_section }}</th>
+        {{/course_format_uses_sections}}
+        <th>{{ column_title_activity_name }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#adleradaptivities}}
+        <tr>
+            {{#course_format_uses_sections}}
+                <td>{{ section }}</td>
+            {{/course_format_uses_sections}}
+            <td><a href="{{ coursemodule_url }}">{{ coursemodule_name }}</a></td>
+        </tr>
+
+    {{/adleradaptivities}}
+    </tbody>
+</table>
