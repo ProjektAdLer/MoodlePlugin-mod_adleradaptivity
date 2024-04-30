@@ -2,8 +2,6 @@
 
 namespace mod_adleradaptivity\local\output\pages;
 
-global $CFG;  // TODO remove and maybe require_once('../../config.php'); also
-
 use bootstrap_renderer;
 use coding_exception;
 use context_course;
@@ -89,7 +87,7 @@ class index_page {
     }
 
     /**
-     * @return array An array containing the processed attempt ID, course module, course, and module instance objects.
+     * @return array An array containing the course object.
      * @throws coding_exception
      * @throws dml_exception
      */
