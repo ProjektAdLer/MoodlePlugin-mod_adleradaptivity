@@ -34,7 +34,6 @@ Feature: View an adleradaptivity
   Scenario: Display module without any attempts
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
     Then I should see a ".behat_module-failure" element
-    # todo: implement the class stuff for tasks (get_task_status_message_translation_key)
     And I should see "1" ".behat_task-not-attempted" element
     And I should see "1" ".behat_task-optional-not-attempted" element
     And I should not see ".behat_question-status-success"
@@ -51,7 +50,6 @@ Feature: View an adleradaptivity
     And I should see "1" ".behat_task-incorrect" element
     And I should see "1" ".behat_task-optional-incorrect" element
 
-  @javascript
   Scenario: Display attempt sufficient to complete the module
     Given user "student" has attempted "Adler Activity 1" with results:
       | question_name | answer  |
@@ -63,3 +61,18 @@ Feature: View an adleradaptivity
     And I should not see a ".behat_task-optional-incorrect" element
     And I should not see a ".behat_task-optional-not-attempted" element
     And I should see a ".behat_task-correct" element
+
+  Scenario: Display module with a question that has multiple references to it (in another module)
+    Given the following "activities" exist:
+      | activity        | name             | intro                  | course | completion |
+      | adleradaptivity | Adler Activity 2 | Adler Activity 2 Intro | C1     | 2          |
+    And adleradaptivity "Adler Activity 2" contains the following tasks:
+      | title   | required_difficulty |
+      | Task2_1 | 100                 |
+    And the following adleradaptivity questions are added:
+      | task_title | question_category | question_name | difficulty |
+      | Task2_1    | Test questions    | Q1            | 0          |
+    When I am on the "Adler Activity 2" "mod_adleradaptivity > View" page logged in as "student"
+    Then I should see a ".behat_module-failure" element
+    And I should see "1" ".behat_task-not-attempted" element
+    And I should not see ".behat_question-status-success"

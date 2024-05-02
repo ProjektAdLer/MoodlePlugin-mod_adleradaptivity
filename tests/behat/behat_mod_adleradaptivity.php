@@ -244,6 +244,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
 
     /**
      * Create adler questions for the specified adleradaptivity task.
+     * If a question with the same name already exists it will be reused (resulting in multiple references to the same moodle question)
      *
      * The first row has to be column names:
      * | task_title | question_category | question_name | difficulty | singlechoice | questiontext |
@@ -283,14 +284,18 @@ class behat_mod_adleradaptivity extends behat_question_base {
                 'difficulty' => $questiondata['difficulty'] ?? 100,
             ]);
 
-            // create moodle question
-            $question = $adleradaptivity_generator->create_moodle_question(
-                $qcat->id,
-                $questiondata['singlechoice'] ?? false,
-                $questiondata['question_name'],
-                $questiondata['uuid'] ?? $questiondata['question_name'],
-                $questiondata['question_name'] ?? null
-            );
+            // load or create question by name
+            $question = $this->get_question_by_name($questiondata['question_name']);
+            if($question === null) {
+                // create moodle question
+                $question = $adleradaptivity_generator->create_moodle_question(
+                    $qcat->id,
+                    $questiondata['singlechoice'] ?? false,
+                    $questiondata['question_name'],
+                    $questiondata['uuid'] ?? $questiondata['question_name'],
+                    $questiondata['question_name'] ?? null
+                );
+            }
 
             // create question reference
             $adleradaptivity_generator->create_question_reference(
@@ -300,6 +305,28 @@ class behat_mod_adleradaptivity extends behat_question_base {
             );
         }
         echo "Created question: ";
+    }
+
+    private function get_question_by_name(string $question_name) {
+        global $DB;
+
+        $question_id = $DB->get_field('question', 'id', ['name' => $question_name]);
+
+        // If the question id is not found, return null.
+        if ($question_id === false) {
+            return null;
+        }
+
+        // Load the question data.
+        $question_data = question_bank::load_question_data((int)$question_id);
+
+        // If the question data is empty, return null.
+        if (empty($question_data)) {
+            return null;
+        }
+
+        // Return the first (and only) question object.
+        return $question_data;
     }
 
 //    ATM not required by this plugin
