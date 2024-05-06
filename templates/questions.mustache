@@ -1,3 +1,26 @@
+{{! @template
+{
+  "module_completed": false,
+  "is_behat_mode": false,
+  "tasks": [
+    {
+      "title": "Task 1",
+      "optional": false,
+      "difficulty": "Medium",
+      "status_success": false,
+      "status_behat_class": "behat_status-failure",
+      "status_message": "Task not completed",
+      "questions": [
+        {
+          "status_best_try": false,
+          "content": "Question 1 content"
+        }
+      ]
+    }
+  ]
+}
+}}
+
 <div class="mod_adleradaptivity_questions">
     <!-- Module completion messages -->
     {{#module_completed}}
