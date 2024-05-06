@@ -30,7 +30,8 @@ class completion_helpers {
      * Check if task is completed.
      *
      * @param question_usage_by_activity $quba The question usage object.
-     * @param stdClass $task The task object.
+     * @param string $task_id The task ID.
+     * @param string|null $task_required_difficulty Required difficulty of the task
      *
      * @return string One of the following possible result values:
      *  - TASK_STATUS_CORRECT
@@ -41,12 +42,12 @@ class completion_helpers {
      *
      * @throws moodle_exception
      */
-    public static function check_task_status(question_usage_by_activity $quba, stdClass $task): string {
+    public static function check_task_status(question_usage_by_activity $quba, string $task_id, string|null $task_required_difficulty): string {
         $success = false;
         $attempted = false;
-        $optional = $task->required_difficulty == null;
+        $optional = $task_required_difficulty == null;
 
-        foreach (helpers::load_questions_by_task_id($task->id) as $question) {
+        foreach (helpers::load_questions_by_task_id($task_id) as $question) {
             // get slot of question
             foreach ($quba->get_slots() as $slot) {
                 if ($quba->get_question($slot)->id == $question->questionid) {
@@ -72,7 +73,7 @@ class completion_helpers {
 
             // if question was answered correctly and question difficulty is equal or above required_difficulty, set task_success to true
             // $is_correct can't be null here anymore, just true and false are left
-            if ($is_correct && $question->difficulty >= $task->required_difficulty) {
+            if ($is_correct && $question->difficulty >= $task_required_difficulty) {
                 $success = true;
             }
         }

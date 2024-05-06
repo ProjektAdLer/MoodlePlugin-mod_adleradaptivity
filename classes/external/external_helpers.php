@@ -25,7 +25,7 @@ class external_helpers {
      * @throws moodle_exception
      */
     public static function generate_task_response_data(question_usage_by_activity $quba, stdClass $task): object {
-        $status = completion_helpers::check_task_status($quba, $task);
+        $status = completion_helpers::check_task_status($quba, $task->id, $task->required_difficulty);
         return (object)[
             'uuid' => $task->uuid,
             'status' => match ($status) {
