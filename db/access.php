@@ -14,8 +14,7 @@ $capabilities = [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
+//            nobody is allowed to add the module as adding is not supported in moodle
         ],
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ],
@@ -30,15 +29,24 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
-    'mod/adleradaptivity:edit' => [
+    'mod/adleradaptivity:create_and_edit_own_attempt' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => [
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
         ],
     ],
-    'mod/adleradaptivity:edit_all_attempts' => [
+    'mod/adleradaptivity:edit' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+//            nobody is allowed to edit the module as editing is not supported in moodle
+        ],
+    ],
+    'mod/adleradaptivity:view_and_edit_all_attempts' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,

@@ -26,7 +26,7 @@ $functions = array(
         'type' => 'write',
         'ajax' => false,
         'services' => array('adler_services'),
-        'capabilities' => 'mod/adleradaptivity:view',
+        'capabilities' => 'mod/adleradaptivity:edit',
         'loginrequired' => true
     ),
 );
