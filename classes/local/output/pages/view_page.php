@@ -15,7 +15,6 @@ use dml_exception;
 use invalid_parameter_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
-use mod_adleradaptivity\local\db\moodle_core_repository;
 use moodle_exception;
 use moodle_page;
 use question_engine;
@@ -41,7 +40,6 @@ class view_page {
     private adleradaptivity_question_repository $question_repository;
     private adleradaptivity_attempt_repository $adleradaptivity_attempt_repository;
     private adleradaptivity_repository $adleradaptivity_repository;
-    private moodle_core_repository $moodle_core_repository;
     private logger $logger;
 
     /**
@@ -93,7 +91,6 @@ class view_page {
         $this->task_repository = new adleradaptivity_task_repository();
         $this->question_repository = new adleradaptivity_question_repository();
         $this->adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
-        $this->moodle_core_repository = new moodle_core_repository();
         $this->adleradaptivity_repository = new adleradaptivity_repository();
 
         $this->logger = new logger('mod_adleradaptivity', 'view_page.php');
@@ -191,7 +188,7 @@ class view_page {
         }
 
         $cm = get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
-        $course = $this->moodle_core_repository->get_course_by_course_id($cm->course);
+        $course = get_course($cm->course);
         $module_instance = $this->adleradaptivity_repository->get_instance_by_instance_id($cm->instance);
         return array($attempt_id, $cm, $course, $module_instance);
     }
