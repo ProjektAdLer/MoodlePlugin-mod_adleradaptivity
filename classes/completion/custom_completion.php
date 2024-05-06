@@ -41,7 +41,7 @@ class custom_completion extends activity_custom_completion {
 
         // check if all tasks are completed
         foreach ($tasks as $task) {
-            $task_status = completion_helpers::check_task_status($quba, $task);
+            $task_status = completion_helpers::check_task_status($quba, $task->id, $task->required_difficulty);
             if (in_array($task_status, [completion_helpers::STATUS_NOT_ATTEMPTED, completion_helpers::STATUS_INCORRECT])) {
                 // the other states TASK_STATUS_CORRECT, TASK_STATUS_OPTIONAL_NOT_ATTEMPTED and TASK_STATUS_OPTIONAL_INCORRECT are considered as completed in this context
                 return false;

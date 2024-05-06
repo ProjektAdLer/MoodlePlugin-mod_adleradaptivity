@@ -9,7 +9,6 @@ use moodle_exception;
 use question_answer;
 use question_attempt;
 use question_usage_by_activity;
-use stdClass;
 
 class completion_helpers {
 
@@ -61,7 +60,7 @@ class completion_helpers {
 
             // check whether question was answered (correctly)
             $question_attempt = $quba->get_question_attempt($slot_of_question);
-            $is_correct = self::check_question_last_answer_correct($question_attempt);
+            $is_correct = self::check_question_answered_correctly_once($question_attempt);
 
             if ($is_correct !== null) {
                 // if one question was answered at all, set the task to attempted
