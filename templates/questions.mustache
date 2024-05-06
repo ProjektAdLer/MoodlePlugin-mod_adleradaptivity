@@ -1,0 +1,51 @@
+<div class="mod_adleradaptivity_questions">
+    <!-- Module completion messages -->
+    {{#module_completed}}
+        <div class="alert alert-success {{#is_behat_mode}}behat_module-success{{/is_behat_mode}}" role="alert">
+            ✅ {{#str}}view_module_completed_success, mod_adleradaptivity{{/str}}
+        </div>
+    {{/module_completed}}
+    {{^module_completed}}
+        <div class="alert alert-warning {{#is_behat_mode}}behat_module-failure{{/is_behat_mode}}" role="alert">
+            ❌ {{#str}}view_module_completed_no, mod_adleradaptivity{{/str}}
+        </div>
+    {{/module_completed}}
+
+    <!-- Tasks -->
+    {{#tasks}}
+        <div class="task">
+            <hr />
+            <h3>{{#str}}view_task_title, mod_adleradaptivity{{/str}}: {{title}}</h3>
+            {{#optional}}
+                <p><em>{{#str}}view_task_optional, mod_adleradaptivity{{/str}}</em></p>
+            {{/optional}}
+            {{^optional}}
+                <p>{{#str}}view_task_required_difficulty, mod_adleradaptivity{{/str}}: <strong>{{difficulty}}</strong></p>
+            {{/optional}}
+
+            <!-- Task Status Handling -->
+            {{#status_success}}
+                <p class="{{#is_behat_mode}}{{{status_behat_class}}}{{/is_behat_mode}}">✅ {{{status_message}}}</p>
+            {{/status_success}}
+            {{^status_success}}
+                <div class="alert alert-warning {{#is_behat_mode}}{{{status_behat_class}}}{{/is_behat_mode}}" role="alert">
+                    ❌ {{{status_message}}}
+                </div>
+            {{/status_success}}
+
+            <!-- Questions -->
+            <div class="questions">
+                {{#questions}}
+                    <div class="question">
+                        <hr />
+<!--                        TODO: class always, not behat exclusive-->
+                        {{#status_best_try}}
+                            <p class="{{#is_behat_mode}}behat_question-status-success{{/is_behat_mode}}">✅ {{#str}}view_question_success, mod_adleradaptivity{{/str}}</p>
+                        {{/status_best_try}}
+                        <div class="question-content">{{{content}}}</div>
+                    </div>
+                {{/questions}}
+            </div>
+        </div>
+    {{/tasks}}
+</div>

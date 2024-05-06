@@ -41,6 +41,35 @@ class helpers {
         return $DB->get_records_sql($sql, [$modulecontext->id]);
     }
 
+    /**
+     * Retrieves the course module ID (cmid) for a given question usage ID.
+     *
+     * @param int $quid The ID of the question usage.
+     * @return int The course module ID (cmid) associated with the question usage.
+     * @throws dml_exception If there's an error with the database query.
+     * @throws dml_missing_record_exception If the expected records are not found.
+     */
+    public static function get_cmid_for_question_usage($quid) {
+        global $DB;
+
+        // First, retrieve the contextid from the question_usages table using the question usage ID
+        $contextid = $DB->get_field('question_usages', 'contextid', ['id' => $quid], MUST_EXIST);
+
+        if (!$contextid) {
+            throw new dml_missing_record_exception('context not found for the provided question usage ID');
+        }
+
+        // Now, use the contextid to find the corresponding cmid in the context table
+        // Note: CONTEXT_MODULE is a constant equal to 80, representing the context level for course modules in Moodle.
+        $cmid = $DB->get_field_select('context', 'instanceid', "contextlevel = ? AND id = ?", [CONTEXT_MODULE, $contextid]);
+
+        if (!$cmid) {
+            throw new dml_missing_record_exception('course module (cmid) not found for the provided context ID');
+        }
+
+        return $cmid;
+    }
+
     /** Gets the attempt object (question usage aka $quba) for the given cm and given user.
      * If there is no attempt object for the given cm and user, a new attempt object is created.
      * If there is more than one attempt object for the given cm and user, an exception is thrown.

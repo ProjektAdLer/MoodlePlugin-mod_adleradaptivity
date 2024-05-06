@@ -70,7 +70,7 @@ class view_page {
         $this->check_attempt_permissions($module_context, $adleradaptivity_attempt);
 
         // continue setting up variables
-        $tasks = $this->load_tasks_with_questions_sorted_by_difficulty($quba, $module_instance);
+        $tasks = $this->load_tasks_with_questions_sorted_by_difficulty($quba, $module_instance, $module_context);
 
 
         // Trigger course_module_viewed event and completion.
@@ -215,12 +215,12 @@ class view_page {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    private function load_tasks_with_questions(question_usage_by_activity $quba, stdClass $module_instance): array {
+    private function load_tasks_with_questions(question_usage_by_activity $quba, stdClass $module_instance, context_module $module_context): array {
         $slots = $quba->get_slots();
 
         $tasks = [];  // This will be an array of tasks, each containing its questions
         foreach ($slots as $slot) {
-            $this->insert_question_from_slot_into_tasks_array($quba, $slot, $module_instance, $tasks);
+            $this->insert_question_from_slot_into_tasks_array($quba, $slot, $module_instance, $tasks, $module_context);
         }
         return $tasks;
     }
@@ -234,8 +234,8 @@ class view_page {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    private function load_tasks_with_questions_sorted_by_difficulty(question_usage_by_activity $quba, stdClass $module_instance): array {
-        $tasks = $this->load_tasks_with_questions($quba, $module_instance);
+    private function load_tasks_with_questions_sorted_by_difficulty(question_usage_by_activity $quba, stdClass $module_instance, context_module $module_context): array {
+        $tasks = $this->load_tasks_with_questions($quba, $module_instance, $module_context);
         return view_page::sort_questions_in_tasks_by_difficulty($tasks);
     }
 
@@ -247,9 +247,9 @@ class view_page {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    private function insert_question_from_slot_into_tasks_array(question_usage_by_activity $quba, int $slot, stdClass $module_instance, array &$tasks): void {
+    private function insert_question_from_slot_into_tasks_array(question_usage_by_activity $quba, int $slot, stdClass $module_instance, array &$tasks, context_module $module_context): void {
         $question = $quba->get_question($slot);
-        $adaptivity_question = $this->question_repository->get_adleradaptivity_question_by_question_bank_entries_id($question->questionbankentryid);
+        $adaptivity_question = $this->question_repository->get_adleradaptivity_question_by_question_bank_entries_id($question->questionbankentryid, $module_context);
         $task = $this->task_repository->get_task_by_question_uuid($question->idnumber, $module_instance->id);
 
         if (!isset($tasks[$task->id])) {

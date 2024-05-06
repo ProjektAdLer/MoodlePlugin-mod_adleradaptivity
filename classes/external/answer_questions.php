@@ -18,6 +18,7 @@ use external_single_structure;
 use external_value;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\completion_helpers;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
 use mod_adleradaptivity\moodle_core;
 use moodle_database;
@@ -124,7 +125,10 @@ class answer_questions extends external_api {
         $params = self::validate_parameters(self::execute_parameters(), ['module' => $module, 'questions' => $questions]);
         $module = external_helpers::validate_module_params_and_get_module($params['module']);
         $context = context_module::instance($module->id);
+
+        // permission checks
         static::validate_context($context);
+        require_capability('mod/adleradaptivity:create_and_edit_own_attempt', $context);
 
         $questions = self::validate_and_enhance_questions($questions, $module->instance);
 
@@ -157,9 +161,10 @@ class answer_questions extends external_api {
      * @throws invalid_parameter_exception If a question does not exist.
      */
     protected static function validate_and_enhance_questions(array $questions, string $instance_id): array {
+        $task_repository = new adleradaptivity_task_repository();
         foreach ($questions as $key => $question) {
             try {
-                $task = helpers::get_task_by_question_uuid($question['uuid'], $instance_id);
+                $task = $task_repository->get_task_by_question_uuid($question['uuid'], $instance_id);
                 $questions[$key]['task'] = $task;
             } catch (moodle_exception $e) {
                 throw new invalid_parameter_exception('Question with uuid ' . $question['uuid'] . ' does not exist.');
@@ -168,6 +173,7 @@ class answer_questions extends external_api {
         return $questions;
     }
 
+    // TODO: move somewhere else, it is now not only used by this external class, but also in a moodle view
     /**
      * Determines the completion status of the module.
      * This is the completion state of the module, saved in the database and not with the currently submitted answers.
@@ -176,7 +182,7 @@ class answer_questions extends external_api {
      * @param stdClass $module Moodle module instance.
      * @return string Completion status.
      */
-    protected static function determine_module_completion_status(completion_info $completion, stdClass $module): string {
+    public static function determine_module_completion_status(completion_info $completion, stdClass $module): string {
         $completionState = $completion->get_data($module)->completionstate;
         return ($completionState == COMPLETION_COMPLETE || $completionState == COMPLETION_COMPLETE_PASS)
             ? completion_helpers::STATUS_CORRECT
@@ -303,7 +309,7 @@ class answer_questions extends external_api {
 
         // start processing the questions
         foreach ($questions as $key => $question) {
-            self::process_individual_question($question, $time_at_request_start, $quba);
+            self::process_single_question($question, $time_at_request_start, $quba);
         }
 
         // save current questions usage
@@ -321,12 +327,12 @@ class answer_questions extends external_api {
     /**
      * Processes an individual question.
      *
-     * @param array $question Question data.
+     * @param array $question Question data containing: uuid, answer (json encoded array of booleans)
      * @param int $time_at_request_start Timestamp at the start of the request.
      * @param question_usage_by_activity $quba Question usage by activity object.
      * @throws invalid_parameter_exception If an unsupported question type is encountered.
      */
-    private static function process_individual_question(array &$question, int $time_at_request_start, question_usage_by_activity $quba) {
+    public static function process_single_question(array $question, int $time_at_request_start, question_usage_by_activity $quba) {
         $question['question_object'] = $quba->get_question(helpers::get_slot_number_by_uuid($question['uuid'], $quba));
         $question_type_class = get_class($question['question_object']->qtype);
 
@@ -357,12 +363,12 @@ class answer_questions extends external_api {
      * @return completion_info Completion information after update.
      * @throws moodle_exception If completion is not enabled for the module.
      */
-    private static function update_module_completion(stdClass $module): completion_info {
+    public static function update_module_completion(stdClass $module, int $user_id = 0): completion_info {
         $course = moodle_core::get_course($module->course);
         $completion = new completion_info($course);
 
         if ($completion->is_enabled($module)) {
-            $completion->update_state($module, COMPLETION_COMPLETE);
+            $completion->update_state($module, COMPLETION_COMPLETE, $user_id);
         } else {
             throw new moodle_exception('Completion is not enabled for this module.');
         }
