@@ -60,4 +60,3 @@ Feature: Attempt an adleradaptivity
 #    question is still considered correct, as it was answered correctly before, but the current answer is wrong
     And I should see a ".behat_question-status-success" element
     And I should see "Partially correct"
-
