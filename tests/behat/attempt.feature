@@ -36,16 +36,16 @@ Feature: Attempt an adleradaptivity
     And I click on "One" "qtype_multichoice > Answer" in the "Q2" "question"
     And I click on "Three" "qtype_multichoice > Answer" in the "Q2" "question"
     And I click on "Check" "button" in the "Q2" "question"
-    Then I should see a ".behat_module-success" element
-    And I should see a ".behat_task-correct" element
+    Then I should see a ".module-success" element
+    And I should see a ".task-correct" element
 
   @javascript
   Scenario: Attempt a question with an incorrect answer
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
     And I click on "Two" "qtype_multichoice > Answer" in the "Q2" "question"
     And I click on "Check" "button" in the "Q2" "question"
-    Then I should see a ".behat_module-failure" element
-    And I should see a ".behat_task-incorrect" element
+    Then I should see a ".module-failure" element
+    And I should see a ".task-incorrect" element
 
   @javascript
   Scenario: Attempt a question with a wrong answer that was previously correct and completed the task
@@ -55,8 +55,8 @@ Feature: Attempt an adleradaptivity
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
     And I click on "Two" "qtype_multichoice > Answer" in the "Q2" "question"
     And I click on "Check" "button" in the "Q2" "question"
-    Then I should see a ".behat_module-success" element
-    And I should see a ".behat_task-correct" element
+    Then I should see a ".module-success" element
+    And I should see a ".task-correct" element
 #    question is still considered correct, as it was answered correctly before, but the current answer is wrong
-    And I should see a ".behat_question-status-success" element
+    And I should see a ".question-status-success" element
     And I should see "Partially correct"

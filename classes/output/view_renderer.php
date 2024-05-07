@@ -63,7 +63,6 @@ class view_renderer extends plugin_renderer_base {
         $completion = new completion_info($course);
 
         $data = [
-            'is_behat_mode' => defined('BEHAT_SITE_RUNNING') && BEHAT_SITE_RUNNING,
             'module_completed' => answer_questions::determine_module_completion_status($completion, $cm) == completion_helpers::STATUS_CORRECT,
             'tasks' => []
         ];
@@ -77,7 +76,7 @@ class view_renderer extends plugin_renderer_base {
                 'difficulty' => $this->get_difficulty_label($task['required_difficulty']),
                 'status_success' => in_array($task_status, [completion_helpers::STATUS_CORRECT, completion_helpers::STATUS_OPTIONAL_INCORRECT, completion_helpers::STATUS_OPTIONAL_NOT_ATTEMPTED]),
                 'status_message' => get_string($this->get_task_status_message_translation_key($task_status), 'mod_adleradaptivity'),
-                'status_behat_class' => $this->get_task_status_behat_class($task_status),
+                'status_class' => $this->get_task_status_class($task_status),
                 'questions' => []
             ];
 
@@ -113,13 +112,13 @@ class view_renderer extends plugin_renderer_base {
         };
     }
 
-    private function get_task_status_behat_class(string $status): string {
+    private function get_task_status_class(string $status): string {
         return match ($status) {
-            completion_helpers::STATUS_NOT_ATTEMPTED => 'behat_task-not-attempted',
-            completion_helpers::STATUS_CORRECT => 'behat_task-correct',
-            completion_helpers::STATUS_INCORRECT => 'behat_task-incorrect',
-            completion_helpers::STATUS_OPTIONAL_NOT_ATTEMPTED => 'behat_task-optional-not-attempted',
-            completion_helpers::STATUS_OPTIONAL_INCORRECT => 'behat_task-optional-incorrect',
+            completion_helpers::STATUS_NOT_ATTEMPTED => 'task-not-attempted',
+            completion_helpers::STATUS_CORRECT => 'task-correct',
+            completion_helpers::STATUS_INCORRECT => 'task-incorrect',
+            completion_helpers::STATUS_OPTIONAL_NOT_ATTEMPTED => 'task-optional-not-attempted',
+            completion_helpers::STATUS_OPTIONAL_INCORRECT => 'task-optional-incorrect',
             default => 'unknown',
         };
     }

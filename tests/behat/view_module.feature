@@ -33,10 +33,10 @@ Feature: View an adleradaptivity
 
   Scenario: Display module without any attempts
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
-    Then I should see a ".behat_module-failure" element
-    And I should see "1" ".behat_task-not-attempted" element
-    And I should see "1" ".behat_task-optional-not-attempted" element
-    And I should not see ".behat_question-status-success"
+    Then I should see a ".module-failure" element
+    And I should see "1" ".task-not-attempted" element
+    And I should see "1" ".task-optional-not-attempted" element
+    And I should not see ".question-status-success"
 
   Scenario: Display attempt not sufficient to complete the module
     Given user "student" has attempted "Adler Activity 1" with results:
@@ -45,10 +45,10 @@ Feature: View an adleradaptivity
       | Q2            | incorrect |
       | Q4            | incorrect |
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
-    Then I should see a ".behat_module-failure" element
-    And I should see "1" ".behat_question-status-success" elements
-    And I should see "1" ".behat_task-incorrect" element
-    And I should see "1" ".behat_task-optional-incorrect" element
+    Then I should see a ".module-failure" element
+    And I should see "1" ".question-status-success" elements
+    And I should see "1" ".task-incorrect" element
+    And I should see "1" ".task-optional-incorrect" element
 
   Scenario: Display attempt sufficient to complete the module
     Given user "student" has attempted "Adler Activity 1" with results:
@@ -56,11 +56,11 @@ Feature: View an adleradaptivity
       | Q2            | correct |
       | Q4            | correct |
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
-    Then I should see a ".behat_module-success" element
-    And I should see "2" ".behat_question-status-success" elements
-    And I should not see a ".behat_task-optional-incorrect" element
-    And I should not see a ".behat_task-optional-not-attempted" element
-    And I should see a ".behat_task-correct" element
+    Then I should see a ".module-success" element
+    And I should see "2" ".question-status-success" elements
+    And I should not see a ".task-optional-incorrect" element
+    And I should not see a ".task-optional-not-attempted" element
+    And I should see a ".task-correct" element
 
   Scenario: Display module with a question that has multiple references to it (in another module)
     Given the following "activities" exist:
@@ -73,6 +73,6 @@ Feature: View an adleradaptivity
       | task_title | question_category | question_name | difficulty |
       | Task2_1    | Test questions    | Q1            | 0          |
     When I am on the "Adler Activity 2" "mod_adleradaptivity > View" page logged in as "student"
-    Then I should see a ".behat_module-failure" element
-    And I should see "1" ".behat_task-not-attempted" element
-    And I should not see ".behat_question-status-success"
+    Then I should see a ".module-failure" element
+    And I should see "1" ".task-not-attempted" element
+    And I should not see ".question-status-success"

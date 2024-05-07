@@ -30,5 +30,3 @@ class course_module_viewed extends core_course_module_viewed {
         return ['db' => 'adleradaptivity', 'restore' => 'adleradaptivity'];
     }
 }
-
-// TODO: documentation

@@ -6,14 +6,13 @@
     Example context (json):
     {
       "module_completed": false,
-      "is_behat_mode": false,
       "tasks": [
         {
           "title": "Task 1",
           "optional": false,
           "difficulty": "Medium",
           "status_success": false,
-          "status_behat_class": "behat_status-failure",
+          "status_class": "status-failure",
           "status_message": "Task not completed",
           "questions": [
             {
@@ -29,12 +28,12 @@
 <div class="mod_adleradaptivity_questions">
     <!-- Module completion messages -->
     {{#module_completed}}
-        <div class="alert alert-success {{#is_behat_mode}}behat_module-success{{/is_behat_mode}}" role="alert">
+        <div class="alert alert-success module-success" role="alert">
             ✅ {{#str}}view_module_completed_success, mod_adleradaptivity{{/str}}
         </div>
     {{/module_completed}}
     {{^module_completed}}
-        <div class="alert alert-warning {{#is_behat_mode}}behat_module-failure{{/is_behat_mode}}" role="alert">
+        <div class="alert alert-warning module-failure" role="alert">
             ❌ {{#str}}view_module_completed_no, mod_adleradaptivity{{/str}}
         </div>
     {{/module_completed}}
@@ -53,10 +52,10 @@
 
             <!-- Task Status Handling -->
             {{#status_success}}
-                <p class="{{#is_behat_mode}}{{{status_behat_class}}}{{/is_behat_mode}}">✅ {{{status_message}}}</p>
+                <p class="{{{status_class}}}">✅ {{{status_message}}}</p>
             {{/status_success}}
             {{^status_success}}
-                <div class="alert alert-warning {{#is_behat_mode}}{{{status_behat_class}}}{{/is_behat_mode}}" role="alert">
+                <div class="alert alert-warning {{{status_class}}}" role="alert">
                     ❌ {{{status_message}}}
                 </div>
             {{/status_success}}
@@ -66,9 +65,8 @@
                 {{#questions}}
                     <div class="question">
                         <hr />
-<!--                        TODO: class always, not behat exclusive-->
                         {{#status_best_try}}
-                            <p class="{{#is_behat_mode}}behat_question-status-success{{/is_behat_mode}}">✅ {{#str}}view_question_success, mod_adleradaptivity{{/str}}</p>
+                            <p class="question-status-success">✅ {{#str}}view_question_success, mod_adleradaptivity{{/str}}</p>
                         {{/status_best_try}}
                         <div class="question-content">{{{content}}}</div>
                     </div>
