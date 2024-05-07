@@ -9,8 +9,6 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/locallib.php');
 use bootstrap_renderer;
 use coding_exception;
 use context_module;
-use core\context;
-use core\context\module;
 use dml_exception;
 use invalid_parameter_exception;
 use local_logging\logger;
@@ -117,11 +115,11 @@ class view_page {
     /**
      * Checks if the user has the necessary permissions to view or edit the specified attempt.
      *
-     * @param context $module_context Permission checks will be executed on that context
+     * @param context_module $module_context Permission checks will be executed on that context
      * @param null|stdClass $adleradaptivity_attempt The adler attempt object (DB object), null if no attempt is specified.
      * @throws moodle_exception If the user does not have the necessary permissions.
      */
-    private function check_attempt_permissions(context $module_context, null|stdClass $adleradaptivity_attempt): void {
+    private function check_attempt_permissions(context_module $module_context, null|stdClass $adleradaptivity_attempt): void {
         if ($this->is_user_accessing_his_own_attempt($adleradaptivity_attempt)) {
             $this->logger->trace('No attempt id specified or specified attempt is the users own attempt -> user will use his own attempt, adler attempt id:' . $adleradaptivity_attempt->id);
             require_capability('mod/adleradaptivity:create_and_edit_own_attempt', $module_context);
@@ -197,11 +195,11 @@ class view_page {
      * @param stdClass $cm
      * @param stdClass $module_instance adleradaptivity db object
      * @param stdClass $course
-     * @param module $module_context
+     * @param context_module $module_context
      * @return void
      * @throws coding_exception
      */
-    private function define_page_meta_information(stdClass $cm, stdClass $module_instance, stdClass $course, module $module_context): void {
+    private function define_page_meta_information(stdClass $cm, stdClass $module_instance, stdClass $course, context_module $module_context): void {
         $this->page->set_url('/mod/adleradaptivity/view.php', array('id' => $cm->id));
         $this->page->set_title(format_string($module_instance->name));
         $this->page->set_heading(format_string($course->fullname));
@@ -211,6 +209,7 @@ class view_page {
     /**
      * @param question_usage_by_activity $quba
      * @param stdClass $module_instance adleradaptivity db object
+     * @param context_module $module_context
      * @return array
      * @throws dml_exception
      * @throws moodle_exception
@@ -230,6 +229,7 @@ class view_page {
      *
      * @param question_usage_by_activity $quba
      * @param stdClass $module_instance adleradaptivity db object
+     * @param context_module $module_context
      * @return array
      * @throws dml_exception
      * @throws moodle_exception
@@ -244,6 +244,7 @@ class view_page {
      * @param int $slot question bank "id"
      * @param stdClass $module_instance adleradaptivity db object
      * @param array $tasks The reference to the tasks array the question will be inserted into.
+     * @param context_module $module_context
      * @throws dml_exception
      * @throws moodle_exception
      */
@@ -278,13 +279,13 @@ class view_page {
     /**
      * @param stdClass $course db object
      * @param stdClass $cm moodle cm object
-     * @param module $module_context
+     * @param context_module $module_context
      * @throws coding_exception
      * @throws moodle_exception
      * @throws require_login_exception
      * @throws required_capability_exception
      */
-    private function check_basic_permissions(stdClass $course, stdClass $cm, module $module_context): void {
+    private function check_basic_permissions(stdClass $course, stdClass $cm, context_module $module_context): void {
         require_login($course, false, $cm);
         require_capability('mod/adleradaptivity:view', $module_context);
     }

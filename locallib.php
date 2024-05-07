@@ -11,12 +11,12 @@ use mod_adleradaptivity\event\course_module_viewed;
  * I don't think this function with this exact name is not actually required to exist,
  * but it is common practice to do it like that.
  *
- * @param  stdClass $adleradaptivity  adleradaptivity object
- * @param  stdClass $course           course object
- * @param  stdClass $cm               course module object
- * @param  stdClass $context          context object
+ * @param stdClass $adleradaptivity adleradaptivity object
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param context_module $context context object
  */
-function adleradaptivity_view(stdClass $adleradaptivity, stdClass $course, stdClass $cm, module $context) {
+function adleradaptivity_view(stdClass $adleradaptivity, stdClass $course, stdClass $cm, context_module $context) {
 
     $params = [
         'objectid' => $adleradaptivity->id,
