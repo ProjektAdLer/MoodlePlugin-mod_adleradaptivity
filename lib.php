@@ -119,6 +119,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         $transaction->allow_commit();
     } catch (Exception $e) {
         $logger->error('Could not delete adleradaptivity instance with id ' . $instance_id);
+        $transaction->rollback($e);
         try {
             $transaction->rollback($e);
         } catch (Exception $e) {
