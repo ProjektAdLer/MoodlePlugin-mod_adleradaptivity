@@ -3,11 +3,12 @@
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\external\external_test_helpers;
 use mod_adleradaptivity\lib\adler_testcase;
+use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
-
 
 class lib_test extends adler_testcase {
     public function test_add_instance() {
@@ -129,13 +130,14 @@ class lib_test extends adler_testcase {
         // Try to delete a non-existing instance.
         $nonExistingId = 999999; // This ID should be non-existing.
 
-        $result = adleradaptivity_delete_instance($nonExistingId);
+        $this->expectException(moodle_exception::class);
 
-        // Check that the method returned false.
-        $this->assertFalse($result);
-
-        // Ensure that no instances were deleted.
-        $this->assertCount(0, $DB->get_records('adleradaptivity'));
+        try {
+            adleradaptivity_delete_instance($nonExistingId);
+        } finally {
+            // Ensure that no instances were deleted.
+            $this->assertCount(0, $DB->get_records('adleradaptivity'));
+        }
     }
 
 
@@ -159,9 +161,9 @@ class lib_test extends adler_testcase {
         $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);
 
         // Mock the repository object
-        $mockRepo = Mockery::mock('alias:mod_adleradaptivity\local\db\adleradaptivity_question_repository');
+        $mockRepo = Mockery::mock('overload:' . adleradaptivity_question_repository::class);
         // Make the method throw an exception
-        $mockRepo->shouldReceive('delete_question_by_id')->andThrow(new Exception('Could not delete'));
+        $mockRepo->shouldReceive('delete_question_by_id')->andThrow(new moodle_exception('Could not delete'));
 
         // verify created elements before deletion
         $this->assertCount(1, $DB->get_records('adleradaptivity'));
@@ -169,16 +171,17 @@ class lib_test extends adler_testcase {
         $this->assertCount(1, $DB->get_records('adleradaptivity_questions'));
         $this->assertCount(1, $DB->get_records('adleradaptivity_attempts'));
 
-        // Try to delete the complex instance.
-        $result = adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id);
+        $this->expectException(moodle_exception::class);
 
-        // Check that the method returned false.
-        $this->assertFalse($result);
-
-        // Ensure that no instances were deleted.
-        $this->assertCount(1, $DB->get_records('adleradaptivity'));
-        $this->assertCount(2, $DB->get_records('adleradaptivity_tasks'));
-        $this->assertCount(1, $DB->get_records('adleradaptivity_questions'));
-        $this->assertCount(1, $DB->get_records('adleradaptivity_attempts'));
+        try {
+            // Try to delete the complex instance.
+            adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id);
+        } finally {
+            // Ensure that no instances were deleted.
+            $this->assertCount(1, $DB->get_records('adleradaptivity'));
+            $this->assertCount(2, $DB->get_records('adleradaptivity_tasks'));
+            $this->assertCount(1, $DB->get_records('adleradaptivity_questions'));
+            $this->assertCount(1, $DB->get_records('adleradaptivity_attempts'));
+        }
     }
 }

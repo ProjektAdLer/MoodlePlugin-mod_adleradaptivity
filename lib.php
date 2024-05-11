@@ -85,6 +85,8 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
     $adleradaptivity_repository = new adleradaptivity_repository();
 
 
+    // there is no transaction above this level. Unsuccessful deletions basically result in unpredictable
+    // behaviour. This at least ensures this module is either deleted completely or not at all.
     $transaction = $DB->start_delegated_transaction();
 
     try {
@@ -119,13 +121,14 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         $transaction->allow_commit();
     } catch (Exception $e) {
         $logger->error('Could not delete adleradaptivity instance with id ' . $instance_id);
+        $logger->error($e->getMessage());
+        // although the existing documentation suggests this method should return true|false depending
+        // on whether the deletion succeeded, this does not actually lead to the desired behaviour.
+        // In case of an error this should throw an exception as otherwise:
+        // - postgresql databases are not rolled back
+        // - course deletion succeeds without indication of an error
+        // - only module deletion behaves as expected and shows an error
         $transaction->rollback($e);
-        try {
-            $transaction->rollback($e);
-        } catch (Exception $e) {
-            // rollback triggers an exception, but I don't care. This method is expected to return false in case of an error.
-        }
-        return false;
     }
 
     return true;
