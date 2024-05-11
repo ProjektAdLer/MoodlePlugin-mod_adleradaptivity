@@ -2,11 +2,26 @@
 
 namespace mod_adleradaptivity\local\db;
 
+use dml_exception;
 use moodle_database;
 use moodle_exception;
 use stdClass;
 
 class adleradaptivity_task_repository extends base_repository {
+    /**
+     * @throws dml_exception
+     */
+    public function create_task(stdClass $task): bool|int {
+        return $this->db->insert_record('adleradaptivity_tasks', $task);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public function delete_task_by_id(int $task_id): bool {
+        return $this->db->delete_records('adleradaptivity_tasks', ['id' => $task_id]);
+    }
+
     /**
      * Get task by question uuid
      *
@@ -40,5 +55,12 @@ class adleradaptivity_task_repository extends base_repository {
             ['question_uuid' => $question_uuid, 'instance_id' => $instance_id],
             MUST_EXIST
         );
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public function get_tasks_by_adleradaptivity_id($adleradaptivity_instance_id): array {
+        return $this->db->get_records('adleradaptivity_tasks', ['adleradaptivity_id' => $adleradaptivity_instance_id]);
     }
 }

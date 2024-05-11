@@ -2,6 +2,10 @@
 
 use core_completion\api as completion_api;
 use local_logging\logger;
+use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
 
 
@@ -35,13 +39,12 @@ function adleradaptivity_supports($feature) {
  * @param $instancedata
  * @param $mform
  * @return int
+ * @throws dml_exception
  */
 function adleradaptivity_add_instance($instancedata, $mform = null): int {
-    global $DB;
-
     $instancedata->timemodified = time();
 
-    $id = $DB->insert_record("adleradaptivity", $instancedata);
+    $id = (new adleradaptivity_repository())->create_adleradaptivity($instancedata);
 
     // Update completion date event. This is a default feature activated for all modules (create module -> Activity completion).
     $completiontimeexpected = !empty($instancedata->completionexpected) ? $instancedata->completionexpected : null;
@@ -53,9 +56,10 @@ function adleradaptivity_add_instance($instancedata, $mform = null): int {
 /** The [modname]_update_instance() function is called when the activity
  * editing form is submitted.
  *
- * @param $instancedata
- * @param $mform
+ * @param $moduleinstance
+ * @param null $mform
  * @return bool
+ * @throws moodle_exception
  */
 function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
     throw new moodle_exception('unsupported', 'adleradaptivity', '', 'update_instance() is not supported');
@@ -72,45 +76,54 @@ function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
  * @throws dml_exception
  */
 function adleradaptivity_delete_instance(int $instance_id): bool {
-    $logger = new logger('mod_adleradaptivity', 'lib.php');
-
     global $DB;
+
+    $logger = new logger('mod_adleradaptivity', 'lib.php');
+    $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
+    $adleradaptivity_tasks_repository = new adleradaptivity_task_repository();
+    $adleradaptivity_question_repository = new adleradaptivity_question_repository();
+    $adleradaptivity_repository = new adleradaptivity_repository();
+
 
     $transaction = $DB->start_delegated_transaction();
 
     try {
         // first ensure that the module instance exists
-        $DB->get_record('adleradaptivity', array('id' => $instance_id), '*', MUST_EXIST);
+        $adleradaptivity_repository->get_instance_by_instance_id($instance_id);
 
         // load all attempts related to $instance_id
         $cm = get_coursemodule_from_instance('adleradaptivity', $instance_id, 0, false, MUST_EXIST);
-        $attempts = helpers::load_adleradaptivity_attempt_by_cmid($cm->id);
+        $attempts = $adleradaptivity_attempt_repository->get_adleradaptivity_attempt_by_cmid($cm->id);
         // delete all attempts
         foreach ($attempts as $attempt) {
-            $DB->delete_records('adleradaptivity_attempts', array('attempt_id' => $attempt->attempt_id));
+            $adleradaptivity_attempt_repository->delete_adleradaptivity_attempt_by_question_usage_id($attempt->attempt_id);
             question_engine::delete_questions_usage_by_activity($attempt->attempt_id);
         }
 
         // delete the module itself and all related tasks and questions
         // load required data
-        $adler_tasks = $DB->get_records('adleradaptivity_tasks', array('adleradaptivity_id' => $instance_id));
+        $adler_tasks = $adleradaptivity_tasks_repository->get_tasks_by_adleradaptivity_id($instance_id);
         $adler_questions = [];
         foreach ($adler_tasks as $task) {
             $adler_questions = array_merge($adler_questions, helpers::load_questions_by_task_id($task->id, true));
         }
         // perform deletion
         foreach ($adler_questions as $question) {
-            $DB->delete_records('adleradaptivity_questions', array('id' => $question->id));
+            $adleradaptivity_question_repository->delete_question_by_id($question->id);
         }
         foreach ($adler_tasks as $task) {
-            $DB->delete_records('adleradaptivity_tasks', array('id' => $task->id));
+            $adleradaptivity_tasks_repository->delete_task_by_id($task->id);
         }
-        $DB->delete_records('adleradaptivity', array('id' => $instance_id));
+        $adleradaptivity_repository->delete_adleradaptivity_by_id($instance_id);
 
         $transaction->allow_commit();
     } catch (Exception $e) {
         $logger->error('Could not delete adleradaptivity instance with id ' . $instance_id);
-        $transaction->rollback($e);
+        try {
+            $transaction->rollback($e);
+        } catch (Exception $e) {
+            // rollback triggers an exception, but I don't care. This method is expected to return false in case of an error.
+        }
         return false;
     }
 
@@ -118,6 +131,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
 }
 
 
+// TODO: maybe test
 /**
  * Add a get_coursemodule_info function to add 'extra' information
  *
@@ -127,6 +141,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
  * @param stdClass $coursemodule The coursemodule object (record).
  * @return cached_cm_info An object on information that the courses
  *                        will know about (most noticeably, an icon).
+ * @throws dml_exception
  */
 function adleradaptivity_get_coursemodule_info($coursemodule) {
     global $DB;

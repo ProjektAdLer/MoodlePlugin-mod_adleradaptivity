@@ -2,11 +2,11 @@
 
 namespace mod_adleradaptivity\local;
 
+global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
 
 use context_module;
 use dml_exception;
-use dml_missing_record_exception;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use moodle_exception;
 use question_bank;
@@ -15,61 +15,6 @@ use question_usage_by_activity;
 use stdClass;
 
 class helpers {
-    /** Load adleradaptivity_attempts by cmid
-     * - Get context by cmid
-     * - with the context id get the question_usage
-     * - question_usage and adleradaptivity_attempts are a 1:1 relation
-     *
-     * @param int $cmid The course module ID of the adleradaptivity element.
-     * @return array adleradaptivity_attempt The question usage object.
-     * @throws dml_exception
-     * @throws dml_missing_record_exception If the expected records are not found.
-     */
-    public static function load_adleradaptivity_attempt_by_cmid($cmid) {
-        global $DB;
-
-        // Get the context for the provided course module ID.
-        $modulecontext = context_module::instance($cmid);
-
-        // Create SQL to join adleradaptivity_attempts with question_usages based on context ID
-        $sql = "
-            SELECT aa.*
-            FROM {adleradaptivity_attempts} AS aa
-            JOIN {question_usages} AS qu ON qu.id = aa.attempt_id
-            WHERE qu.contextid = ?
-        ";
-        return $DB->get_records_sql($sql, [$modulecontext->id]);
-    }
-
-    /**
-     * Retrieves the course module ID (cmid) for a given question usage ID.
-     *
-     * @param int $quid The ID of the question usage.
-     * @return int The course module ID (cmid) associated with the question usage.
-     * @throws dml_exception If there's an error with the database query.
-     * @throws dml_missing_record_exception If the expected records are not found.
-     */
-    public static function get_cmid_for_question_usage($quid) {
-        global $DB;
-
-        // First, retrieve the contextid from the question_usages table using the question usage ID
-        $contextid = $DB->get_field('question_usages', 'contextid', ['id' => $quid], MUST_EXIST);
-
-        if (!$contextid) {
-            throw new dml_missing_record_exception('context not found for the provided question usage ID');
-        }
-
-        // Now, use the contextid to find the corresponding cmid in the context table
-        // Note: CONTEXT_MODULE is a constant equal to 80, representing the context level for course modules in Moodle.
-        $cmid = $DB->get_field_select('context', 'instanceid', "contextlevel = ? AND id = ?", [CONTEXT_MODULE, $contextid]);
-
-        if (!$cmid) {
-            throw new dml_missing_record_exception('course module (cmid) not found for the provided context ID');
-        }
-
-        return $cmid;
-    }
-
     /** Gets the attempt object (question usage aka $quba) for the given cm and given user.
      * If there is no attempt object for the given cm and user, a new attempt object is created.
      * If there is more than one attempt object for the given cm and user, an exception is thrown.
@@ -82,14 +27,15 @@ class helpers {
      * @throws moodle_exception If multiple question usages are found for the given criteria.
      */
     public static function load_or_create_question_usage(int $cmid, int|null $userid = null, bool $create_new_attempt = true): false|question_usage_by_activity {
-        global $DB, $USER;
+        global $USER;
+        $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
 
         if (!isset($userid)) {
             $userid = $USER->id;
         }
 
         // Fetch existing question usages for the given cmid and userid
-        $adleradaptivity_attempts_all_users = static::load_adleradaptivity_attempt_by_cmid($cmid);
+        $adleradaptivity_attempts_all_users = $adleradaptivity_attempt_repository->get_adleradaptivity_attempt_by_cmid($cmid);
         // filter the results by userid
         $adleradaptivity_attempts = array_filter($adleradaptivity_attempts_all_users, function ($attempt) use ($userid) {
             return $attempt->user_id == $userid;

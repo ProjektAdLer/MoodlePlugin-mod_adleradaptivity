@@ -3,6 +3,13 @@
 global $CFG;
 
 class mod_adleradaptivity_generator extends testing_module_generator {
+    /** This method is called by $this->getDataGenerator()->create_module('adleradaptivity', ...
+     *
+     * @param $record
+     * @param array|null $options
+     * @return stdClass
+     * @throws coding_exception
+     */
     public function create_instance($record = null, array $options = null) {
         $default_params = [
             'name' => 'name',

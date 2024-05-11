@@ -1,11 +1,30 @@
 <?php
 
+use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
+use mod_adleradaptivity\local\db\moodle_core_repository;
+
 /**
  * Structure step to restore one adleradaptivity activity
  */
 class restore_adleradaptivity_activity_structure_step extends restore_questions_activity_structure_step {
-
+    private adleradaptivity_repository $adleradaptivity_repository;
+    private adleradaptivity_task_repository $adleradaptivity_task_repository;
+    private adleradaptivity_question_repository $adleradaptivity_question_repository;
+    private adleradaptivity_attempt_repository $adleradaptivity_attempt_repository;
+    private moodle_core_repository $moodle_core_repository;
     private ?object $current_adleradaptivity_attempt;
+
+    public function __construct(...$args) {
+        parent::__construct(...$args);
+        $this->adleradaptivity_repository = new adleradaptivity_repository();
+        $this->adleradaptivity_task_repository = new adleradaptivity_task_repository();
+        $this->adleradaptivity_question_repository = new adleradaptivity_question_repository();
+        $this->adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
+        $this->moodle_core_repository = new moodle_core_repository();
+    }
 
     protected function define_structure() {
         $paths = [];
@@ -33,8 +52,6 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
     }
 
     protected function process_adleradaptivity($data) {
-        global $DB;
-
         $data = (object)$data;
         $data->course = $this->get_courseid();
 
@@ -44,32 +61,27 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         }
 
         // insert the adleradaptivity record
-        $newitemid = $DB->insert_record('adleradaptivity', $data);
+        $newitemid = $this->adleradaptivity_repository->create_adleradaptivity($data);
         // immediately after inserting "activity" record, call this
         $this->apply_activity_instance($newitemid);
     }
 
     protected function process_task($data) {
-        global $DB;
-
         $data = (object)$data;
         $oldid = $data->id;
 
         $data->adleradaptivity_id = $this->get_new_parentid('adleradaptivity');
 
-        $newitemid = $DB->insert_record('adleradaptivity_tasks', $data);
+        $newitemid = $this->adleradaptivity_task_repository->create_task($data);
         $this->set_mapping('task', $oldid, $newitemid);
     }
 
     protected function process_question($data) {
-        global $DB;
-
         $data = (object)$data;
 
         $data->adleradaptivity_task_id = $this->get_new_parentid("task");
 
-
-        $newitemid = $DB->insert_record('adleradaptivity_questions', $data);
+        $newitemid = $this->adleradaptivity_question_repository->create_question($data);
         $this->set_mapping('question', $data->id, $newitemid);
     }
 
@@ -81,14 +93,13 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
      * @param array $data the data from the XML file.
      */
     public function process_question_reference($data) {
-        global $DB;
         $data = (object)$data;
         $data->usingcontextid = $this->get_mappingid('context', $data->usingcontextid);
         $data->itemid = $this->get_new_parentid('question');
         if ($entry = $this->get_mappingid('question_bank_entry', $data->questionbankentryid)) {
             $data->questionbankentryid = $entry;
         }
-        $DB->insert_record('question_references', $data);
+        $this->moodle_core_repository->create_question_reference($data);
     }
 
     protected function after_execute() {
@@ -119,8 +130,6 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
      * @param int $newusageid the id of the newly created question usage.
      */
     protected function inform_new_usage_id($newusageid) {
-        global $DB;
-
         $data = $this->current_adleradaptivity_attempt;
         if ($data === null) {
             return;
@@ -129,7 +138,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $oldid = $data->id;
         $data->attempt_id = $newusageid;
 
-        $newitemid = $DB->insert_record('adleradaptivity_attempts', $data);
+        $newitemid = $this->adleradaptivity_attempt_repository->create_adleradaptivity_attempt($data);
 
         // Save adleradaptivity attempt id mapping
         $this->set_mapping('adleradaptivity', $oldid, $newitemid);

@@ -13,6 +13,7 @@ use dml_exception;
 use invalid_parameter_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
+use mod_adleradaptivity\local\db\moodle_core_repository;
 use moodle_exception;
 use moodle_page;
 use question_engine;
@@ -38,6 +39,7 @@ class view_page {
     private adleradaptivity_question_repository $question_repository;
     private adleradaptivity_attempt_repository $adleradaptivity_attempt_repository;
     private adleradaptivity_repository $adleradaptivity_repository;
+    private moodle_core_repository $moodle_core_repository;
     private logger $logger;
 
     /**
@@ -90,6 +92,7 @@ class view_page {
         $this->question_repository = new adleradaptivity_question_repository();
         $this->adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
         $this->adleradaptivity_repository = new adleradaptivity_repository();
+        $this->moodle_core_repository = new moodle_core_repository();
 
         $this->logger = new logger('mod_adleradaptivity', 'view_page.php');
     }
@@ -158,7 +161,7 @@ class view_page {
         } else {
             // Load the attempt
             $this->logger->trace('Loading existing attempt. Attempt ID: ' . $attempt_id);
-            if ($cm->id == helpers::get_cmid_for_question_usage($attempt_id)) {
+            if ($cm->id == $this->moodle_core_repository->get_cmid_by_question_usage_id($attempt_id)) {
                 // can only happen if attempt id was specified, otherwise only a valid one will be loaded
                 $quba = question_engine::load_questions_usage_by_activity($attempt_id);
             } else {

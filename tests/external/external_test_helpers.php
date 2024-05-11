@@ -7,6 +7,8 @@ use question_definition;
 use stdClass;
 use testing_data_generator;
 
+// TODO: this should be in data generator
+
 class external_test_helpers {
     /**
      * This function creates a course with test questions, enrolls a user, and sets up tasks in the context of a Moodle course.
@@ -18,7 +20,7 @@ class external_test_helpers {
      * @param bool $q2 If true, a second question will be created. If false, a second question will not be created.
      * @return array Returns an array containing the user, the first question (q1), and the second question (q2) if it was created.
      */
-    public static function create_course_with_test_questions(testing_data_generator $generator, $task_required = true, $singlechoice = false, $q2 = false) {
+    public static function create_course_with_test_questions(testing_data_generator $generator, $task_required = true, $singlechoice = false, $q2 = false): array {
         $adleradaptivity_generator = $generator->get_plugin_generator('mod_adleradaptivity');
 
         $uuid = '75c248df-562f-40f7-9819-ebbeb078954b';

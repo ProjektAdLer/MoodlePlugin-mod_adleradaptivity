@@ -8,6 +8,20 @@ use stdClass;
 
 class adleradaptivity_question_repository extends base_repository {
     /**
+     * @throws dml_exception
+     */
+    public function create_question(stdClass $question): bool|int {
+        return $this->db->insert_record('adleradaptivity_questions', $question);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public function delete_question_by_id(int $question_id): bool {
+        return $this->db->delete_records('adleradaptivity_questions', ['id' => $question_id]);
+    }
+
+    /**
      * Get adleradaptivity question by question_bank_entries_id
      *
      * @param int $question_bank_entries_id
