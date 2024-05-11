@@ -81,6 +81,7 @@ class lib_test extends adler_testcase {
     }
 
     /**
+     * @runInSeparateProcess
      * @dataProvider data_provider_for_test_delete_complex_instance
      */
     public function test_delete_complex_instance($withAttempt) {
@@ -161,6 +162,12 @@ class lib_test extends adler_testcase {
         $mockRepo = Mockery::mock('alias:mod_adleradaptivity\local\db\adleradaptivity_question_repository');
         // Make the method throw an exception
         $mockRepo->shouldReceive('delete_question_by_id')->andThrow(new Exception('Could not delete'));
+
+        // verify created elements before deletion
+        $this->assertCount(1, $DB->get_records('adleradaptivity'));
+        $this->assertCount(2, $DB->get_records('adleradaptivity_tasks'));
+        $this->assertCount(1, $DB->get_records('adleradaptivity_questions'));
+        $this->assertCount(1, $DB->get_records('adleradaptivity_attempts'));
 
         // Try to delete the complex instance.
         $result = adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id);
