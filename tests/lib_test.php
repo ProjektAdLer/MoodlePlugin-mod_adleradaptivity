@@ -176,8 +176,12 @@ class lib_test extends adler_testcase {
         try {
             // Try to delete the complex instance.
             adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id);
+        } catch (Exception $e) {
+            // Roll back the transaction before re-throwing the exception
+            $DB->force_transaction_rollback();
+            throw $e;
         } finally {
-            sleep(60);
+//            sleep(60);
             // Ensure that no instances were deleted.
             $this->assertCount(1, $DB->get_records('adleradaptivity'));
             $this->assertCount(2, $DB->get_records('adleradaptivity_tasks'));
