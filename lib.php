@@ -128,6 +128,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         // - postgresql databases are not rolled back
         // - course deletion succeeds without indication of an error
         // - only module deletion behaves as expected and shows an error
+        $DB->force_transaction_rollback();
         $transaction->rollback($e);
     }
 
