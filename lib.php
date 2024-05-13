@@ -123,9 +123,9 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         $logger->error('Could not delete adleradaptivity instance with id ' . $instance_id);
         $logger->error($e->getMessage());
         // although the existing documentation suggests this method should return true|false depending
-        // on whether the deletion succeeded, this does not actually lead to the desired behaviour.
-        // In case of an error this should throw an exception as otherwise:
-        // - postgresql databases are not rolled back
+        // on whether the deletion succeeded, it seems to be "better" to throw exceptions.
+        // - other code is doing it like that
+        // - I am unsure whether the rollback behaviour is correct for all databases without exceptions
         // - course deletion succeeds without indication of an error
         // - only module deletion behaves as expected and shows an error
         $transaction->rollback($e);
