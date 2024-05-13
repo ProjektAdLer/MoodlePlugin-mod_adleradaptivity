@@ -46,7 +46,7 @@ class completion_helpers {
         $attempted = false;
         $optional = $task_required_difficulty == null;
 
-        foreach (helpers::load_questions_by_task_id($task_id) as $question) {
+        foreach (helpers::get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task_id) as $question) {
             // get slot of question
             foreach ($quba->get_slots() as $slot) {
                 if ($quba->get_question($slot)->id == $question->questionid) {

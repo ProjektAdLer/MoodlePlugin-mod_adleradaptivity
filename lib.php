@@ -107,7 +107,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         $adler_tasks = $adleradaptivity_tasks_repository->get_tasks_by_adleradaptivity_id($instance_id);
         $adler_questions = [];
         foreach ($adler_tasks as $task) {
-            $adler_questions = array_merge($adler_questions, helpers::load_questions_by_task_id($task->id, true));
+            $adler_questions = array_merge($adler_questions, helpers::get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task->id, true));
         }
         // perform deletion
         foreach ($adler_questions as $question) {

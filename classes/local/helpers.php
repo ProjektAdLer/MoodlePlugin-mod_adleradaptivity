@@ -114,7 +114,7 @@ class helpers {
      * @return array of objects with moodle question id and adleradaptivity question id.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public static function load_questions_by_task_id(int $task_id, bool $ignore_question_version = false) {
+    public static function get_adleradaptivity_questions_with_moodle_question_id_by_task_id(int $task_id, bool $ignore_question_version = false): array {
         global $DB;
 
         // Retrieves question versions from the {question_versions} table based on a specified adaptivity ID.
