@@ -360,6 +360,7 @@ class answer_questions extends external_api {
      * Updates the completion status of the module.
      *
      * @param stdClass $module Moodle module instance.
+     * @param int $user_id The user ID.
      * @return completion_info Completion information after update.
      * @throws moodle_exception If completion is not enabled for the module.
      */

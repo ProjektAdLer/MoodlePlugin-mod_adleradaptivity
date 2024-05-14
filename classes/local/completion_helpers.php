@@ -5,6 +5,7 @@ namespace mod_adleradaptivity\local;
 global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
 
+use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
 use moodle_exception;
 use question_answer;
 use question_attempt;
@@ -42,11 +43,13 @@ class completion_helpers {
      * @throws moodle_exception
      */
     public static function check_task_status(question_usage_by_activity $quba, string $task_id, string|null $task_required_difficulty): string {
+        $adleradaptivity_question_repository = new adleradaptivity_question_repository();
+
         $success = false;
         $attempted = false;
         $optional = $task_required_difficulty == null;
 
-        foreach (helpers::get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task_id) as $question) {
+        foreach ($adleradaptivity_question_repository->get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task_id) as $question) {
             // get slot of question
             foreach ($quba->get_slots() as $slot) {
                 if ($quba->get_question($slot)->id == $question->questionid) {

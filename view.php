@@ -19,7 +19,6 @@ require(__DIR__.'/../../config.php');
 
 // TODO: attempts report (likely h5p)
 // TODO permission check (only own latest attempt, except for admin, also in processattempt)
-// TODO: create DB abstraction layer class
 // TODO: consistently use typing
 // TODO: better handling of invalid, not existing, or otherwise incorrect attempt parameter value
 

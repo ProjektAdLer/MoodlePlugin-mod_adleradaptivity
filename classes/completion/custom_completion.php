@@ -10,6 +10,7 @@ require_once($CFG->libdir . '/questionlib.php');
 use core_completion\activity_custom_completion;
 use dml_exception;
 use mod_adleradaptivity\local\completion_helpers;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
 use moodle_exception;
 
@@ -22,6 +23,16 @@ use moodle_exception;
  * @copyright 2023 Markus Heck
  */
 class custom_completion extends activity_custom_completion {
+    private adleradaptivity_task_repository $task_repository;
+
+    public function __construct(...$args)  {
+        // cast 2nd parameter to int. Sometimes moodle code calls this constructor with a string and the constructor of the parent class expects an int
+        // This started to be a problem since this class is defining a constructor.
+        $args[1] = (int) $args[1];
+
+        parent::__construct(...$args);
+        $this->task_repository = new adleradaptivity_task_repository();
+    }
     /**
      * Check element successfully completed.
      * This method will not create a new attempt if there is none. In this case the module is considered as not completed.
@@ -32,7 +43,7 @@ class custom_completion extends activity_custom_completion {
      */
     protected function check_module_completed(): bool {
         $quba = helpers::load_or_create_question_usage(intval($this->cm->id), null, false);
-        $tasks = helpers::load_tasks_by_instance_id($this->cm->instance);
+        $tasks = $this->task_repository->get_tasks_by_adleradaptivity_id($this->cm->instance);
 
         // check if there is an attempt, if not the module was not yet started and therefore not completed
         if ($quba === false) {

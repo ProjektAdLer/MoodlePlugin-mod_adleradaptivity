@@ -139,9 +139,7 @@ class lib_test extends adler_testcase {
         }
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+
     public function test_delete_instance_failure_due_to_question_deletion_failure() {
         global $DB;
         $generator = $this->getDataGenerator();
@@ -159,9 +157,9 @@ class lib_test extends adler_testcase {
         $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);
 
         // Mock the repository object
-        $mockRepo = Mockery::mock('overload:' . adleradaptivity_question_repository::class);
+        $mockRepo = $this->getMockBuilder(adleradaptivity_question_repository::class)->onlyMethods(['delete_question_by_id'])->getMock();
         // Make the method throw an exception
-        $mockRepo->shouldReceive('delete_question_by_id')->andThrow(new moodle_exception('Could not delete'));
+        $mockRepo->method('delete_question_by_id')->willThrowException(new moodle_exception('Could not delete'));
 
         // verify created elements before deletion
         $this->assertCount(1, $DB->get_records('adleradaptivity'));
@@ -173,7 +171,7 @@ class lib_test extends adler_testcase {
 
         try {
             // Try to delete the complex instance.
-            adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id);
+            adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id, $mockRepo);
         } finally {
             // From my understanding these checks are not possible for postgresql databases as they don't allow rolling back sub-transactions
             // Overall the behaviour should still be correct, but as this code is executed as part of a higher level transaction

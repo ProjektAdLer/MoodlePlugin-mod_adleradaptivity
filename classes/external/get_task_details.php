@@ -15,6 +15,7 @@ use external_multiple_structure;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
 use moodle_exception;
 
@@ -71,6 +72,8 @@ class get_task_details extends external_api {
      * @throws moodle_exception
      */
     public static function execute(array $module): array {
+        $tasks_repo = new adleradaptivity_task_repository();
+
         // Parameter validation
         $params = self::validate_parameters(self::execute_parameters(), array('module' => $module));
         $module = $params['module'];
@@ -87,7 +90,7 @@ class get_task_details extends external_api {
         $quba = helpers::load_or_create_question_usage($module_id);
 
         // load all tasks in current module
-        $tasks = helpers::load_tasks_by_instance_id($instance_id);
+        $tasks = $tasks_repo->get_tasks_by_adleradaptivity_id($instance_id);
 
         // generate response data
         $results = [];

@@ -8,6 +8,7 @@ require_once($CFG->libdir . '/questionlib.php');
 use context_module;
 use dml_exception;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
+use mod_adleradaptivity\local\db\moodle_core_repository;
 use moodle_exception;
 use question_bank;
 use question_engine;
@@ -104,53 +105,6 @@ class helpers {
         return $quba;
     }
 
-    /** Get adleradaptivity questions with moodle question ids for the given adleradaptivity task id.
-     *
-     * @param int $task_id task id of the adleradaptivity task.
-     * @param bool $ignore_question_version DANGER! whether to ignore the question version. If true,
-     * the question version is not checked. Besides that questions with version != 1 are not supported by adleradaptivity,
-     * deactivating this check might also result in the same question being returned multiple times in different versions.
-     * This switch is intended only for stuff like module deletion.
-     * @return array of objects with moodle question id and adleradaptivity question id.
-     * @throws moodle_exception if any question version is not equal to 1.
-     */
-    public static function get_adleradaptivity_questions_with_moodle_question_id_by_task_id(int $task_id, bool $ignore_question_version = false): array {
-        global $DB;
-
-        // Retrieves question versions from the {question_versions} table based on a specified adaptivity ID.
-        $sql = "
-            SELECT qv.questionid, qv.version, aq.*
-            FROM {adleradaptivity_questions} aq
-            JOIN {question_references} qr ON qr.itemid = aq.id
-            JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
-            
-            WHERE aq.adleradaptivity_task_id = ?
-            AND qr.component = 'mod_adleradaptivity'
-            AND qr.questionarea = 'question';
-        ";
-        $question_data = $DB->get_records_sql($sql, [$task_id]);
-
-        $result = [];
-        foreach ($question_data as $one_question) {
-            if (!$ignore_question_version && $one_question->version != 1) {
-                throw new moodle_exception(
-                    'question_version_not_one',
-                    'mod_adleradaptivity',
-                    '',
-                    '',
-                    'There is a question with version ' . $one_question->version . '. This is not supported by adleradaptivity.'
-                );
-            }
-
-            // remove version field from $one_question
-            unset($one_question->version);
-
-            $result[] = $one_question;
-        }
-
-        return $result;
-    }
-
     /** Get all question objects from the question table for the given course module ID (cmid) of the adleradaptivity element.
      *
      * @param int $cmid course module id of the adleradaptivity element.
@@ -158,25 +112,14 @@ class helpers {
      * @return array of question_definition objects.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public static function load_questions_by_cmid($cmid, $allow_shuffle = false) {
-        global $DB;
+    public static function load_questions_by_cmid(int $cmid, bool $allow_shuffle = false) {
+        $moodle_core_repository = new moodle_core_repository();
 
         // get instance id from cmid
-        $instance_id = $DB->get_field('course_modules', 'instance', ['id' => $cmid]);
+        $instance_id = get_coursemodule_from_id('', $cmid)->instance;
 
         // Retrieves question versions from the {question_versions} table based on a specified adaptivity ID.
-        $sql = "
-        SELECT qv.*
-        FROM {adleradaptivity_questions} aq
-        JOIN {question_references} qr ON qr.itemid = aq.id
-        JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_task_id = at.id
-        JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
-        
-        WHERE at.adleradaptivity_id = ?
-        AND qr.component = 'mod_adleradaptivity'
-        AND qr.questionarea = 'question'
-        ";
-        $question_versions = $DB->get_records_sql($sql, [$instance_id]);
+        $question_versions = $moodle_core_repository->get_question_versions_by_adleradaptivity_instance_id($instance_id);
 
         $questions = [];
         foreach ($question_versions as $question_version) {
@@ -195,19 +138,6 @@ class helpers {
 
         return $questions;
     }
-
-    /** Get all tasks for the given instance ID (cmid) of the adleradaptivity element.
-     *
-     * @param int $cmid course module id of the adleradaptivity element.
-     * @return array of task objects.
-     * @throws dml_exception
-     */
-    public static function load_tasks_by_instance_id($instance_id) {
-        global $DB;
-
-        return $DB->get_records('adleradaptivity_tasks', ['adleradaptivity_id' => $instance_id]);
-    }
-
 
     /** Get slot number by question uuid from question_engine
      *

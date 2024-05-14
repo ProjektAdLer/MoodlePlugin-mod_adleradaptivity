@@ -71,17 +71,18 @@ function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
  * questions itself are not deleted here as they belong to the course, not to the module. The adleradaptivity_questions are deleted.
  *
  * @param $instance_id int The instance id of the module to delete.
+ * @param adleradaptivity_question_repository|null $adleradaptivity_question_repository allows to inject a mock for testing
  * @return bool true if success, false if failed.
  * @throws dml_transaction_exception if the transaction failed and could not be rolled back.
  * @throws dml_exception
  */
-function adleradaptivity_delete_instance(int $instance_id): bool {
+function adleradaptivity_delete_instance(int $instance_id, adleradaptivity_question_repository $adleradaptivity_question_repository = null): bool {
     global $DB;
 
     $logger = new logger('mod_adleradaptivity', 'lib.php');
     $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
     $adleradaptivity_tasks_repository = new adleradaptivity_task_repository();
-    $adleradaptivity_question_repository = new adleradaptivity_question_repository();
+    $adleradaptivity_question_repository = $adleradaptivity_question_repository ?? new adleradaptivity_question_repository();
     $adleradaptivity_repository = new adleradaptivity_repository();
 
 
@@ -107,7 +108,7 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
         $adler_tasks = $adleradaptivity_tasks_repository->get_tasks_by_adleradaptivity_id($instance_id);
         $adler_questions = [];
         foreach ($adler_tasks as $task) {
-            $adler_questions = array_merge($adler_questions, helpers::get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task->id, true));
+            $adler_questions = array_merge($adler_questions, $adleradaptivity_question_repository->get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task->id, true));
         }
         // perform deletion
         foreach ($adler_questions as $question) {
@@ -143,15 +144,14 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
  * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
  *
  * @param stdClass $coursemodule The coursemodule object (record).
- * @return cached_cm_info An object on information that the courses
+ * @return cached_cm_info|false An object on information that the courses
  *                        will know about (most noticeably, an icon).
  * @throws dml_exception
  */
 function adleradaptivity_get_coursemodule_info($coursemodule) {
-    global $DB;
+    $adleradaptivity_repository = new adleradaptivity_repository();
 
-    $dbparams = ['id' => $coursemodule->instance];
-    if (!$cm = $DB->get_record('adleradaptivity', $dbparams)) {
+    if (!$cm = $adleradaptivity_repository->get_instance_by_instance_id($coursemodule->instance)) {
         return false;
     }
 

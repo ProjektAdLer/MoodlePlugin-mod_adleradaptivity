@@ -38,4 +38,22 @@ class moodle_core_repository extends base_repository {
 
         return $cmid;
     }
+
+    /**
+     * @throws dml_exception
+     */
+    public function get_question_versions_by_adleradaptivity_instance_id(int $instance_id): array {
+        $sql = "
+        SELECT qv.*
+        FROM {adleradaptivity_questions} aq
+        JOIN {question_references} qr ON qr.itemid = aq.id
+        JOIN {adleradaptivity_tasks} at ON aq.adleradaptivity_task_id = at.id
+        JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
+        
+        WHERE at.adleradaptivity_id = ?
+        AND qr.component = 'mod_adleradaptivity'
+        AND qr.questionarea = 'question'
+        ";
+        return $this->db->get_records_sql($sql, [$instance_id]);
+    }
 }
