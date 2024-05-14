@@ -140,6 +140,9 @@ class lib_test extends adler_testcase {
     }
 
 
+    /**
+     * @runInSeparateProcess
+     */
     public function test_delete_instance_failure_due_to_question_deletion_failure() {
         global $DB;
         $generator = $this->getDataGenerator();
