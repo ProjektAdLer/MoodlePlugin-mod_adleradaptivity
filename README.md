@@ -19,10 +19,6 @@ und können vom Nutzer auch bearbeitet werden. Der Zustand zwischen 3D und Moodl
 
 
 ## Kompabilität
-Die minimal notwendige Moodle Version ist auf 4.1.0 gesetzt, daher wird die Installation auf älteren Versionen nicht funktionieren.
-Prinzipiell sollte dieses Plugin auch auf älteren Versionen funktionieren, dies wird aber nicht getestet und spätestens bei der
-Nutzung weiterer AdLer Plugins wird es zu Problemen kommen, da diese Features nutzen, die erst in neueren Moodle Versionen verfügbar sind.
-
 Folgende Versionen werden unterstützt (mit mariadb und postresql getestet):
 
 | Moodle Branch           | PHP Version |
@@ -32,6 +28,9 @@ Folgende Versionen werden unterstützt (mit mariadb und postresql getestet):
 | MOODLE_402_STABLE       | 8.2         |
 | MOODLE_403_STABLE       | 8.1         |
 | MOODLE_403_STABLE       | 8.2         |
+| MOODLE_404_STABLE       | 8.1         |
+| MOODLE_404_STABLE       | 8.2         |
+| MOODLE_404_STABLE       | 8.3         |
 
 ## Development
 Um die question bank für ein Adaptivitätsmodul anzuzeigen, den folgenden Code in `/lib.php` einfügen:
