@@ -119,7 +119,6 @@ class answer_questions extends external_api {
      * @throws moodle_exception For general Moodle-related errors.
      */
     public static function execute(array $module, array $questions): array {
-        global $DB;
         $time_at_request_start = time();
 
         $params = self::validate_parameters(self::execute_parameters(), ['module' => $module, 'questions' => $questions]);
@@ -133,7 +132,7 @@ class answer_questions extends external_api {
         $questions = self::validate_and_enhance_questions($questions, $module->instance);
 
         $quba = helpers::load_or_create_question_usage($module->id);
-        $completion = self::process_questions($questions, $time_at_request_start, $module, $DB, $quba);
+        $completion = self::process_questions($questions, $time_at_request_start, $module, $quba);
 
         $module_completion_status = static::determine_module_completion_status($completion, $module);
         $tasks_completion_data = static::get_tasks_completion_data($questions, $quba);
@@ -303,7 +302,9 @@ class answer_questions extends external_api {
      * @throws dml_transaction_exception
      * @throws dml_exception
      */
-    protected static function process_questions(array $questions, int $time_at_request_start, stdClass $module, moodle_database $DB, question_usage_by_activity $quba): completion_info {
+    protected static function process_questions(array $questions, int $time_at_request_start, stdClass $module, question_usage_by_activity $quba): completion_info {
+        global $DB;
+
         // start delegating transaction
         $transaction = $DB->start_delegated_transaction();
 
