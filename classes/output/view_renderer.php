@@ -73,7 +73,7 @@ class view_renderer extends plugin_renderer_base {
             $taskData = [
                 'title' => $task['title'],
                 'optional' => $task['required_difficulty'] === null,
-                'difficulty' => $this->get_difficulty_label($task['required_difficulty']),
+                'difficulty' => $task['required_difficulty'] !== null ? $this->get_difficulty_label($task['required_difficulty']) : '',
                 'status_success' => in_array($task_status, [completion_helpers::STATUS_CORRECT, completion_helpers::STATUS_OPTIONAL_INCORRECT, completion_helpers::STATUS_OPTIONAL_NOT_ATTEMPTED]),
                 'status_message' => get_string($this->get_task_status_message_translation_key($task_status), 'mod_adleradaptivity'),
                 'status_class' => $this->get_task_status_class($task_status),
@@ -126,10 +126,11 @@ class view_renderer extends plugin_renderer_base {
     /**
      * Converts a difficulty code to a human-readable label.
      *
-     * @param int $difficulty The difficulty code.
+     * @param int|null $difficulty The difficulty code.
      * @return string The difficulty label.
+     * @throws coding_exception
      */
-    private function get_difficulty_label($difficulty) {
+    private function get_difficulty_label(int|null $difficulty): string {
         $difficulties = [
             0 => get_string('difficulty_0', 'mod_adleradaptivity'),
             100 => get_string('difficulty_100', 'mod_adleradaptivity'),

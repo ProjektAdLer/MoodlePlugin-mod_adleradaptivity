@@ -16,7 +16,7 @@ use mod_adleradaptivity\event\course_module_viewed;
  * @param stdClass $cm course module object
  * @param context_module $context context object
  */
-function adleradaptivity_view(stdClass $adleradaptivity, stdClass $course, stdClass $cm, context_module $context) {
+function adleradaptivity_view(stdClass $adleradaptivity, stdClass $course, stdClass $cm, context_module $context): void {
 
     $params = [
         'objectid' => $adleradaptivity->id,

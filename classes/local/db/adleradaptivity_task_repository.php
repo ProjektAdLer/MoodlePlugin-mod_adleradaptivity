@@ -30,7 +30,7 @@ class adleradaptivity_task_repository extends base_repository {
      * @returns stdClass The task object
      * @throws moodle_exception If the task could not be found or if there are multiple results.
      */
-    public function get_task_by_question_uuid($question_uuid, $instance_id) {
+    public function get_task_by_question_uuid(string $question_uuid, int $instance_id): stdClass {
         // uuid is stored in question_bank_entries table.
         // connection to adleradaptivity_questions over question_references
         // quesiton_references need additional filtering for entries of this module.
@@ -60,7 +60,7 @@ class adleradaptivity_task_repository extends base_repository {
     /**
      * @throws dml_exception
      */
-    public function get_tasks_by_adleradaptivity_id($adleradaptivity_instance_id): array {
+    public function get_tasks_by_adleradaptivity_id(int|string $adleradaptivity_instance_id): array {
         return $this->db->get_records('adleradaptivity_tasks', ['adleradaptivity_id' => $adleradaptivity_instance_id]);
     }
 }

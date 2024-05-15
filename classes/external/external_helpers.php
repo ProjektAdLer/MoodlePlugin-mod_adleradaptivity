@@ -99,7 +99,7 @@ class external_helpers {
         return $response_data;
     }
 
-    public static function get_external_structure_question_response() {
+    public static function get_external_structure_question_response(): external_multiple_structure {
         return new external_multiple_structure(
             new external_single_structure(
                 [

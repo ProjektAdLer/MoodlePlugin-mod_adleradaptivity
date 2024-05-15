@@ -17,6 +17,9 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
     private moodle_core_repository $moodle_core_repository;
     private ?object $current_adleradaptivity_attempt;
 
+    /**
+     * @throws restore_step_exception
+     */
     public function __construct(...$args) {
         parent::__construct(...$args);
         $this->adleradaptivity_repository = new adleradaptivity_repository();
@@ -26,7 +29,12 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $this->moodle_core_repository = new moodle_core_repository();
     }
 
-    protected function define_structure() {
+    /**
+     * @return restore_path_element[]
+     * @throws base_step_exception
+     * @throws restore_step_exception
+     */
+    protected function define_structure(): array {
         $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
@@ -51,7 +59,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         return $this->prepare_activity_structure($paths);
     }
 
-    protected function process_adleradaptivity($data) {
+    protected function process_adleradaptivity(array|object $data): void {
         $data = (object)$data;
         $data->course = $this->get_courseid();
 
@@ -66,7 +74,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $this->apply_activity_instance($newitemid);
     }
 
-    protected function process_task($data) {
+    protected function process_task(array|object $data): void {
         $data = (object)$data;
         $oldid = $data->id;
 
@@ -76,7 +84,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $this->set_mapping('task', $oldid, $newitemid);
     }
 
-    protected function process_question($data) {
+    protected function process_question(array|object $data): void {
         $data = (object)$data;
 
         $data->adleradaptivity_task_id = $this->get_new_parentid("task");
@@ -90,9 +98,10 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
      *
      * Process question references which replaces the direct connection to quiz slots to question.
      *
-     * @param array $data the data from the XML file.
+     * @param array|object $data the data from the XML file.
+     * @throws dml_exception
      */
-    public function process_question_reference($data) {
+    public function process_question_reference($data): void {
         $data = (object)$data;
         $data->usingcontextid = $this->get_mappingid('context', $data->usingcontextid);
         $data->itemid = $this->get_new_parentid('question');
@@ -102,10 +111,7 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
         $this->moodle_core_repository->create_question_reference($data);
     }
 
-    protected function after_execute() {
-    }
-
-    protected function process_adleradaptivity_attempt($data) {
+    protected function process_adleradaptivity_attempt(array|object $data): void {
         $data = (object)$data;
 
         // Get user mapping, return early if no mapping found for the quiz attempt.
@@ -128,8 +134,10 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
      * It is used to insert the adleradaptivity attempt with the attempt_id of the newly created question usage into the database.
      *
      * @param int $newusageid the id of the newly created question usage.
+     * @throws restore_step_exception
+     * @throws dml_exception
      */
-    protected function inform_new_usage_id($newusageid) {
+    protected function inform_new_usage_id($newusageid): void {
         $data = $this->current_adleradaptivity_attempt;
         if ($data === null) {
             return;

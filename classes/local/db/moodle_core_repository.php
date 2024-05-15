@@ -7,6 +7,9 @@ use dml_missing_record_exception;
 use stdClass;
 
 class moodle_core_repository extends base_repository {
+    /**
+     * @throws dml_exception
+     */
     public function create_question_reference(stdClass $question_reference): int {
         return $this->db->insert_record('question_references', $question_reference);
     }

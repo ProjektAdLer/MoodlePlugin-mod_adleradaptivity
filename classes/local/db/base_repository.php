@@ -2,10 +2,12 @@
 
 namespace mod_adleradaptivity\local\db;
 
-abstract class base_repository {
-    protected $db;
+use moodle_database;
 
-    public function __construct($db = null) {
+abstract class base_repository {
+    protected moodle_database $db;
+
+    public function __construct(moodle_database|null $db = null) {
         if (is_null($db)) {
             global $DB;
             $this->db = $DB;

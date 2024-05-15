@@ -29,7 +29,7 @@ class adleradaptivity_question_repository extends base_repository {
      * @return stdClass question object
      * @throws dml_exception
      */
-    public function get_adleradaptivity_question_by_question_bank_entries_id(int $question_bank_entries_id, context_module $module_context) {
+    public function get_adleradaptivity_question_by_question_bank_entries_id(int $question_bank_entries_id, context_module $module_context): stdClass {
         $sql = "
             SELECT aq.*
             FROM {adleradaptivity_questions} aq

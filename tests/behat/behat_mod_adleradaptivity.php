@@ -9,6 +9,8 @@ require_once(__DIR__ . '/../external/external_test_helpers.php');  // TODO: this
 
 
 use Behat\Gherkin\Node\TableNode;
+use Behat\Mink\Exception\ElementNotFoundException;
+use Behat\Mink\Exception\ExpectationException;
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\external\external_test_helpers;
 use mod_adleradaptivity\local\helpers;
@@ -59,7 +61,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
         }
     }
 
-    protected function get_course_by_course_name(string $course_name)  {
+    protected function get_course_by_course_name(string $course_name): false|stdClass  {
         global $DB;
         return $DB->get_record('course', ['fullname' => $course_name], '*', MUST_EXIST);
     }
@@ -95,9 +97,9 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * Taken from MinkExtension
      *
      * @Then /^the (?i)url(?-i) should match (?P<pattern>"(?:[^"]|\\")*")$/
+     * @throws ExpectationException
      */
-    public function assertUrlRegExp($pattern)
-    {
+    public function assertUrlRegExp(string $pattern): void {
         $this->assertSession()->addressMatches($this->fixStepArgument($pattern));
     }
 
@@ -110,8 +112,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      *
      * @return string
      */
-    protected function fixStepArgument($argument)
-    {
+    protected function fixStepArgument(string $argument): string {
         return str_replace('\\"', '"', $argument);
     }
 
@@ -123,8 +124,9 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * Taken from MinkExtension
      *
      * @Then /^(?:|I )should see an? "(?P<element>[^"]*)" element$/
+     * @throws ElementNotFoundException
      */
-    public function assertElementOnPage($element) {
+    public function assertElementOnPage(string $element): void {
         $this->assertSession()->elementExists('css', $element);
     }
 
@@ -135,8 +137,9 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * Taken from MinkExtension
      *
      * @Then /^(?:|I )should not see an? "(?P<element>[^"]*)" element$/
+     * @throws ExpectationException
      */
-    public function assertElementNotOnPage($element) {
+    public function assertElementNotOnPage(string $element): void {
         $this->assertSession()->elementNotExists('css', $element);
     }
 
@@ -145,8 +148,9 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * Example: Then I should see 3 "div" elements
      *
      * @Then /^I should see "(?P<num>\d+)" "(?P<element>[^"]*)" elements?$/
+     * @throws ExpectationException
      */
-    public function assertNumElementsOnPage($num, $element) {
+    public function assertNumElementsOnPage(int $num, string $element): void {
         $this->assertSession()->elementsCount('css', $element, $num);
     }
 
@@ -167,7 +171,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      *
      * @Given /^user "([^"]*)" has attempted "([^"]*)" with results:$/
      */
-    public function user_has_attempted_with_results(string $username, string $adleradaptivityname, TableNode $data) {
+    public function user_has_attempted_with_results(string $username, string $adleradaptivityname, TableNode $data): void {
 // TODO refactor methods from "main" code as they are (now) also used in test code
         global $DB;
 
@@ -225,13 +229,9 @@ class behat_mod_adleradaptivity extends behat_question_base {
      *
      * @Given /^adleradaptivity "([^"]*)" contains the following tasks:$/
      */
-    public function adleradaptivity_contains_the_following_tasks(string $adleradaptivityname, TableNode $data) {
-        global $DB;
-
-        $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
-
-
+    public function adleradaptivity_contains_the_following_tasks(string $adleradaptivityname, TableNode $data): void {
         $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
+        $adleradaptivity_cm = $this->get_cm_by_adleradaptivity_name($adleradaptivityname);
 
         foreach ($data->getHash() as $taskdata) {
             $taskdata['uuid'] = $taskdata['title'];
@@ -263,7 +263,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
      *
      * @Given /^the following adleradaptivity questions are added:$/
      */
-    public function the_following_adleradaptivity_questions_are_added(TableNode $data) {
+    public function the_following_adleradaptivity_questions_are_added(TableNode $data): void {
         global $DB;
 
         $adleradaptivity_generator = behat_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
@@ -307,7 +307,7 @@ class behat_mod_adleradaptivity extends behat_question_base {
         echo "Created question: ";
     }
 
-    private function get_question_by_name(string $question_name) {
+    private function get_question_by_name(string $question_name): ?object {
         global $DB;
 
         $question_id = $DB->get_field('question', 'id', ['name' => $question_name]);

@@ -82,7 +82,7 @@ class helpers {
      * @return question_usage_by_activity The generated question usage object.
      * @throws moodle_exception
      */
-    public static function generate_new_attempt($cmid) {
+    public static function generate_new_attempt(int $cmid): question_usage_by_activity {
         // Retrieve the module context
         $modulecontext = context_module::instance($cmid);
 
@@ -112,7 +112,7 @@ class helpers {
      * @return array of question_definition objects.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public static function load_questions_by_cmid(int $cmid, bool $allow_shuffle = false) {
+    public static function load_questions_by_cmid(int $cmid, bool $allow_shuffle = false): array {
         $moodle_core_repository = new moodle_core_repository();
 
         // get instance id from cmid
@@ -146,7 +146,7 @@ class helpers {
      * @return int slot number
      * @throws moodle_exception if question is not found in question usage
      */
-    public static function get_slot_number_by_uuid(string $uuid, question_usage_by_activity $quba) {
+    public static function get_slot_number_by_uuid(string $uuid, question_usage_by_activity $quba): int {
         foreach ($quba->get_slots() as $slot) {
             if ($quba->get_question($slot)->idnumber == $uuid) {
                 return $slot;

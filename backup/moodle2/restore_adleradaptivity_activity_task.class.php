@@ -13,14 +13,14 @@ class restore_adleradaptivity_activity_task extends restore_activity_task {
     /**
      * Define (add) particular settings this activity can have
      */
-    protected function define_my_settings() {
+    protected function define_my_settings(): void {
         // No particular settings for this activity
     }
 
     /**
      * Define (add) particular steps this activity can have
      */
-    protected function define_my_steps() {
+    protected function define_my_steps(): void {
         // adleradaptivity only has one structure step
         $this->add_step(new restore_adleradaptivity_activity_structure_step('adleradaptivity_structure', 'adleradaptivity.xml'));
     }
@@ -29,7 +29,7 @@ class restore_adleradaptivity_activity_task extends restore_activity_task {
      * Define the contents in the activity that must be
      * processed by the link decoder
      */
-    static public function define_decode_contents() {
+    static public function define_decode_contents(): array {
         // As I understand it, this describes where URLs are that have to be decoded (replaced/updated).
         // The replacement itself (the replacement rule) is described in define_decode_rules().
         // This method is the "where"
@@ -43,7 +43,7 @@ class restore_adleradaptivity_activity_task extends restore_activity_task {
      * Define the decoding rules for links belonging
      * to the activity to be executed by the link decoder
      */
-    static public function define_decode_rules() {
+    static public function define_decode_rules(): array {
         return [];
     }
 

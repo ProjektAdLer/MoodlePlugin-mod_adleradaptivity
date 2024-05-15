@@ -10,7 +10,7 @@
  */
 class backup_adleradaptivity_activity_structure_step extends backup_questions_activity_structure_step {
 
-    protected function define_structure() {
+    protected function define_structure(): backup_nested_element {
         // To know if we are including userinfo
         $userinfo = $this->get_setting_value('userinfo');
 

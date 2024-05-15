@@ -23,7 +23,7 @@ class adleradaptivity_repository extends base_repository {
     /**
      * @throws dml_exception
      */
-    public function get_instance_by_instance_id(int $instance_id) {
+    public function get_instance_by_instance_id(int $instance_id): false|stdClass {
         return $this->db->get_record('adleradaptivity', ['id' => $instance_id], '*', MUST_EXIST);
     }
 }

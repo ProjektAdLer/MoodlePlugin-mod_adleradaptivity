@@ -237,7 +237,7 @@ class answer_questions extends external_api {
      *     'choice4' => "0",
      *  ] // submitted this question
      */
-    private static function format_multichoice_answer(string $answer, bool $is_single_choice, int $number_of_choices = null) {
+    private static function format_multichoice_answer(string $answer, bool $is_single_choice, int $number_of_choices = null): array {
         // Answer shuffling is no problem because it is disabled for all attempts in this module
 
         $answers_array = json_decode($answer);
@@ -332,7 +332,7 @@ class answer_questions extends external_api {
      * @param question_usage_by_activity $quba Question usage by activity object.
      * @throws invalid_parameter_exception If an unsupported question type is encountered.
      */
-    public static function process_single_question(array $question, int $time_at_request_start, question_usage_by_activity $quba) {
+    public static function process_single_question(array $question, int $time_at_request_start, question_usage_by_activity $quba): void {
         $question['question_object'] = $quba->get_question(helpers::get_slot_number_by_uuid($question['uuid'], $quba));
         $question_type_class = get_class($question['question_object']->qtype);
 

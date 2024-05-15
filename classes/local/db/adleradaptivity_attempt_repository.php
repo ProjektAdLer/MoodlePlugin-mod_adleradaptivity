@@ -47,7 +47,7 @@ class adleradaptivity_attempt_repository extends base_repository {
      * @throws dml_exception
      * @throws dml_missing_record_exception If the expected records are not found.
      */
-    public function get_adleradaptivity_attempt_by_cmid($cmid) {
+    public function get_adleradaptivity_attempt_by_cmid(int $cmid): array {
         // Get the context for the provided course module ID.
         $modulecontext = context_module::instance($cmid);
 

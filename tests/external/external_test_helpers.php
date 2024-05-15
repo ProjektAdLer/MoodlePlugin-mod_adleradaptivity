@@ -20,7 +20,7 @@ class external_test_helpers {
      * @param bool $q2 If true, a second question will be created. If false, a second question will not be created.
      * @return array Returns an array containing the user, the first question (q1), and the second question (q2) if it was created.
      */
-    public static function create_course_with_test_questions(testing_data_generator $generator, $task_required = true, $singlechoice = false, $q2 = false): array {
+    public static function create_course_with_test_questions(testing_data_generator $generator, bool $task_required = true, bool $singlechoice = false, bool $q2 = false): array {
         $adleradaptivity_generator = $generator->get_plugin_generator('mod_adleradaptivity');
 
         $uuid = '75c248df-562f-40f7-9819-ebbeb078954b';
@@ -78,7 +78,7 @@ class external_test_helpers {
      * @return array Returns an array of booleans representing the answers to the question.
      * @throws moodle_exception
      */
-    public static function gernerate_question_answers_for_single_question(String $answer_type, question_definition $question) {
+    public static function gernerate_question_answers_for_single_question(String $answer_type, question_definition $question): array {
         $answerdata_q1 = [];
         $partially_one_correct_chosen = false;
         foreach ($question->answers as $answer) {
@@ -110,7 +110,7 @@ class external_test_helpers {
         return $answerdata_q1;
     }
 
-    public static function generate_answer_question_parameters(String $q1, String $q2, array $course_data) {
+    public static function generate_answer_question_parameters(String $q1, String $q2, array $course_data): array {
         // generate parameters
         $param_module = [
             'instance_id' => $course_data['module']->id,

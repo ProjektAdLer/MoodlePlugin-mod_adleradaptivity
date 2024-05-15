@@ -10,7 +10,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
      * @return stdClass
      * @throws coding_exception
      */
-    public function create_instance($record = null, array $options = null) {
+    public function create_instance($record = null, array $options = null): stdClass {
         $default_params = [
             'name' => 'name',
             'intro' => 'intro',
@@ -21,7 +21,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
         return parent::create_instance($record, (array)$options);
     }
 
-    public function create_mod_adleradaptivity_task(int $adleradaptivity_id, $params = array(), bool $insert = true) {
+    public function create_mod_adleradaptivity_task(int $adleradaptivity_id, $params = array(), bool $insert = true): object {
         global $DB;
         $default_params = [
             'adleradaptivity_id' => $adleradaptivity_id,
@@ -38,7 +38,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
         return $new_object;
     }
 
-    public function create_mod_adleradaptivity_question(int $adleradaptivity_task_id, $params = array(), bool $insert = true) {
+    public function create_mod_adleradaptivity_question(int $adleradaptivity_task_id, $params = array(), bool $insert = true): object {
         global $DB;
         $default_params = [
             'adleradaptivity_task_id' => $adleradaptivity_task_id,
@@ -63,7 +63,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
      * @param bool $insert If true, the question reference will be inserted into the database.
      * @return object Returns the question reference object.
      */
-    public function create_question_reference(int $adleradaptivity_question_id, int $questionbank_entry_id, int $cmid, bool $insert = true) {
+    public function create_question_reference(int $adleradaptivity_question_id, int $questionbank_entry_id, int $cmid, bool $insert = true): object {
         global $DB;
         $new_object = (object)[
             'usingcontextid' => context_module::instance($cmid)->id,
@@ -90,7 +90,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
      *
      * @return question_definition Returns the question object.
      */
-    public function create_moodle_question(int $question_category_id, bool $singlechoice, string $name, string $uuid, string|null $question_text = null) {
+    public function create_moodle_question(int $question_category_id, bool $singlechoice, string $name, string $uuid, string|null $question_text = null): question_definition {
         global $DB;
         $generator = $this->datagenerator->get_plugin_generator('core_question');
         $question_override_parameter = [
@@ -119,7 +119,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
         return $question;
     }
 
-    public function create_mod_adleradaptivity_attempt(int $attempt_id, int $user_id, bool $insert = true) {
+    public function create_mod_adleradaptivity_attempt(int $attempt_id, int $user_id, bool $insert = true): object {
         global $DB;
         $default_params = [
             'attempt_id' => $attempt_id,

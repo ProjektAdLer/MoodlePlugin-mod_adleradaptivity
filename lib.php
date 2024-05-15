@@ -15,7 +15,7 @@ use mod_adleradaptivity\local\helpers;
  * @param string $feature Constant representing the feature.
  * @return string|true|null True if the feature is supported, null otherwise. Or a string for FEATURE_MOD_PURPOSE (moodle logic ...)
  */
-function adleradaptivity_supports($feature) {
+function adleradaptivity_supports(string $feature): bool|string|null {
     switch ($feature) {
 //        case FEATURE_COMPLETION_TRACKS_VIEWS:  // seems to add the "Require view" checkbox to the "when conditions are met" in the "activity completion" section of the activity settings
         case FEATURE_COMPLETION_HAS_RULES:  // custom completion rules
@@ -148,7 +148,7 @@ function adleradaptivity_delete_instance(int $instance_id, adleradaptivity_quest
  *                        will know about (most noticeably, an icon).
  * @throws dml_exception
  */
-function adleradaptivity_get_coursemodule_info($coursemodule) {
+function adleradaptivity_get_coursemodule_info(stdClass $coursemodule): cached_cm_info|bool {
     $adleradaptivity_repository = new adleradaptivity_repository();
 
     if (!$cm = $adleradaptivity_repository->get_instance_by_instance_id($coursemodule->instance)) {
