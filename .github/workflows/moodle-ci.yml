@@ -52,6 +52,12 @@ jobs:
 #            experimental: true
           - php: '8.3'
             moodle-branch: 'MOODLE_404_STABLE'
+            database: mariadb
+            experimental: false
+          - php: '8.3'
+            moodle-branch: 'MOODLE_404_STABLE'
+            database: pgsql
+            experimental: false
 
     continue-on-error: ${{ matrix.experimental }}
 
