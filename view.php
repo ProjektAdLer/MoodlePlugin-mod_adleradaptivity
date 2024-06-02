@@ -19,6 +19,5 @@ require(__DIR__.'/../../config.php');
 
 // TODO: attempts report (likely h5p)
 // TODO permission check (only own latest attempt, except for admin, also in processattempt)
-// TODO: better handling of invalid, not existing, or otherwise incorrect attempt parameter value
 
 new view_page();

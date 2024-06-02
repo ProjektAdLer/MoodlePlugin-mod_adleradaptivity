@@ -10,10 +10,12 @@ use bootstrap_renderer;
 use coding_exception;
 use context_module;
 use dml_exception;
+use dml_missing_record_exception;
 use invalid_parameter_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
 use mod_adleradaptivity\local\db\moodle_core_repository;
+use mod_adleradaptivity\moodle_core;
 use moodle_exception;
 use moodle_page;
 use question_engine;
@@ -38,7 +40,7 @@ class view_page {
     private adleradaptivity_task_repository $task_repository;
     private adleradaptivity_question_repository $question_repository;
     private adleradaptivity_attempt_repository $adleradaptivity_attempt_repository;
-    private adleradaptivity_repository $adleradaptivity_repository;
+    protected adleradaptivity_repository $adleradaptivity_repository;
     private moodle_core_repository $moodle_core_repository;
     private logger $logger;
 
@@ -63,7 +65,11 @@ class view_page {
         $this->check_basic_permissions($course, $cm, $module_context);
 
         // setup attempt variables (and create new attempt if required)
-        $quba = $this->load_or_create_question_usage_by_attempt_id($attempt_id, $cm);
+        try {
+            $quba = $this->load_or_create_question_usage_by_attempt_id($attempt_id, $cm);
+        } catch (invalid_parameter_exception $e) {
+            throw new moodle_exception('invalidattemptid', 'adleradaptivity');
+        }
         $adleradaptivity_attempt = $this->adleradaptivity_attempt_repository->get_adleradaptivity_attempt_by_quba_id($quba->get_id());
 
         // now having enough information to check permissions to access/edit the attempt
@@ -147,21 +153,27 @@ class view_page {
     }
 
     /**
-     * @param int $attempt_id The attempt id as specified in the request, -1 if no attempt id was provided
+     * @param int|null $attempt_id The attempt id as specified in the request, null if no attempt id was provided
      * @param stdClass $cm course module (in moodle form)
      * @return question_usage_by_activity
      * @throws dml_exception
+     * @throws invalid_parameter_exception
      * @throws moodle_exception
      */
-    private function load_or_create_question_usage_by_attempt_id(int $attempt_id, stdClass $cm): question_usage_by_activity {
-        // Load quiz attempt if attempt parameter is not -1, otherwise create new attempt
-        if ($attempt_id === -1) {
+    private function load_or_create_question_usage_by_attempt_id(int|null $attempt_id, stdClass $cm): question_usage_by_activity {
+        // Load quiz attempt if attempt parameter is not null, otherwise create new attempt
+        if ($attempt_id === null) {
             $this->logger->trace('No attempt specified, loading existing attempt if exists or creating new one');
             $quba = helpers::load_or_create_question_usage($cm->id);
         } else {
             // Load the attempt
             $this->logger->trace('Loading existing attempt. Attempt ID: ' . $attempt_id);
-            if ($cm->id == $this->moodle_core_repository->get_cmid_by_question_usage_id($attempt_id)) {
+            try {
+                $cmid_of_question_usage = $this->moodle_core_repository->get_cmid_by_question_usage_id($attempt_id);
+            } catch (dml_missing_record_exception $e) {
+                throw new invalid_parameter_exception('Specified attempt does not exist. Attempt ID: ' . $attempt_id);
+            }
+            if ($cm->id == $cmid_of_question_usage) {
                 // can only happen if attempt id was specified, otherwise only a valid one will be loaded
                 $quba = question_engine::load_questions_usage_by_activity($attempt_id);
             } else {
@@ -183,13 +195,21 @@ class view_page {
             throw new moodle_exception('invalidcoursemodule', 'adleradaptivity');
         }
 
-        $attempt_id = optional_param('attempt', -1, PARAM_INT);
-        if ($attempt_id == 0) {
+        $attempt_id = optional_param('attempt', null, PARAM_RAW);
+        if ($attempt_id !== null &&
+            !is_int($attempt_id) &&
+            !ctype_digit($attempt_id)) {
             throw new moodle_exception('invalidattemptid', 'adleradaptivity');
         }
+        if ($attempt_id !== null) {
+            $attempt_id = intval($attempt_id);
+            if ($attempt_id < 0) {
+                throw new moodle_exception('invalidattemptid', 'adleradaptivity');
+            }
+        }
 
-        $cm = get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
-        $course = get_course($cm->course);
+        $cm = moodle_core::get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
+        $course = moodle_core::get_course($cm->course);
         $module_instance = $this->adleradaptivity_repository->get_instance_by_instance_id($cm->instance);
         return array($attempt_id, $cm, $course, $module_instance);
     }

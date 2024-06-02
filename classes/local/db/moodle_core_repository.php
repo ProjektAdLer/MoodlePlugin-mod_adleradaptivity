@@ -17,17 +17,17 @@ class moodle_core_repository extends base_repository {
     /**
      * Retrieves the course module ID (cmid) for a given question usage ID.
      *
-     * @param int $quid The ID of the question usage.
+     * @param int $question_usage_id The ID of the question usage.
      * @return int The course module ID (cmid) associated with the question usage.
      * @throws dml_exception If there's an error with the database query.
      * @throws dml_missing_record_exception If the expected records are not found.
      */
-    public function get_cmid_by_question_usage_id(int $quid): int {
+    public function get_cmid_by_question_usage_id(int $question_usage_id): int {
         // First, retrieve the contextid from the question_usages table using the question usage ID
-        $contextid = $this->db->get_field('question_usages', 'contextid', ['id' => $quid], MUST_EXIST);
+        $contextid = $this->db->get_field('question_usages', 'contextid', ['id' => $question_usage_id]);
 
         if (!$contextid) {
-            throw new dml_missing_record_exception('context not found for the provided question usage ID');
+            throw new dml_missing_record_exception('no context found for the provided question usage ID');
         }
 
         // Now, use the contextid to find the corresponding cmid in the context table
