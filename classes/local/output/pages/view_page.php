@@ -198,7 +198,7 @@ class view_page {
         $attempt_id = optional_param('attempt', null, PARAM_RAW);
         if ($attempt_id !== null &&
             !is_int($attempt_id) &&
-            !ctype_digit($attempt_id)) {
+            !(is_string($attempt_id) && ctype_digit($attempt_id))) {
             throw new moodle_exception('invalidattemptid', 'adleradaptivity');
         }
         if ($attempt_id !== null) {

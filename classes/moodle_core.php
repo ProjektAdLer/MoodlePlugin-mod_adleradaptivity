@@ -2,6 +2,7 @@
 
 namespace mod_adleradaptivity;
 
+use coding_exception;
 use dml_exception;
 use stdClass;
 
@@ -14,5 +15,12 @@ class moodle_core {
      */
     public static function get_course(int|string $course_id, $clone = true): stdClass {
         return get_course($course_id, $clone);
+    }
+
+    /**
+     * @throws coding_exception
+     */
+    public static function get_coursemodule_from_id(...$args): bool|stdClass {
+        return get_coursemodule_from_id(...$args);
     }
 }
