@@ -168,17 +168,7 @@ class view_page {
         } else {
             // Load the attempt
             $this->logger->trace('Loading existing attempt. Attempt ID: ' . $attempt_id);
-            try {
-                $cmid_of_question_usage = $this->moodle_core_repository->get_cmid_by_question_usage_id($attempt_id);
-            } catch (dml_missing_record_exception $e) {
-                throw new invalid_parameter_exception('Specified attempt does not exist. Attempt ID: ' . $attempt_id);
-            }
-            if ($cm->id == $cmid_of_question_usage) {
-                // can only happen if attempt id was specified, otherwise only a valid one will be loaded
-                $quba = question_engine::load_questions_usage_by_activity($attempt_id);
-            } else {
-                throw new invalid_parameter_exception('Specified attempt is not for this cm. Attempt ID: ' . $attempt_id);
-            }
+            $quba = self::get_question_usage_by_attempt_id_with_cm_verification($attempt_id, $cm, $this->moodle_core_repository);
         }
         return $quba;
     }
@@ -195,18 +185,7 @@ class view_page {
             throw new moodle_exception('invalidcoursemodule', 'adleradaptivity');
         }
 
-        $attempt_id = optional_param('attempt', null, PARAM_RAW);
-        if ($attempt_id !== null &&
-            !is_int($attempt_id) &&
-            !(is_string($attempt_id) && ctype_digit($attempt_id))) {
-            throw new moodle_exception('invalidattemptid', 'adleradaptivity');
-        }
-        if ($attempt_id !== null) {
-            $attempt_id = intval($attempt_id);
-            if ($attempt_id < 0) {
-                throw new moodle_exception('invalidattemptid', 'adleradaptivity');
-            }
-        }
+        $attempt_id = self::get_attempt_id_param();
 
         $cm = moodle_core::get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
         $course = moodle_core::get_course($cm->course);
@@ -311,5 +290,48 @@ class view_page {
     private function check_basic_permissions(stdClass $course, stdClass $cm, context_module $module_context): void {
         require_login($course, false, $cm);
         require_capability('mod/adleradaptivity:view', $module_context);
+    }
+
+    /**
+     * @return int|null
+     * @throws coding_exception
+     * @throws moodle_exception
+     */
+    public static function get_attempt_id_param(): int|null {
+        $attempt_id = optional_param('attempt', null, PARAM_RAW);
+        if ($attempt_id !== null &&
+            !is_int($attempt_id) &&
+            !(is_string($attempt_id) && ctype_digit($attempt_id))) {
+            throw new moodle_exception('invalidattemptid', 'adleradaptivity');
+        }
+        if ($attempt_id !== null) {
+            $attempt_id = intval($attempt_id);
+            if ($attempt_id < 0) {
+                throw new moodle_exception('invalidattemptid', 'adleradaptivity');
+            }
+        }
+        return $attempt_id;
+    }
+
+    /**
+     * @param int $attempt_id
+     * @param stdClass $cm
+     * @return question_usage_by_activity
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     */
+    public static function get_question_usage_by_attempt_id_with_cm_verification(int $attempt_id, stdClass $cm, moodle_core_repository $moodle_core_repository): question_usage_by_activity {
+        try {
+            $cmid_of_question_usage = $moodle_core_repository->get_cmid_by_question_usage_id($attempt_id);
+        } catch (dml_missing_record_exception $e) {
+            throw new invalid_parameter_exception('Specified attempt does not exist. Attempt ID: ' . $attempt_id);
+        }
+        if ($cm->id == $cmid_of_question_usage) {
+            // can only happen if attempt id was specified, otherwise only a valid one will be loaded
+            $quba = question_engine::load_questions_usage_by_activity($attempt_id);
+        } else {
+            throw new invalid_parameter_exception('Specified attempt is not for this cm. Attempt ID: ' . $attempt_id);
+        }
+        return $quba;
     }
 }

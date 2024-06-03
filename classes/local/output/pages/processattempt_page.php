@@ -7,6 +7,7 @@ use completion_info;
 use dml_exception;
 use dml_transaction_exception;
 use local_logging\logger;
+use mod_adleradaptivity\local\db\moodle_core_repository;
 use moodle_exception;
 use moodle_url;
 use question_engine;
@@ -22,6 +23,7 @@ require_once($CFG->libdir . '/questionlib.php');  // required for question_engin
  * This page does not render anything, it only processes the attempt and redirects to the view page.
  */
 class processattempt_page {
+    private moodle_core_repository $moodle_core_repository;
     private logger $logger;
     private int $time_now;
 
@@ -71,20 +73,22 @@ class processattempt_page {
     private function setup_instance_variables(): void {
         $this->logger = new logger('mod_adleradaptiviy', 'processattempt');
         $this->time_now = time();  # Saving time at request start to use the actual submission time
+        $this->moodle_core_repository = new moodle_core_repository();
     }
 
     /**
      * @return array An array containing the course module, course and question usage by activity
      * @throws coding_exception
      * @throws dml_exception
+     * @throws moodle_exception
      */
     private function process_request_parameters(): array {
         $cmid = optional_param('id', 0, PARAM_INT);
-        $attempt_id = required_param('attempt', PARAM_INT);
+        $attempt_id = view_page::get_attempt_id_param();
 
         $cm = get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
         $course = get_course($cm->course);
-        $quba = question_engine::load_questions_usage_by_activity($attempt_id);
+        $quba = view_page::get_question_usage_by_attempt_id_with_cm_verification($attempt_id, $cm,$this->moodle_core_repository);
 
         return array($cm, $course, $quba);
     }
