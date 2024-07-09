@@ -182,7 +182,7 @@ function adleradaptivity_get_coursemodule_info(stdClass $coursemodule): cached_c
 //
 ///**
 // * Given a course and a date, prints a summary of the recent activity happened in this module.
-// * As mod_quiz does not implement this method i assume it is not required.
+// * As mod_adleradaptivity does not implement this method i assume it is not required.
 // *
 // * It is shown eg in in the "recent activity" sidebar block.
 // * The actual output of this method (what is shown in the "recent activity") is outputted via echo.
