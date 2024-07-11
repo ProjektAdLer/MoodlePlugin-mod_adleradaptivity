@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace mod_adleradaptivity\external;
 
@@ -74,7 +74,7 @@ class external_test_helpers {
     /**
      *
      * @param String $answer_type How to answer the question. Can be 'correct', 'incorrect', 'all_true', 'all_false', 'partially_correct'.
-     * @param stdClass $question
+     * @param question_definition $question
      * @return array Returns an array of booleans representing the answers to the question.
      * @throws moodle_exception
      */

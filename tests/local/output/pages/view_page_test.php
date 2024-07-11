@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace mod_adleradaptivity\local\output\pages;
 
@@ -27,6 +27,8 @@ class view_page_test extends adler_testcase {
 
     /**
      * @dataProvider provider_test_request_parameters
+     *
+     * ANF-ID: [MVP14]
      */
     public function testProcessRequestParameters($attempt_id) {
         // Arrange
@@ -77,6 +79,8 @@ class view_page_test extends adler_testcase {
 
     /**
      * @dataProvider invalidAttemptProvider
+     *
+     * ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithInvalidAttempt($invalidAttempt) {
         // Arrange
@@ -115,6 +119,8 @@ class view_page_test extends adler_testcase {
 
     /**
      * @runInSeparateProcess
+     *
+     *  ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithNonExistingAttempt() {
         // create two users
@@ -156,6 +162,8 @@ class view_page_test extends adler_testcase {
 
     /**
      * @runInSeparateProcess
+     *
+     *  ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithAttemptOfOtherUser() {
         // create two users
@@ -199,6 +207,8 @@ class view_page_test extends adler_testcase {
 
     /**
      * @runInSeparateProcess
+     *
+     *  ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithAttemptOfOtherCm() {
         // create two users

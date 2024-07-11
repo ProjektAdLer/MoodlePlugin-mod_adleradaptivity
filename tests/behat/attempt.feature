@@ -29,6 +29,7 @@ Feature: Attempt an adleradaptivity
       | Task1      | Test questions    | Q2            | 100        |
       | Task1      | Test questions    | Q3            | 200        |
 
+#    ANF-ID: [MVP18, MVP17, MVP16, MVP14]
   @javascript
   Scenario: Attempt a question with an correct answer
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
@@ -39,6 +40,7 @@ Feature: Attempt an adleradaptivity
     Then I should see a ".module-success" element
     And I should see a ".task-correct" element
 
+#    ANF-ID: [MVP18, MVP17, MVP16, MVP14]
   @javascript
   Scenario: Attempt a question with an incorrect answer
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
@@ -47,6 +49,7 @@ Feature: Attempt an adleradaptivity
     Then I should see a ".module-failure" element
     And I should see a ".task-incorrect" element
 
+#    ANF-ID: [MVP15, MVP18, MVP17, MVP16, MVP14]
   @javascript
   Scenario: Attempt a question with a wrong answer that was previously correct and completed the task
     Given user "student" has attempted "Adler Activity 1" with results:

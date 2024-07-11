@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\external\external_test_helpers;
@@ -51,6 +51,9 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
         $this->bc->destroy();
     }
 
+    /**
+     * ANF-ID: [MVP1]
+     */
     public function test_backup() {
         // Get xml from backup.
         $module_xml = $this->get_xml_from_backup($this->bc);
@@ -74,6 +77,9 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
         $this->assertCount('1', $completion_xml->completion->completionstate);
     }
 
+    /**
+     * ANF-ID: [MVP2]
+     */
     public function test_restore() {
         global $DB;
 

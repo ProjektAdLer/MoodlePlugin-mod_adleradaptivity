@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 namespace mod_adleradaptivity\external;
 
@@ -14,6 +14,9 @@ require_once($CFG->dirroot . '/question/tests/generator/lib.php');
  * @runTestsInSeparateProcesses
  */
 class get_question_details_test extends adler_externallib_testcase {
+    /**
+     * ANF-ID: [MVP4]
+     */
     public function test_execute_integration() {
         $task_required = true;
         $singlechoice = false;

@@ -31,6 +31,7 @@ Feature: View an adleradaptivity
       | Task1      | Test questions    | Q3            | 200        |
       | Task2      | Test questions    | Q4            | 0          |
 
+#    ANF-ID: [MVP15, MVP17, MVP16, MVP14]
   Scenario: Display module without any attempts
     When I am on the "Adler Activity 1" "mod_adleradaptivity > View" page logged in as "student"
     Then I should see a ".module-failure" element
@@ -38,6 +39,7 @@ Feature: View an adleradaptivity
     And I should see "1" ".task-optional-not-attempted" element
     And I should not see ".question-status-success"
 
+#    ANF-ID: [MVP15, MVP17, MVP16, MVP14]
   Scenario: Display attempt not sufficient to complete the module
     Given user "student" has attempted "Adler Activity 1" with results:
       | question_name | answer    |
@@ -50,6 +52,7 @@ Feature: View an adleradaptivity
     And I should see "1" ".task-incorrect" element
     And I should see "1" ".task-optional-incorrect" element
 
+#    ANF-ID: [MVP15, MVP17, MVP16, MVP14]
   Scenario: Display attempt sufficient to complete the module
     Given user "student" has attempted "Adler Activity 1" with results:
       | question_name | answer  |
@@ -62,6 +65,7 @@ Feature: View an adleradaptivity
     And I should not see a ".task-optional-not-attempted" element
     And I should see a ".task-correct" element
 
+#    ANF-ID: [MVP15, MVP17, MVP16, MVP14]
   Scenario: Display module with a question that has multiple references to it (in another module)
     Given the following "activities" exist:
       | activity        | name             | intro                  | course | completion |
