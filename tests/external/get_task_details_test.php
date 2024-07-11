@@ -15,7 +15,7 @@ require_once($CFG->dirroot . '/question/tests/generator/lib.php');
  */
 class get_task_details_test extends adler_externallib_testcase {
     /**
-     * ANF-ID: [MVP5]
+     * # ANF-ID: [MVP5]
      */
     public function test_execute_integration() {
         $task_required = true;

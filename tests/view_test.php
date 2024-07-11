@@ -10,7 +10,7 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php'
 
 class view_test extends adler_testcase {
     /**
-     *  ANF-ID: [MVP14]
+     *  # ANF-ID: [MVP14]
      */
     public function test_sort_questions_in_tasks_by_difficulty() {
         $tasks = [

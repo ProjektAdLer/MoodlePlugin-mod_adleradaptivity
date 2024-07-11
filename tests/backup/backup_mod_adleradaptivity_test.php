@@ -52,7 +52,7 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
     }
 
     /**
-     * ANF-ID: [MVP1]
+     * # ANF-ID: [MVP1]
      */
     public function test_backup() {
         // Get xml from backup.
@@ -78,7 +78,7 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
     }
 
     /**
-     * ANF-ID: [MVP2]
+     * # ANF-ID: [MVP2]
      */
     public function test_restore() {
         global $DB;

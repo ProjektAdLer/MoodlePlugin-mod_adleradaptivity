@@ -81,7 +81,7 @@ class answer_questions_test extends adler_externallib_testcase {
     /**
      * @dataProvider provide_test_execute_integration_data
      *
-     * ANF-ID: [MVP3]
+     * # ANF-ID: [MVP3]
      */
     public function test_execute_integration(string $q1, string $q2, bool $task_required, bool $singlechoice, string $expected_result) {
         // create course with test questions and user
@@ -146,7 +146,7 @@ class answer_questions_test extends adler_externallib_testcase {
     /**
      * @dataProvider provide_test_execute_integration__check_question_answered_correctly_once_data
      *
-     * ANF-ID: [MVP3]
+     * # ANF-ID: [MVP3]
      */
     public function test_execute_integration__check_question_answered_correctly_once(string $attempt1, string $attempt2, $expected_result) {
         // create course with test questions and user
