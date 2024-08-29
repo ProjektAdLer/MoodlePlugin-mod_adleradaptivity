@@ -6,7 +6,7 @@ use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
-use mod_adleradaptivity\local\helpers;
+use mod_adleradaptivity\event\course_module_viewed;
 
 
 /**
@@ -173,6 +173,36 @@ function adleradaptivity_get_coursemodule_info(stdClass $coursemodule): cached_c
     }
     return $result;
 }
+
+
+/**
+ * Mark the activity completed (if required) and trigger the course_module_viewed event.
+ *
+ * I am unaware of any source documenting the <modname>_view function,
+ * but it seems to be common practice to do it like that.
+ *
+ * @param stdClass $adleradaptivity adleradaptivity object
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param context_module $context context object
+ * @throws coding_exception
+ */
+function adleradaptivity_view(stdClass $adleradaptivity, stdClass $course, stdClass $cm, context_module $context): void {
+
+    $params = [
+        'objectid' => $adleradaptivity->id,
+        'context' => $context
+    ];
+
+    $event = course_module_viewed::create($params);
+    $event->add_record_snapshot('adleradaptivity', $adleradaptivity);
+    $event->trigger();
+
+    // Completion.
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+}
+
 
 // --------
 // methods required according to mod/README.md

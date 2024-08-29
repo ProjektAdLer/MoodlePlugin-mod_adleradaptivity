@@ -17,7 +17,7 @@ require(__DIR__.'/../../config.php');
 // - https://moodledev.io/general/development/tools/component-library
 // - https://componentlibrary.moodle.com/admin/tool/componentlibrary/docspage.php/moodle/components/moodle-icons/
 
-// TODO: attempts report (likely h5p)
+// TODO: attempts report (like h5p)
 // TODO permission check (only own latest attempt, except for admin, also in processattempt)
 
 new view_page();

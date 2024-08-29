@@ -4,7 +4,6 @@ namespace mod_adleradaptivity\local\output\pages;
 
 global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
-require_once($CFG->dirroot . '/mod/adleradaptivity/locallib.php');
 
 use bootstrap_renderer;
 use coding_exception;
