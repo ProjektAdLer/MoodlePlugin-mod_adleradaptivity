@@ -49,8 +49,8 @@ class lib_test extends adler_testcase {
         // Create a course.
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
 
-        $adleradaptivity_module1 = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => 2]);
-        $adleradaptivity_module2 = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => 2]);
+        $adleradaptivity_module1 = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC]);
+        $adleradaptivity_module2 = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC]);
 
 
         // Ensure that the instances were created.
@@ -92,7 +92,7 @@ class lib_test extends adler_testcase {
         $complex_adleradaptivity_module = external_test_helpers::create_course_with_test_questions($generator);
 
         // Create a second, trivial module instance.
-        $trivial_adleradaptivity_module = $generator->create_module('adleradaptivity', ['course' => $complex_adleradaptivity_module['course']->id, 'completion' => 2]);
+        $trivial_adleradaptivity_module = $generator->create_module('adleradaptivity', ['course' => $complex_adleradaptivity_module['course']->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC]);
 
         // If withAttempt is true, create an attempt.
         if ($withAttempt) {

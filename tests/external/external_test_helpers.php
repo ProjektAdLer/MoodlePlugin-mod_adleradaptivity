@@ -32,7 +32,7 @@ class external_test_helpers {
         $generator->enrol_user($user->id, $course->id);
 
         // create adleradaptivity module
-        $adleradaptivity_module = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => 2]);
+        $adleradaptivity_module = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC]);
         $adleradaptivity_task = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => $task_required ? 100 : null]);
         $adleradaptivity_task2 = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => null, 'uuid' => 'uuid2', 'name' => 'task2']);
         $adleradaptivity_question = $adleradaptivity_generator->create_mod_adleradaptivity_question($adleradaptivity_task->id);
