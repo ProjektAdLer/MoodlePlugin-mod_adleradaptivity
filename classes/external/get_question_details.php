@@ -8,12 +8,14 @@ require_once($CFG->dirroot . '/lib/externallib.php');
 use coding_exception;
 use context_module;
 use core_external\restricted_context_exception;
+use dml_exception;
 use external_api;
 use external_function_parameters;
 use external_value;
 use external_single_structure;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\helpers;
+use moodle_exception;
 
 class get_question_details extends external_api {
     public static function execute_parameters(): external_function_parameters {
@@ -49,8 +51,11 @@ class get_question_details extends external_api {
 
     /**
      * @param array $module [int $module_id, string $instance_id]
-     * @throws invalid_parameter_exception If neither module_id nor instance_id are set
+     * @return array
+     * @throws dml_exception
+     * @throws moodle_exception
      * @throws coding_exception If the module could not be found
+     * @throws invalid_parameter_exception If neither module_id nor instance_id are set
      * @throws restricted_context_exception If the user does not have the required context to view the module
      */
     public static function execute(array $module): array {
@@ -60,7 +65,6 @@ class get_question_details extends external_api {
 
         $module = external_helpers::validate_module_params_and_get_module($module);
         $module_id = $module->id;
-        $instance_id = $module->instance;
 
         // default validation stuff with context
         $context = context_module::instance($module_id);
