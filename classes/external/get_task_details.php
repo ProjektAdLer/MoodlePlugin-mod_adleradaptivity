@@ -7,6 +7,7 @@ global $CFG;
 require_once($CFG->dirroot . '/lib/externallib.php');
 
 use context_module;
+use core\di;
 use core_external\restricted_context_exception;
 use dml_exception;
 use external_api;
@@ -72,7 +73,7 @@ class get_task_details extends external_api {
      * @throws moodle_exception
      */
     public static function execute(array $module): array {
-        $tasks_repo = new adleradaptivity_task_repository();
+        $tasks_repo = di::get(adleradaptivity_task_repository::class);
 
         // Parameter validation
         $params = self::validate_parameters(self::execute_parameters(), array('module' => $module));

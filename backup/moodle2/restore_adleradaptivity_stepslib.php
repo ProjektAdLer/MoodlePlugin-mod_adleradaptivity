@@ -1,5 +1,6 @@
 <?php
 
+use core\di;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
@@ -22,11 +23,11 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
      */
     public function __construct(...$args) {
         parent::__construct(...$args);
-        $this->adleradaptivity_repository = new adleradaptivity_repository();
-        $this->adleradaptivity_task_repository = new adleradaptivity_task_repository();
-        $this->adleradaptivity_question_repository = new adleradaptivity_question_repository();
-        $this->adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
-        $this->moodle_core_repository = new moodle_core_repository();
+        $this->adleradaptivity_repository = di::get(adleradaptivity_repository::class);
+        $this->adleradaptivity_task_repository = di::get(adleradaptivity_task_repository::class);
+        $this->adleradaptivity_question_repository = di::get(adleradaptivity_question_repository::class);
+        $this->adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
+        $this->moodle_core_repository = di::get(moodle_core_repository::class);
     }
 
     /**

@@ -7,6 +7,7 @@ namespace mod_adleradaptivity\completion;
 global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
 
+use core\di;
 use core_completion\activity_custom_completion;
 use dml_exception;
 use mod_adleradaptivity\local\completion_helpers;
@@ -31,7 +32,7 @@ class custom_completion extends activity_custom_completion {
         $args[1] = (int) $args[1];
 
         parent::__construct(...$args);
-        $this->task_repository = new adleradaptivity_task_repository();
+        $this->task_repository = di::get(adleradaptivity_task_repository::class);
     }
     /**
      * Check element successfully completed.

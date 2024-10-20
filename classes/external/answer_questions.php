@@ -8,6 +8,7 @@ require_once($CFG->libdir . '/questionlib.php');
 
 use completion_info;
 use context_module;
+use core\di;
 use core_external\restricted_context_exception;
 use dml_exception;
 use dml_transaction_exception;
@@ -160,7 +161,7 @@ class answer_questions extends external_api {
      * @throws invalid_parameter_exception If a question does not exist.
      */
     protected static function validate_and_enhance_questions(array $questions, string $instance_id): array {
-        $task_repository = new adleradaptivity_task_repository();
+        $task_repository = di::get(adleradaptivity_task_repository::class);
         foreach ($questions as $key => $question) {
             try {
                 $task = $task_repository->get_task_by_question_uuid($question['uuid'], $instance_id);
@@ -303,10 +304,8 @@ class answer_questions extends external_api {
      * @throws dml_exception
      */
     protected static function process_questions(array $questions, int $time_at_request_start, stdClass $module, question_usage_by_activity $quba): completion_info {
-        global $DB;
-
         // start delegating transaction
-        $transaction = $DB->start_delegated_transaction();
+        $transaction = di::get(moodle_database::class)->start_delegated_transaction();
 
         // start processing the questions
         foreach ($questions as $key => $question) {

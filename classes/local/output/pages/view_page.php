@@ -8,6 +8,7 @@ require_once($CFG->libdir . '/questionlib.php');
 use bootstrap_renderer;
 use coding_exception;
 use context_module;
+use core\di;
 use dml_exception;
 use dml_missing_record_exception;
 use invalid_parameter_exception;
@@ -93,11 +94,11 @@ class view_page {
         $this->output = $OUTPUT;
         $this->user = $USER;
 
-        $this->task_repository = new adleradaptivity_task_repository();
-        $this->question_repository = new adleradaptivity_question_repository();
-        $this->adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
-        $this->adleradaptivity_repository = new adleradaptivity_repository();
-        $this->moodle_core_repository = new moodle_core_repository();
+        $this->task_repository = di::get( adleradaptivity_task_repository::class);
+        $this->question_repository = di::get( adleradaptivity_question_repository::class);
+        $this->adleradaptivity_attempt_repository = di::get( adleradaptivity_attempt_repository::class);
+        $this->adleradaptivity_repository = di::get( adleradaptivity_repository::class);
+        $this->moodle_core_repository = di::get( moodle_core_repository::class);
 
         $this->logger = new logger('mod_adleradaptivity', 'view_page.php');
     }

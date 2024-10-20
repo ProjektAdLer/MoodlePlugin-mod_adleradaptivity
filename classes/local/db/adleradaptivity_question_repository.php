@@ -51,7 +51,7 @@ class adleradaptivity_question_repository extends base_repository {
      * @return array of objects with moodle question id and adleradaptivity question id.
      * @throws moodle_exception if any question version is not equal to 1.
      */
-    public function get_adleradaptivity_questions_with_moodle_question_id_by_task_id(int $task_id, bool $ignore_question_version = false): array {
+    public function get_adleradaptivity_questions_with_moodle_question_id(int $task_id, bool $ignore_question_version = false): array {
         // Retrieves question versions from the {question_versions} table based on a specified adaptivity ID.
         $sql = "
             SELECT qv.questionid, qv.version, aq.*

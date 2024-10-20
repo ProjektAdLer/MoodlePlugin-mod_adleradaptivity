@@ -4,10 +4,12 @@ namespace mod_adleradaptivity\local\output\pages;
 
 use coding_exception;
 use completion_info;
+use core\di;
 use dml_exception;
 use dml_transaction_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\moodle_core_repository;
+use moodle_database;
 use moodle_exception;
 use moodle_url;
 use question_engine;
@@ -57,7 +59,7 @@ class processattempt_page {
      */
     private function process_attempt(question_usage_by_activity $quba, stdClass $course, stdClass $cm): void {
         global $DB;
-        $transaction = $DB->start_delegated_transaction();
+        $transaction = di::get(moodle_database::class)->start_delegated_transaction();
         $quba->process_all_actions($this->time_now);
         question_engine::save_questions_usage_by_activity($quba);
 
@@ -73,7 +75,7 @@ class processattempt_page {
     private function setup_instance_variables(): void {
         $this->logger = new logger('mod_adleradaptiviy', 'processattempt');
         $this->time_now = time();  # Saving time at request start to use the actual submission time
-        $this->moodle_core_repository = new moodle_core_repository();
+        $this->moodle_core_repository = di::get(moodle_core_repository::class);
     }
 
     /**

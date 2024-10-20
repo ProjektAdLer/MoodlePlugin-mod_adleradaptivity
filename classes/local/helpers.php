@@ -6,6 +6,7 @@ global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
 
 use context_module;
+use core\di;
 use dml_exception;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\moodle_core_repository;
@@ -29,7 +30,7 @@ class helpers {
      */
     public static function load_or_create_question_usage(int $cmid, int|null $userid = null, bool $create_new_attempt = true): false|question_usage_by_activity {
         global $USER;
-        $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
+        $adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
 
         if (!isset($userid)) {
             $userid = $USER->id;
@@ -57,7 +58,7 @@ class helpers {
                 $adleradaptivity_attempt->attempt_id = $attempt_id;
                 $adleradaptivity_attempt->user_id = $userid;
 
-                $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
+                $adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
                 $adleradaptivity_attempt_repository->create_adleradaptivity_attempt($adleradaptivity_attempt);
                 break;
             case 1:
@@ -113,7 +114,7 @@ class helpers {
      * @throws moodle_exception if any question version is not equal to 1.
      */
     public static function load_questions_by_cmid(int $cmid, bool $allow_shuffle = false): array {
-        $moodle_core_repository = new moodle_core_repository();
+        $moodle_core_repository = di::get(moodle_core_repository::class);
 
         // get instance id from cmid
         $instance_id = get_coursemodule_from_id('', $cmid)->instance;

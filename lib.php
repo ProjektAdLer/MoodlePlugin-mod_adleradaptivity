@@ -1,5 +1,6 @@
 <?php
 
+use core\di;
 use core_completion\api as completion_api;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
@@ -44,7 +45,7 @@ function adleradaptivity_supports(string $feature): bool|string|null {
 function adleradaptivity_add_instance($instancedata, $mform = null): int {
     $instancedata->timemodified = time();
 
-    $id = (new adleradaptivity_repository())->create_adleradaptivity($instancedata);
+    $id = di::get(adleradaptivity_repository::class)->create_adleradaptivity($instancedata);
 
     // Update completion date event. This is a default feature activated for all modules (create module -> Activity completion).
     $completiontimeexpected = !empty($instancedata->completionexpected) ? $instancedata->completionexpected : null;
@@ -71,24 +72,21 @@ function adleradaptivity_update_instance($moduleinstance, $mform = null): bool {
  * questions itself are not deleted here as they belong to the course, not to the module. The adleradaptivity_questions are deleted.
  *
  * @param $instance_id int The instance id of the module to delete.
- * @param adleradaptivity_question_repository|null $adleradaptivity_question_repository allows to inject a mock for testing
  * @return bool true if success, false if failed.
  * @throws dml_transaction_exception if the transaction failed and could not be rolled back.
  * @throws dml_exception
  */
-function adleradaptivity_delete_instance(int $instance_id, adleradaptivity_question_repository $adleradaptivity_question_repository = null): bool {
-    global $DB;
-
+function adleradaptivity_delete_instance(int $instance_id): bool {
     $logger = new logger('mod_adleradaptivity', 'lib.php');
-    $adleradaptivity_attempt_repository = new adleradaptivity_attempt_repository();
-    $adleradaptivity_tasks_repository = new adleradaptivity_task_repository();
-    $adleradaptivity_question_repository = $adleradaptivity_question_repository ?? new adleradaptivity_question_repository();
-    $adleradaptivity_repository = new adleradaptivity_repository();
+    $adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
+    $adleradaptivity_tasks_repository = di::get(adleradaptivity_task_repository::class);
+    $adleradaptivity_question_repository = di::get(adleradaptivity_question_repository::class);
+    $adleradaptivity_repository = di::get(adleradaptivity_repository::class);
 
 
     // there is no transaction above this level. Unsuccessful deletions basically result in unpredictable
     // behaviour. This at least ensures this module is either deleted completely or not at all.
-    $transaction = $DB->start_delegated_transaction();
+    $transaction = di::get(moodle_database::class)->start_delegated_transaction();
 
     try {
         // first ensure that the module instance exists
@@ -108,7 +106,10 @@ function adleradaptivity_delete_instance(int $instance_id, adleradaptivity_quest
         $adler_tasks = $adleradaptivity_tasks_repository->get_tasks_by_adleradaptivity_id($instance_id);
         $adler_questions = [];
         foreach ($adler_tasks as $task) {
-            $adler_questions = array_merge($adler_questions, $adleradaptivity_question_repository->get_adleradaptivity_questions_with_moodle_question_id_by_task_id($task->id, true));
+            $adler_questions = array_merge(
+                $adler_questions,
+                $adleradaptivity_question_repository->get_adleradaptivity_questions_with_moodle_question_id($task->id, true)
+            );
         }
         // perform deletion
         foreach ($adler_questions as $question) {
@@ -120,7 +121,7 @@ function adleradaptivity_delete_instance(int $instance_id, adleradaptivity_quest
         $adleradaptivity_repository->delete_adleradaptivity_by_id($instance_id);
 
         $transaction->allow_commit();
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         $logger->error('Could not delete adleradaptivity instance with id ' . $instance_id);
         $logger->error($e->getMessage());
         // although the existing documentation suggests this method should return true|false depending
@@ -149,7 +150,7 @@ function adleradaptivity_delete_instance(int $instance_id, adleradaptivity_quest
  * @throws dml_exception
  */
 function adleradaptivity_get_coursemodule_info(stdClass $coursemodule): cached_cm_info|bool {
-    $adleradaptivity_repository = new adleradaptivity_repository();
+    $adleradaptivity_repository = di::get(adleradaptivity_repository::class);
 
     if (!$cm = $adleradaptivity_repository->get_instance_by_instance_id($coursemodule->instance)) {
         return false;

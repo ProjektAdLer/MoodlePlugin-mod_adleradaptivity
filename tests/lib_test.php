@@ -1,5 +1,6 @@
 <?php
 
+use core\di;
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\external\external_test_helpers;
 use mod_adleradaptivity\lib\adler_testcase;
@@ -159,10 +160,14 @@ class lib_test extends adler_testcase {
         // Create an attempt.
         $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);
 
-        // Mock the repository object
-        $mockRepo = $this->getMockBuilder(adleradaptivity_question_repository::class)->onlyMethods(['delete_question_by_id'])->getMock();
-        // Make the method throw an exception
+        // Mock the repository object and make it throw an exception.
+        $mockRepo = $this
+            ->getMockBuilder(adleradaptivity_question_repository::class)
+            ->onlyMethods(['delete_question_by_id'])
+            ->setConstructorArgs([di::get(moodle_database::class)])
+            ->getMock();
         $mockRepo->method('delete_question_by_id')->willThrowException(new moodle_exception('Could not delete'));
+        di::set(adleradaptivity_question_repository::class, $mockRepo);
 
         // verify created elements before deletion
         $this->assertCount(1, $DB->get_records('adleradaptivity'));
@@ -174,7 +179,7 @@ class lib_test extends adler_testcase {
 
         try {
             // Try to delete the complex instance.
-            adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id, $mockRepo);
+            adleradaptivity_delete_instance($complex_adleradaptivity_module['module']->id);
         } finally {
             // From my understanding these checks are not possible for postgresql databases as they don't allow rolling back sub-transactions
             // Overall the behaviour should still be correct, but as this code is executed as part of a higher level transaction
