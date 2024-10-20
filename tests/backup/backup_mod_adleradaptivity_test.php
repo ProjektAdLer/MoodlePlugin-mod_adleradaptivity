@@ -1,7 +1,6 @@
 <?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 use mod_adleradaptivity\external\answer_questions;
-use mod_adleradaptivity\external\external_test_helpers;
 use mod_adleradaptivity\lib\adler_testcase;
 
 global $CFG;
@@ -12,9 +11,11 @@ require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 class backup_mod_adleradaptivity_test extends adler_testcase {
     private ?array $course_data = null;
     private ?backup_controller $bc = null;
+    private $plugin_generator;
 
     public function setUp(): void {
         parent::setUp();
+        $this->plugin_generator = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity');
 
         $task_required = true;
         $singlechoice = false;
@@ -23,13 +24,13 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
 
         // cheap way of creating test data
         // create course with test questions and user
-        $this->course_data = external_test_helpers::create_course_with_test_questions($this->getDataGenerator(), $task_required, $singlechoice, $q2 != 'none');
+        $this->course_data = $this->plugin_generator->create_course_with_test_questions($this->getDataGenerator(), $task_required, $singlechoice, $q2 != 'none');
 
         // sign in as user
         $this->setUser($this->course_data['user']);
 
         // generate answer data
-        $answerdata = external_test_helpers::generate_answer_question_parameters($q1, $q2, $this->course_data);
+        $answerdata = $this->plugin_generator->generate_answer_question_parameters($q1, $q2, $this->course_data);
 
         $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);
 

@@ -5,14 +5,12 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 require_once(__DIR__ . '/../../../../question/tests/behat/behat_question_base.php');
-require_once(__DIR__ . '/../external/external_test_helpers.php');  // TODO: this should be autoloaded. maybe it does not because the tests folder does not follow default auload folder structure
 
 
 use Behat\Gherkin\Node\TableNode;
 use Behat\Mink\Exception\ElementNotFoundException;
 use Behat\Mink\Exception\ExpectationException;
 use mod_adleradaptivity\external\answer_questions;
-use mod_adleradaptivity\external\external_test_helpers;
 use mod_adleradaptivity\local\helpers;
 
 class behat_mod_adleradaptivity extends behat_question_base {
@@ -27,11 +25,10 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * @throws Exception with a meaningful error message if the specified page cannot be found.
      */
     protected function resolve_page_url(string $page): moodle_url {
-//        TODO
-//        switch (strtolower($page)) {
-//            default:
-//                throw new Exception('Unrecognised quiz page type "' . $page . '."');
-//        }
+        switch (strtolower($page)) {
+            default:
+                throw new Exception('Unrecognised core_question page type "' . $page . '."');
+        }
     }
 
     /**
@@ -194,7 +191,8 @@ class behat_mod_adleradaptivity extends behat_question_base {
             $question_id = $DB->get_field('question', 'id', ['name' => $questiondata['question_name']], MUST_EXIST);
             $question_definition = question_bank::load_question($question_id);
             // generate answer
-            $answer = json_encode(external_test_helpers::gernerate_question_answers_for_single_question($questiondata['answer'], $question_definition));
+            $plugin_generator = testing_util::get_data_generator()->get_plugin_generator('mod_adleradaptivity');
+            $answer = json_encode($plugin_generator->gernerate_question_answers_for_single_question($questiondata['answer'], $question_definition));
 
             // answer question
             answer_questions::process_single_question(

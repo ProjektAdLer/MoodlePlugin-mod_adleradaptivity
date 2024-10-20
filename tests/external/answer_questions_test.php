@@ -81,14 +81,15 @@ class answer_questions_test extends adler_externallib_testcase {
      * # ANF-ID: [MVP3]
      */
     public function test_execute_integration(string $q1, string $q2, bool $task_required, bool $singlechoice, string $expected_result) {
+        $plugin_generator = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity');
         // create course with test questions and user
-        $course_data = external_test_helpers::create_course_with_test_questions($this->getDataGenerator(), $task_required, $singlechoice, $q2 != 'none');
+        $course_data = $plugin_generator->create_course_with_test_questions($this->getDataGenerator(), $task_required, $singlechoice, $q2 != 'none');
 
         // sign in as user
         $this->setUser($course_data['user']);
 
         // generate answer data
-        $answerdata = external_test_helpers::generate_answer_question_parameters($q1, $q2, $course_data);
+        $answerdata = $plugin_generator->generate_answer_question_parameters($q1, $q2, $course_data);
 
 
         // execute
@@ -146,22 +147,24 @@ class answer_questions_test extends adler_externallib_testcase {
      * # ANF-ID: [MVP3]
      */
     public function test_execute_integration__check_question_answered_correctly_once(string $attempt1, string $attempt2, $expected_result) {
+        $plugin_generator = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity');
+
         // create course with test questions and user
-        $course_data = external_test_helpers::create_course_with_test_questions($this->getDataGenerator());
+        $course_data = $plugin_generator->create_course_with_test_questions($this->getDataGenerator());
 
         // sign in as user
         $this->setUser($course_data['user']);
 
         // attempt 1
         // generate answer data
-        $answerdata = external_test_helpers::generate_answer_question_parameters($attempt1, "null", $course_data);
+        $answerdata = $plugin_generator->generate_answer_question_parameters($attempt1, "null", $course_data);
         // execute
         $result = answer_questions::execute($answerdata[0], $answerdata[1]);
 
         // attempt 2
         if ($attempt2 != 'none') {
             // generate answer data
-            $answerdata = external_test_helpers::generate_answer_question_parameters($attempt2, "null", $course_data);
+            $answerdata = $plugin_generator->generate_answer_question_parameters($attempt2, "null", $course_data);
             // execute
             $result = answer_questions::execute($answerdata[0], $answerdata[1]);
         }

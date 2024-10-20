@@ -2,7 +2,6 @@
 
 use core\di;
 use mod_adleradaptivity\external\answer_questions;
-use mod_adleradaptivity\external\external_test_helpers;
 use mod_adleradaptivity\lib\adler_testcase;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
@@ -12,6 +11,13 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php'
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 class lib_test extends adler_testcase {
+    private $plugin_generator;
+
+    public function setUp(): void {
+        parent::setUp();
+        $this->plugin_generator = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity');
+    }
+
     public function test_add_instance() {
         global $DB;
 
@@ -89,7 +95,7 @@ class lib_test extends adler_testcase {
         $generator = $this->getDataGenerator();
 
         // Create a complex module instance with test questions.
-        $complex_adleradaptivity_module = external_test_helpers::create_course_with_test_questions($generator);
+        $complex_adleradaptivity_module = $this->plugin_generator->create_course_with_test_questions($generator);
 
         // Create a second, trivial module instance.
         $trivial_adleradaptivity_module = $generator->create_module('adleradaptivity', ['course' => $complex_adleradaptivity_module['course']->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC]);
@@ -100,7 +106,7 @@ class lib_test extends adler_testcase {
             $this->setUser($complex_adleradaptivity_module['user']);
 
             // Generate answer data.
-            $answerdata = external_test_helpers::generate_answer_question_parameters('correct', false, $complex_adleradaptivity_module);
+            $answerdata = $this->plugin_generator->generate_answer_question_parameters('correct', false, $complex_adleradaptivity_module);
 
             // Create an attempt.
             $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);
@@ -145,13 +151,13 @@ class lib_test extends adler_testcase {
         $generator = $this->getDataGenerator();
 
         // Create a complex module instance with test questions.
-        $complex_adleradaptivity_module = external_test_helpers::create_course_with_test_questions($generator);
+        $complex_adleradaptivity_module = $this->plugin_generator->create_course_with_test_questions($generator);
 
         // Sign in as user.
         $this->setUser($complex_adleradaptivity_module['user']);
 
         // Generate answer data.
-        $answerdata = external_test_helpers::generate_answer_question_parameters('correct', false, $complex_adleradaptivity_module);
+        $answerdata = $this->plugin_generator->generate_answer_question_parameters('correct', false, $complex_adleradaptivity_module);
 
         // Create an attempt.
         $answer_question_result = answer_questions::execute($answerdata[0], $answerdata[1]);

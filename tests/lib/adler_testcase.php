@@ -5,7 +5,6 @@ namespace mod_adleradaptivity\lib;
 global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->dirroot . '/mod/adleradaptivity/vendor/autoload.php');
-require_once($CFG->dirroot . '/mod/adleradaptivity/tests/external/external_test_helpers.php');
 
 use advanced_testcase;
 use externallib_advanced_testcase;
