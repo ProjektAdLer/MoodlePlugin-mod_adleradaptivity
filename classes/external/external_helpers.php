@@ -2,12 +2,10 @@
 
 namespace mod_adleradaptivity\external;
 
-require_once($CFG->dirroot . '/lib/externallib.php');
-
 use coding_exception;
-use external_multiple_structure;
-use external_single_structure;
-use external_value;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\completion_helpers;
 use mod_adleradaptivity\local\helpers;

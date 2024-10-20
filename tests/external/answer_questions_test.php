@@ -13,9 +13,6 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php'
 require_once($CFG->dirroot . '/question/tests/generator/lib.php');
 
 
-/**
- * @runTestsInSeparateProcesses
- */
 class answer_questions_test extends adler_externallib_testcase {
     public function provide_test_execute_integration_data() {
         return [

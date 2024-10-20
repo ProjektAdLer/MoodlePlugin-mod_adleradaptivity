@@ -3,18 +3,16 @@
 
 namespace mod_adleradaptivity\external;
 
-global $CFG;
-require_once($CFG->dirroot . '/lib/externallib.php');
 
+use coding_exception;
 use context_module;
 use core\di;
-use core_external\restricted_context_exception;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 use dml_exception;
-use external_api;
-use external_function_parameters;
-use external_multiple_structure;
-use external_value;
-use external_single_structure;
 use invalid_parameter_exception;
 use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
@@ -66,10 +64,11 @@ class get_task_details extends external_api {
     }
 
     /**
-     * @param array $elements [int $course_id, string $element_type, array $uuids]
-     * @throws invalid_parameter_exception
+     * @param array $module
+     * @return array
+     * @throws coding_exception
      * @throws dml_exception
-     * @throws restricted_context_exception
+     * @throws invalid_parameter_exception
      * @throws moodle_exception
      */
     public static function execute(array $module): array {

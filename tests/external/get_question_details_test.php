@@ -6,13 +6,9 @@ use mod_adleradaptivity\lib\adler_externallib_testcase;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php');
-
 require_once($CFG->dirroot . '/question/tests/generator/lib.php');
 
 
-/**
- * @runTestsInSeparateProcesses
- */
 class get_question_details_test extends adler_externallib_testcase {
     /**
      * # ANF-ID: [MVP4]
