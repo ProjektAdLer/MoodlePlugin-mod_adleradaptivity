@@ -3,6 +3,7 @@
 namespace mod_adleradaptivity\local\output\pages;
 
 use context_module;
+use core\di;
 use Mockery;
 use mod_adleradaptivity\lib\adler_testcase;
 use mod_adleradaptivity\moodle_core;
@@ -41,11 +42,12 @@ class view_page_test extends adler_testcase {
         $viewPage = Mockery::mock(view_page::class)->makePartial()->shouldAllowMockingProtectedMethods();
 
         // Mock MoodleCore functions
-        $mockMoodleCore = Mockery::mock('alias:' . moodle_core::class);
+        $mockMoodleCore = Mockery::mock(moodle_core::class);
         $mockMoodleCore->shouldReceive('get_coursemodule_from_id')
             ->andReturn((object)['course' => 1, 'instance' => 1]);
         $mockMoodleCore->shouldReceive('get_course')
             ->andReturn((object)['fullname' => 'Test Course']);
+        di::set(moodle_core::class, $mockMoodleCore);
 
         // Use reflection to set the private property
         $reflection = new ReflectionClass(view_page::class);
@@ -93,11 +95,12 @@ class view_page_test extends adler_testcase {
         $viewPage = Mockery::mock(view_page::class)->makePartial()->shouldAllowMockingProtectedMethods();
 
         // Mock MoodleCore functions
-        $mockMoodleCore = Mockery::mock('alias:' . moodle_core::class);
+        $mockMoodleCore = Mockery::mock(moodle_core::class);
         $mockMoodleCore->shouldReceive('get_coursemodule_from_id')
             ->andReturn((object)['course' => 1, 'instance' => 1]);
         $mockMoodleCore->shouldReceive('get_course')
             ->andReturn((object)['fullname' => 'Test Course']);
+        di::set(moodle_core::class, $mockMoodleCore);
 
         // Use reflection to set the private property
         $reflection = new ReflectionClass(view_page::class);

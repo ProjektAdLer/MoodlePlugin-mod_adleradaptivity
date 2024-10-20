@@ -94,11 +94,11 @@ class view_page {
         $this->output = $OUTPUT;
         $this->user = $USER;
 
-        $this->task_repository = di::get( adleradaptivity_task_repository::class);
-        $this->question_repository = di::get( adleradaptivity_question_repository::class);
-        $this->adleradaptivity_attempt_repository = di::get( adleradaptivity_attempt_repository::class);
-        $this->adleradaptivity_repository = di::get( adleradaptivity_repository::class);
-        $this->moodle_core_repository = di::get( moodle_core_repository::class);
+        $this->task_repository = di::get(adleradaptivity_task_repository::class);
+        $this->question_repository = di::get(adleradaptivity_question_repository::class);
+        $this->adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
+        $this->adleradaptivity_repository = di::get(adleradaptivity_repository::class);
+        $this->moodle_core_repository = di::get(moodle_core_repository::class);
 
         $this->logger = new logger('mod_adleradaptivity', 'view_page.php');
     }
@@ -187,8 +187,8 @@ class view_page {
 
         $attempt_id = self::get_attempt_id_param();
 
-        $cm = moodle_core::get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
-        $course = moodle_core::get_course($cm->course);
+        $cm = di::get(moodle_core::class)::get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
+        $course = di::get(moodle_core::class)::get_course($cm->course);
         $module_instance = $this->adleradaptivity_repository->get_instance_by_instance_id($cm->instance);
         return array($attempt_id, $cm, $course, $module_instance);
     }
