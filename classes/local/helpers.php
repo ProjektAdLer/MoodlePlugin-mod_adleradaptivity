@@ -5,6 +5,7 @@ namespace mod_adleradaptivity\local;
 global $CFG;
 require_once($CFG->libdir . '/questionlib.php');
 
+use completion_info;
 use context_module;
 use core\di;
 use dml_exception;
@@ -154,5 +155,20 @@ class helpers {
             }
         }
         throw new moodle_exception('Question with uuid ' . $uuid . ' not found in question usage');
+    }
+
+    /**
+     * Determines the completion status of the module.
+     * This is the completion state of the module, saved in the database and not with the currently submitted answers.
+     *
+     * @param completion_info $completion Completion information object.
+     * @param stdClass $module Moodle module instance.
+     * @return string Completion status.
+     */
+    public static function determine_module_completion_status(completion_info $completion, stdClass $module): string {
+        $completionState = $completion->get_data($module)->completionstate;
+        return ($completionState == COMPLETION_COMPLETE || $completionState == COMPLETION_COMPLETE_PASS)
+            ? completion_helpers::STATUS_CORRECT
+            : completion_helpers::STATUS_INCORRECT;
     }
 }

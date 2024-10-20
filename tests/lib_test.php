@@ -3,7 +3,6 @@
 use core\di;
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\lib\adler_testcase;
-use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
 
 global $CFG;

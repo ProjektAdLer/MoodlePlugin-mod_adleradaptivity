@@ -9,6 +9,7 @@ use completion_info;
 use html_writer;
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\local\completion_helpers;
+use mod_adleradaptivity\local\helpers;
 use moodle_exception;
 use moodle_url;
 use plugin_renderer_base;
@@ -63,7 +64,7 @@ class view_renderer extends plugin_renderer_base {
         $completion = new completion_info($course);
 
         $data = [
-            'module_completed' => answer_questions::determine_module_completion_status($completion, $cm) == completion_helpers::STATUS_CORRECT,
+            'module_completed' => helpers::determine_module_completion_status($completion, $cm) == completion_helpers::STATUS_CORRECT,
             'tasks' => []
         ];
 

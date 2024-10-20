@@ -134,7 +134,7 @@ class answer_questions extends external_api {
         $quba = helpers::load_or_create_question_usage($module->id);
         $completion = self::process_questions($questions, $time_at_request_start, $module, $quba);
 
-        $module_completion_status = static::determine_module_completion_status($completion, $module);
+        $module_completion_status = helpers::determine_module_completion_status($completion, $module);
         $tasks_completion_data = static::get_tasks_completion_data($questions, $quba);
         $questions_completion_data = external_helpers::generate_question_response_data(array_column($questions, 'uuid'), $quba);
 
@@ -170,22 +170,6 @@ class answer_questions extends external_api {
             }
         }
         return $questions;
-    }
-
-    // TODO: move somewhere else, it is now not only used by this external class, but also in a moodle view
-    /**
-     * Determines the completion status of the module.
-     * This is the completion state of the module, saved in the database and not with the currently submitted answers.
-     *
-     * @param completion_info $completion Completion information object.
-     * @param stdClass $module Moodle module instance.
-     * @return string Completion status.
-     */
-    public static function determine_module_completion_status(completion_info $completion, stdClass $module): string {
-        $completionState = $completion->get_data($module)->completionstate;
-        return ($completionState == COMPLETION_COMPLETE || $completionState == COMPLETION_COMPLETE_PASS)
-            ? completion_helpers::STATUS_CORRECT
-            : completion_helpers::STATUS_INCORRECT;
     }
 
     /**

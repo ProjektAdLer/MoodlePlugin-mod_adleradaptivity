@@ -169,7 +169,8 @@ class behat_mod_adleradaptivity extends behat_question_base {
      * @Given /^user "([^"]*)" has attempted "([^"]*)" with results:$/
      */
     public function user_has_attempted_with_results(string $username, string $adleradaptivityname, TableNode $data): void {
-// TODO refactor methods from "main" code as they are (now) also used in test code
+        // This method is using code from the code under test. This is not ideal but rewriting these methods here, doing
+        // the exact same thing is also not ideal.
         global $DB;
 
         // load adleradaptivity cm
