@@ -82,7 +82,6 @@ class lib_test extends adler_testcase {
     }
 
     /**
-     * @runInSeparateProcess
      * @dataProvider data_provider_for_test_delete_complex_instance
      */
     public function test_delete_complex_instance($withAttempt) {
@@ -141,9 +140,6 @@ class lib_test extends adler_testcase {
     }
 
 
-    /**
-     * @runInSeparateProcess
-     */
     public function test_delete_instance_failure_due_to_question_deletion_failure() {
         global $DB;
         $generator = $this->getDataGenerator();

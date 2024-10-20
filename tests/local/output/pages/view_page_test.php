@@ -121,8 +121,6 @@ class view_page_test extends adler_testcase {
     }
 
     /**
-     * @runInSeparateProcess
-     *
      *  # ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithNonExistingAttempt() {
@@ -164,8 +162,6 @@ class view_page_test extends adler_testcase {
     }
 
     /**
-     * @runInSeparateProcess
-     *
      *  # ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithAttemptOfOtherUser() {
@@ -209,8 +205,6 @@ class view_page_test extends adler_testcase {
     }
 
     /**
-     * @runInSeparateProcess
-     *
      *  # ANF-ID: [MVP14]
      */
     public function testProcessRequestParametersWithAttemptOfOtherCm() {
