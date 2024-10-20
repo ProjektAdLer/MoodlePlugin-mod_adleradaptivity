@@ -4,7 +4,6 @@ namespace mod_adleradaptivity\external;
 
 use moodle_exception;
 use question_definition;
-use stdClass;
 use testing_data_generator;
 
 // TODO: this should be in data generator
