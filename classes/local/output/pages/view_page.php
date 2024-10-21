@@ -14,6 +14,7 @@ use dml_missing_record_exception;
 use invalid_parameter_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\db\moodle_core_repository;
 use mod_adleradaptivity\moodle_core;
 use moodle_exception;
@@ -53,6 +54,7 @@ class view_page {
         private readonly adleradaptivity_question_repository $adleradaptivity_question_repository,
         private readonly adleradaptivity_attempt_repository $adleradaptivity_attempt_repository,
         private readonly adleradaptivity_repository $adleradaptivity_repository,
+        private readonly adleradaptivity_task_repository $adleradaptivity_task_repository,
         private readonly moodle_core_repository $moodle_core_repository,
     ) {
         // setup variables
@@ -230,8 +232,8 @@ class view_page {
      */
     private function insert_question_from_slot_into_tasks_array(question_usage_by_activity $quba, int $slot, stdClass $module_instance, array &$tasks, context_module $module_context): void {
         $question = $quba->get_question($slot);
-        $adaptivity_question = $this->question_repository->get_adleradaptivity_question_by_question_bank_entries_id($question->questionbankentryid, $module_context);
-        $task = $this->task_repository->get_task_by_question_uuid($question->idnumber, $module_instance->id);
+        $adaptivity_question = $this->adleradaptivity_question_repository->get_adleradaptivity_question_by_question_bank_entries_id($question->questionbankentryid, $module_context);
+        $task = $this->adleradaptivity_task_repository->get_task_by_question_uuid($question->idnumber, $module_instance->id);
 
         if (!isset($tasks[$task->id])) {
             $tasks[$task->id] = [

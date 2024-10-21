@@ -3,7 +3,6 @@
 namespace mod_adleradaptivity\local\db;
 
 use dml_exception;
-use moodle_database;
 use moodle_exception;
 use stdClass;
 
