@@ -13,7 +13,8 @@ trait trait_attempt_utils {
      *
      * @param context_module $module_context Permission checks will be executed on that context
      * @param null|stdClass $adleradaptivity_attempt The adler attempt object (DB object), null if no attempt is specified.
-     * @throws moodle_exception If the user does not have the necessary permissions.
+     * @throws required_capability_exception
+     * @throws dml_exception
      */
     private function check_attempt_permissions(context_module $module_context, null|stdClass $adleradaptivity_attempt): void {
         if ($this->is_user_accessing_his_own_attempt($adleradaptivity_attempt)) {

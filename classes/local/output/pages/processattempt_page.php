@@ -11,6 +11,7 @@ use dml_transaction_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\moodle_core_repository;
+use mod_adleradaptivity\moodle_core;
 use moodle_database;
 use moodle_exception;
 use moodle_url;
@@ -61,7 +62,7 @@ class processattempt_page {
         $this->process_attempt($quba, $course, $cm);
 
         // redirect to the view page
-        redirect(new moodle_url('/mod/adleradaptivity/view.php', ['id' => $cm->id, 'attempt' => $quba->get_id()]));
+        di::get(moodle_core::class)::redirect(new moodle_url('/mod/adleradaptivity/view.php', ['id' => $cm->id, 'attempt' => $quba->get_id()]));
     }
 
     /**

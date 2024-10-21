@@ -4,6 +4,7 @@ namespace mod_adleradaptivity;
 
 use coding_exception;
 use dml_exception;
+use moodle_exception;
 use stdClass;
 
 /**
@@ -22,5 +23,12 @@ class moodle_core {
      */
     public static function get_coursemodule_from_id(...$args): bool|stdClass {
         return get_coursemodule_from_id(...$args);
+    }
+
+    /**
+     * @throws moodle_exception
+     */
+    public static function redirect(...$args): void {
+        redirect(...$args);
     }
 }
