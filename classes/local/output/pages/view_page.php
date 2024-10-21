@@ -26,7 +26,6 @@ use stdClass;
 
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
-use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use mod_adleradaptivity\local\helpers;
 
 /**
@@ -34,14 +33,11 @@ use mod_adleradaptivity\local\helpers;
  * It's responsibilities are the same as view.php in other plugins.
  */
 class view_page {
+    use trait_attempt_utils;
+
     private moodle_page $page;
     private bootstrap_renderer $output;
     private stdClass $user;
-    private adleradaptivity_task_repository $task_repository;
-    private adleradaptivity_question_repository $question_repository;
-    private adleradaptivity_attempt_repository $adleradaptivity_attempt_repository;
-    protected adleradaptivity_repository $adleradaptivity_repository;
-    private moodle_core_repository $moodle_core_repository;
     private logger $logger;
 
     /**
@@ -53,7 +49,12 @@ class view_page {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function __construct() {
+    public function __construct(
+        private readonly adleradaptivity_question_repository $adleradaptivity_question_repository,
+        private readonly adleradaptivity_attempt_repository $adleradaptivity_attempt_repository,
+        private readonly adleradaptivity_repository $adleradaptivity_repository,
+        private readonly moodle_core_repository $moodle_core_repository,
+    ) {
         // setup variables
         $this->setup_instance_variables();
         list($attempt_id, $cm, $course, $module_instance) = $this->process_request_parameters();
@@ -94,12 +95,6 @@ class view_page {
         $this->output = $OUTPUT;
         $this->user = $USER;
 
-        $this->task_repository = di::get(adleradaptivity_task_repository::class);
-        $this->question_repository = di::get(adleradaptivity_question_repository::class);
-        $this->adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
-        $this->adleradaptivity_repository = di::get(adleradaptivity_repository::class);
-        $this->moodle_core_repository = di::get(moodle_core_repository::class);
-
         $this->logger = new logger('mod_adleradaptivity', 'view_page.php');
     }
 
@@ -119,23 +114,6 @@ class view_page {
         }
 
         return $sorted_tasks;
-    }
-
-    /**
-     * Checks if the user has the necessary permissions to view or edit the specified attempt.
-     *
-     * @param context_module $module_context Permission checks will be executed on that context
-     * @param null|stdClass $adleradaptivity_attempt The adler attempt object (DB object), null if no attempt is specified.
-     * @throws moodle_exception If the user does not have the necessary permissions.
-     */
-    private function check_attempt_permissions(context_module $module_context, null|stdClass $adleradaptivity_attempt): void {
-        if ($this->is_user_accessing_his_own_attempt($adleradaptivity_attempt)) {
-            $this->logger->trace('No attempt id specified or specified attempt is the users own attempt -> user will use his own attempt, adler attempt id:' . $adleradaptivity_attempt->id);
-            require_capability('mod/adleradaptivity:create_and_edit_own_attempt', $module_context);
-        } else {
-            $this->logger->info('User tries to open an attempt that is not his own, adler attempt id:' . $adleradaptivity_attempt->id);
-            require_capability('mod/adleradaptivity:view_and_edit_all_attempts', $module_context);
-        }
     }
 
     /**
@@ -268,14 +246,6 @@ class view_page {
             'slot' => $slot,
             'difficulty' => $adaptivity_question->difficulty
         ];
-    }
-
-    /**
-     * @param stdClass|null $adleradaptivity_attempt db object
-     * @return bool True if accessing their own attempt, false otherwise.
-     */
-    private function is_user_accessing_his_own_attempt(?stdClass $adleradaptivity_attempt): bool {
-        return $adleradaptivity_attempt === null || $adleradaptivity_attempt->user_id == $this->user->id;
     }
 
     /**

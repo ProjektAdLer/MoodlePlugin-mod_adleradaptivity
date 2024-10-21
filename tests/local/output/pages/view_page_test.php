@@ -158,7 +158,7 @@ class view_page_test extends adler_testcase {
         $this->expectExceptionMessage('invalidattemptid');
 
         // Load the page to test
-        new view_page();
+        di::get(view_page::class);
     }
 
     /**
@@ -201,7 +201,7 @@ class view_page_test extends adler_testcase {
         $this->expectExceptionMessage('do not currently have permissions');
 
         // Load the page to test
-        new view_page();
+        di::get(view_page::class);
     }
 
     /**
@@ -243,6 +243,6 @@ class view_page_test extends adler_testcase {
         $this->expectExceptionMessage('invalidattemptid');
 
         // Load the page to test
-        new view_page();
+        di::get(view_page::class);
     }
 }
