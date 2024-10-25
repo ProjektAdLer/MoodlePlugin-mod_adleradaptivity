@@ -100,7 +100,7 @@ class processattempt_page {
      * @throws moodle_exception
      */
     private function process_request_parameters(): array {
-        $cmid = required_param('id', 0, PARAM_INT);
+        $cmid = required_param('id', PARAM_INT);
         $attempt_id = view_page::get_attempt_id_param();
         if ($attempt_id === null) {
             throw new invalid_parameter_exception();
