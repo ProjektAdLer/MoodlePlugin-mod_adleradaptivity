@@ -8,6 +8,7 @@ use context_module;
 use core\di;
 use dml_exception;
 use dml_transaction_exception;
+use invalid_parameter_exception;
 use local_logging\logger;
 use mod_adleradaptivity\local\db\adleradaptivity_attempt_repository;
 use mod_adleradaptivity\local\db\moodle_core_repository;
@@ -95,11 +96,15 @@ class processattempt_page {
      * @return array An array containing the course module, course and question usage by activity
      * @throws coding_exception
      * @throws dml_exception
+     * @throws invalid_parameter_exception
      * @throws moodle_exception
      */
     private function process_request_parameters(): array {
-        $cmid = optional_param('id', 0, PARAM_INT);
+        $cmid = required_param('id', 0, PARAM_INT);
         $attempt_id = view_page::get_attempt_id_param();
+        if ($attempt_id === null) {
+            throw new invalid_parameter_exception();
+        }
 
         $cm = get_coursemodule_from_id('adleradaptivity', $cmid, 0, false, MUST_EXIST);
         $course = get_course($cm->course);
