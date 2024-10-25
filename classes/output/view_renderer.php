@@ -23,7 +23,11 @@ class view_renderer extends plugin_renderer_base {
      *
      * @param array $tasks
      * @param question_usage_by_activity $quba
+     * @param stdClass $cm
+     * @param stdClass $course
      * @return string
+     * @throws coding_exception
+     * @throws moodle_exception
      */
     public function render_module_view_page(array $tasks, question_usage_by_activity $quba, stdClass $cm, stdClass $course): string {
         $cmid = $cm->id;

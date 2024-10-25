@@ -52,10 +52,10 @@ class view_page {
      */
     public function __construct(
         private readonly adleradaptivity_question_repository $adleradaptivity_question_repository,
-        private readonly adleradaptivity_attempt_repository $adleradaptivity_attempt_repository,
-        private readonly adleradaptivity_repository $adleradaptivity_repository,
-        private readonly adleradaptivity_task_repository $adleradaptivity_task_repository,
-        private readonly moodle_core_repository $moodle_core_repository,
+        private readonly adleradaptivity_attempt_repository  $adleradaptivity_attempt_repository,
+        private readonly adleradaptivity_repository          $adleradaptivity_repository,
+        private readonly adleradaptivity_task_repository     $adleradaptivity_task_repository,
+        private readonly moodle_core_repository              $moodle_core_repository,
     ) {
         // setup variables
         $this->setup_instance_variables();
@@ -271,12 +271,11 @@ class view_page {
      */
     public static function get_attempt_id_param(): int|null {
         $attempt_id = optional_param('attempt', null, PARAM_RAW);
-        if ($attempt_id !== null &&
-            !is_int($attempt_id) &&
-            !(is_string($attempt_id) && ctype_digit($attempt_id))) {
-            throw new moodle_exception('invalidattemptid', 'adleradaptivity');
-        }
         if ($attempt_id !== null) {
+            if (!is_int($attempt_id) &&
+                !(is_string($attempt_id) && ctype_digit($attempt_id))) {
+                throw new moodle_exception('invalidattemptid', 'adleradaptivity');
+            }
             $attempt_id = intval($attempt_id);
             if ($attempt_id < 0) {
                 throw new moodle_exception('invalidattemptid', 'adleradaptivity');
@@ -288,6 +287,7 @@ class view_page {
     /**
      * @param int $attempt_id
      * @param stdClass $cm
+     * @param moodle_core_repository $moodle_core_repository
      * @return question_usage_by_activity
      * @throws dml_exception
      * @throws invalid_parameter_exception

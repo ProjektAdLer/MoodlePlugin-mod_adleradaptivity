@@ -51,7 +51,7 @@ class processattempt_page {
         list($cm, $course, $quba) = $this->process_request_parameters();
 
         require_login($course, false, $cm);
-        require_sesskey();
+        require_sesskey();  // looks like quba->process_all_actions() does not check for sesskey
         // check permissions to access/edit the attempt
         $this->check_attempt_permissions(
             context_module::instance($cm->id),

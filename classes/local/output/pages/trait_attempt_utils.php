@@ -4,7 +4,8 @@ namespace mod_adleradaptivity\local\output\pages;
 
 
 use context_module;
-use moodle_exception;
+use dml_exception;
+use required_capability_exception;
 use stdClass;
 
 trait trait_attempt_utils {

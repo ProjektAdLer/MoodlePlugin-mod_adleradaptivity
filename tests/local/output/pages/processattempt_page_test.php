@@ -76,7 +76,7 @@ class processattempt_page_test extends adler_testcase {
         // Load the page to test
         di::get(processattempt_page::class);
     }
-// TODO: test modifying attempt of other user
+
 
 // TODO: remaining two plugins
 // TODO: issues on github
