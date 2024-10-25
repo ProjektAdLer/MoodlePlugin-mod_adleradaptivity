@@ -4,6 +4,7 @@ use core\di;
 use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\lib\adler_testcase;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_repository;
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php');
@@ -193,5 +194,49 @@ class lib_test extends adler_testcase {
                 $this->assertCount(1, $DB->get_records('adleradaptivity_attempts'), 'The attempt should not be deleted');
             }
         }
+    }
+
+    public function test_adleradaptivity_get_coursemodule_info() {
+        // Create a course
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+
+        // Create an instance of the adleradaptivity module
+        $adleradaptivity = $this->getDataGenerator()->create_module('adleradaptivity', ['course' => $course->id, 'name' => 'Test Adler Adaptivity', 'completion' => COMPLETION_TRACKING_AUTOMATIC, 'showdescription' => 1]);
+
+        // Get the course module object
+        $cm = get_coursemodule_from_instance('adleradaptivity', $adleradaptivity->id, $course->id);
+
+        // Call the function
+        $result = adleradaptivity_get_coursemodule_info($cm);
+
+        // Verify the result
+        $this->assertInstanceOf(cached_cm_info::class, $result);
+        $this->assertEquals('Test Adler Adaptivity', $result->name);
+
+        // Verify the description field
+        if ($cm->showdescription) {
+            $this->assertNotEmpty($result->content);
+        }
+
+        // Verify the custom completion rule
+        if ($cm->completion == COMPLETION_TRACKING_AUTOMATIC) {
+            $this->assertArrayHasKey('default_rule', $result->customdata['customcompletionrules']);
+            $this->assertEquals('some random string to make the completion rule work', $result->customdata['customcompletionrules']['default_rule']);
+        }
+    }
+
+    public function test_adleradaptivity_get_coursemodule_info_instance_not_found() {
+        $adleradaptivity_repository_mock = Mockery::mock(adleradaptivity_repository::class);
+        $adleradaptivity_repository_mock->shouldReceive('get_instance_by_instance_id')->andReturn(false);
+        di::set(adleradaptivity_repository::class, $adleradaptivity_repository_mock);
+
+        $cm = new stdClass();
+        $cm->instance = -1;
+
+        // Call the function
+        $result = adleradaptivity_get_coursemodule_info($cm);
+
+        // Verify the result
+        $this->assertFalse($result);
     }
 }
