@@ -137,7 +137,6 @@ function adleradaptivity_delete_instance(int $instance_id): bool {
 }
 
 
-// TODO: maybe test
 /**
  * Add a get_coursemodule_info function to add 'extra' information
  *
