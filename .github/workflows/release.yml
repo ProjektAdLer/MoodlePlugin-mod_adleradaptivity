@@ -24,11 +24,11 @@ jobs:
           # - release is marked as pre-release on github, then MATURITY_BETA
           # - release name contains 'rc', then MATURITY_RC
           if [[ "${{ github.ref_name }}" == *"rc"* ]]; then
-            sed -i "s/^\$plugin->maturity\s=\sMATURITY_STABLE;/\$plugin->maturity = MATURITY_RC;/" version.php
+            sed -i "s/^\$plugin->maturity\s=\sMATURITY_[A-Z]*;/\$plugin->maturity = MATURITY_RC;/" version.php
           elif [[ "${{ github.event_name }}" == "release" && "${{ github.event.release.prerelease }}" == "true" ]]; then
-            sed -i "s/^\$plugin->maturity\s=\sMATURITY_STABLE;/\$plugin->maturity = MATURITY_BETA;/" version.php
-          else 
-            sed -i "s/^\$plugin->maturity\s=\sMATURITY_STABLE;/\$plugin->maturity = MATURITY_STABLE;/" version.php
+            sed -i "s/^\$plugin->maturity\s=\sMATURITY_[A-Z]*;/\$plugin->maturity = MATURITY_BETA;/" version.php
+          else
+            sed -i "s/^\$plugin->maturity\s=\sMATURITY_[A-Z]*;/\$plugin->maturity = MATURITY_STABLE;/" version.php
           fi
 
       - name: remove files not needed for release
