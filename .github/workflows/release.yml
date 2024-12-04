@@ -40,17 +40,34 @@ jobs:
           tar --exclude='.git' -czf /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz *
           zip -x .git -r /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip *
 
-      - name: Upload release archives
+      - name: Calculate MD5 hash
+        run: |
+          md5sum /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz > /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz.md5
+          md5sum /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip > /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip.md5
+
+      - name: Upload release archive (ZIP)
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip
           tag: ${{ github.ref_name }}
-      - name: Upload release archives
+      - name: Upload release archive (TGZ)
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz
+          tag: ${{ github.ref_name }}
+      - name: Upload MD5 hash files (ZIP)
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip.md5
+          tag: ${{ github.ref_name }}
+      - name: Upload MD5 hash files (TGZ)
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz.md5
           tag: ${{ github.ref_name }}
 
       - name: Prepare release body (description)
