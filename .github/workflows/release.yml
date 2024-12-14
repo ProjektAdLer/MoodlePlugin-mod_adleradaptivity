@@ -35,9 +35,13 @@ jobs:
         run: |
           rm -rf .github tests vendor .gitignore composer.json composer.lock phpunit.xml dev_utils phpunit.xml infection.json5
 
-      - name: Create release archives
+      - name: Create release archive
         run: |
-          zip -x .git -r /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip *
+          FOLDER_NAME=$(echo ${{ env.PLUGIN_NAME }} | cut -d'_' -f2)
+          mkdir -p /tmp/$FOLDER_NAME
+          cp -r * /tmp/$FOLDER_NAME
+          cd /tmp
+          zip -r moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip $FOLDER_NAME
 
       - name: Calculate MD5 hash
         run: |
