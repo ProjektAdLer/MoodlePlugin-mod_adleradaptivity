@@ -45,7 +45,7 @@ jobs:
 
       - name: Calculate MD5 hash
         run: |
-          md5sum /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz > /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.tgz.md5
+          cd /tmp
           md5sum /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip > /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip.md5
 
       - name: Upload release archive (ZIP)
