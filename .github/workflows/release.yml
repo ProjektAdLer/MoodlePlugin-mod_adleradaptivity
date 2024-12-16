@@ -1,4 +1,4 @@
-name: Moodle Plugin CI
+name: Create release
 
 on:
   release:
