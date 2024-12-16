@@ -61,16 +61,9 @@ jobs:
           file: /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip.md5
           tag: ${{ github.ref_name }}
 
-      - name: Prepare release body (description)
-        id: prep_body
+      - name: Upload to package registry
         run: |
-          echo "${{ github.event.release.body }}" > changes.md
-
-      - name: Discord notification
-        uses: appleboy/discord-action@master
-        with:
-          webhook_id: ${{ secrets.DISCORD_RELEASE_CHANNEL_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_RELEASE_CHANNEL_WEBHOOK_TOKEN }}
-          username: GitHub Releases
-          message: "New release of **${{ github.repository }}**\nVersion: ${{ github.ref_name }} (${{github.event.release.name}})\n<${{ github.event.release.html_url }}>"
-          file: changes.md
+          cd /tmp
+          MD5_CONTENT=$(awk '{print $1 " '${{ github.ref_name }}.zip'"}' /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip.md5)
+          curl --fail-with-body -u upload:${{ secrets.PACKAGE_REGISTRY_UPLOAD_PASSWORD }} -T /tmp/moodle-${{ env.PLUGIN_NAME }}-${{ github.ref_name }}.zip https://packages.projekt-adler.eu/upload/moodle/${{ env.PLUGIN_NAME }}/${{ github.ref_name }}.zip
+          curl --fail-with-body -u upload:${{ secrets.PACKAGE_REGISTRY_UPLOAD_PASSWORD }} -X PUT --data "$MD5_CONTENT" https://packages.projekt-adler.eu/upload/moodle/${{ env.PLUGIN_NAME }}/${{ github.ref_name }}.zip.md5
