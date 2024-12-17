@@ -17,18 +17,10 @@ und können vom Nutzer auch bearbeitet werden. Der Zustand zwischen 3D und Moodl
 > Dieses Plugin kann nur in Verwendung mit dem gesamten AdLer Projekt verwendet werden. Es funktioniert zwar theoretisch standalone,
 > es ist aber nicht vorgesehen, Elemente über Moodle anzulegen/zu bearbeiten, wodurch es für sich alleine nicht sinnvoll nutzbar ist. 
 
-
 ## Kompabilität
 Folgende Versionen werden unterstützt (mit mariadb und postresql getestet):
 
-| Moodle Branch           | PHP Version |
-|-------------------------|-------------|
-| MOODLE_404_STABLE       | 8.1         |
-| MOODLE_404_STABLE       | 8.2         |
-| MOODLE_404_STABLE       | 8.3         |
-| MOODLE_405_STABLE (LTS) | 8.1         |
-| MOODLE_405_STABLE (LTS) | 8.2         |
-| MOODLE_405_STABLE (LTS) | 8.3         |
+siehe [plugin_compatibility.json](plugin_compatibility.json)
 
 ## Development
 Um die question bank für ein Adaptivitätsmodul anzuzeigen, den folgenden Code in `/lib.php` einfügen:
