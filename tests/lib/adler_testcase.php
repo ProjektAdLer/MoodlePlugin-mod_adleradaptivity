@@ -24,9 +24,7 @@ trait general_testcase_adjustments{
         Mockery::resetContainer();
 
         // workaround for beStrictAboutOutputDuringTests = true in default moodle phpunit configuration
-        if ($this->getTestResultObject()->isStrictAboutOutputDuringTests()){
-            $this->expectOutputRegex('/.*/');
-        }
+        $this->expectOutputRegex('/.*/');
     }
 
     public function tearDown(): void {
