@@ -14,7 +14,7 @@ require_once($CFG->dirroot . '/question/tests/generator/lib.php');
 
 
 class answer_questions_test extends adler_externallib_testcase {
-    public function provide_test_execute_integration_data() {
+    public static function provide_test_execute_integration_data() {
         return [
             'question correct' => [
                 'q1' => 'correct',
@@ -121,7 +121,7 @@ class answer_questions_test extends adler_externallib_testcase {
         }
     }
 
-    public function provide_test_execute_integration__check_question_answered_correctly_once_data() {
+    public static function provide_test_execute_integration__check_question_answered_correctly_once_data() {
         return [
             'successful 1' => [
                 'attempt1' => 'correct',

@@ -16,7 +16,7 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php'
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 class view_page_test extends adler_testcase {
-    public function provider_test_request_parameters(): array {
+    public static function provider_test_request_parameters(): array {
         return [
             'null' => [null],
             '1' => [1],
