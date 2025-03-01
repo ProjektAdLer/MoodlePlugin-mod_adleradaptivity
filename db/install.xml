@@ -43,16 +43,18 @@
         <KEY NAME="fk_adleradaptivity_task" TYPE="foreign" FIELDS="adleradaptivity_task_id" REFTABLE="adleradaptivity_tasks" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="adleradaptivity_attempts" COMMENT="stores relation between a 'question' attempt and a user (looks like the question attempts are user independent)">
+    <TABLE NAME="adleradaptivity_attempts" COMMENT="stores relation between a question_usage (moodle class for attempts) and the user">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="attempt_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Every attempt started is represented as a line in the question_usages table. question_attemps are attempts on individual questions."/>
         <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User owning this attempt"/>
+        <FIELD NAME="adleradaptivity_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Adleradaptivity activity this attempt is part of. Technically redundant as this relation is also provided via attempt_id -&gt; question_usage -&gt; context -&gt; adlerataptivity, but makes lots of queries way simpler."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="fk_attempt_id" TYPE="foreign" FIELDS="attempt_id" REFTABLE="question_usages" REFFIELDS="id"/>
         <KEY NAME="fk_user_id" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="fk_adleradaptivity_id" TYPE="foreign" FIELDS="adleradaptivity_id" REFTABLE="adleradaptivity" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
