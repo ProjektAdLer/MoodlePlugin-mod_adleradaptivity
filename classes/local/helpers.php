@@ -52,12 +52,15 @@ class helpers {
                     return false;
                 }
 
+                $adleradaptivity_id = get_coursemodule_from_id('adleradaptivity', $cmid)->instance;
+
                 $quba = static::generate_new_attempt($cmid);
                 $attempt_id = $quba->get_id();
 
                 $adleradaptivity_attempt = new stdClass();
                 $adleradaptivity_attempt->attempt_id = $attempt_id;
                 $adleradaptivity_attempt->user_id = $userid;
+                $adleradaptivity_attempt->adleradaptivity_id = $adleradaptivity_id;
 
                 $adleradaptivity_attempt_repository = di::get(adleradaptivity_attempt_repository::class);
                 $adleradaptivity_attempt_repository->create_adleradaptivity_attempt($adleradaptivity_attempt);

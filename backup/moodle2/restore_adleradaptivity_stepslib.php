@@ -126,6 +126,8 @@ class restore_adleradaptivity_activity_structure_step extends restore_questions_
             return;
         }
 
+        $data->adleradaptivity_id = $this->get_new_parentid('adleradaptivity');
+
         // The data is actually inserted into the database later in inform_new_usage_id.
         $this->current_adleradaptivity_attempt = clone($data);
     }
