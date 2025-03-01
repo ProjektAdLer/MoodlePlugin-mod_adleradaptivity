@@ -7,6 +7,7 @@ require_once($CFG->libdir . '/questionlib.php');
 
 use core\di;
 use mod_adleradaptivity\local\db\adleradaptivity_question_repository;
+use mod_adleradaptivity\local\db\adleradaptivity_task_repository;
 use moodle_exception;
 use question_answer;
 use question_attempt;
@@ -99,6 +100,21 @@ class completion_helpers {
                 return self::STATUS_INCORRECT;
             }
         }
+    }
+
+    public static function check_module_completed(question_usage_by_activity $quba, int $module_instance_id): bool {
+        $tasks = di::get(adleradaptivity_task_repository::class)->get_tasks_by_adleradaptivity_id($module_instance_id);
+
+        // check if all tasks are completed
+        foreach ($tasks as $task) {
+            $task_status = completion_helpers::check_task_status($quba, $task->id, $task->required_difficulty);
+            if (in_array($task_status, [completion_helpers::STATUS_NOT_ATTEMPTED, completion_helpers::STATUS_INCORRECT])) {
+                // the other states TASK_STATUS_CORRECT, TASK_STATUS_OPTIONAL_NOT_ATTEMPTED and TASK_STATUS_OPTIONAL_INCORRECT are considered as completed in this context
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

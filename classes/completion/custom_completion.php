@@ -44,7 +44,6 @@ class custom_completion extends activity_custom_completion {
      */
     protected function check_module_completed(): bool {
         $quba = helpers::load_or_create_question_usage(intval($this->cm->id), null, false);
-        $tasks = $this->task_repository->get_tasks_by_adleradaptivity_id($this->cm->instance);
 
         // check if there is an attempt, if not the module was not yet started and therefore not completed
         if ($quba === false) {
@@ -52,15 +51,7 @@ class custom_completion extends activity_custom_completion {
         }
 
         // check if all tasks are completed
-        foreach ($tasks as $task) {
-            $task_status = completion_helpers::check_task_status($quba, $task->id, $task->required_difficulty);
-            if (in_array($task_status, [completion_helpers::STATUS_NOT_ATTEMPTED, completion_helpers::STATUS_INCORRECT])) {
-                // the other states TASK_STATUS_CORRECT, TASK_STATUS_OPTIONAL_NOT_ATTEMPTED and TASK_STATUS_OPTIONAL_INCORRECT are considered as completed in this context
-                return false;
-            }
-        }
-
-        return true;
+        return completion_helpers::check_module_completed($quba, (int) $this->cm->instance);
     }
 
     /**

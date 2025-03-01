@@ -7,7 +7,6 @@ defined('MOODLE_INTERNAL') || die();
 use coding_exception;
 use completion_info;
 use html_writer;
-use mod_adleradaptivity\external\answer_questions;
 use mod_adleradaptivity\local\completion_helpers;
 use mod_adleradaptivity\local\helpers;
 use moodle_exception;

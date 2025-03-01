@@ -35,8 +35,6 @@ function adleradaptivity_supports(string $feature): bool|string|null {
  * creation form is submitted. This function is only called when adding
  * an activity and should contain any logic required to add the activity.
  *
- *
- *
  * @param $instancedata
  * @param $mform
  * @return int
