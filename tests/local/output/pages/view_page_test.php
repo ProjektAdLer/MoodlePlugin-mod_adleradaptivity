@@ -143,7 +143,10 @@ class view_page_test extends adler_testcase {
         $moodle_attempt->set_preferred_behaviour(1);
         question_engine::save_questions_usage_by_activity($moodle_attempt);
         // then create an adleradaptivity attempt
-        $attempt = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity')->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user1->id);
+        $attempt = $this
+            ->getDataGenerator()
+            ->get_plugin_generator('mod_adleradaptivity')
+            ->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user1->id, $adleradaptivity->id);
 
         // login as user1
         $this->setUser($user1);
@@ -186,7 +189,10 @@ class view_page_test extends adler_testcase {
         $moodle_attempt->set_preferred_behaviour(1);
         question_engine::save_questions_usage_by_activity($moodle_attempt);
         // then create an adleradaptivity attempt
-        $attempt = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity')->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user1->id);
+        $attempt = $this
+            ->getDataGenerator()
+            ->get_plugin_generator('mod_adleradaptivity')
+            ->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user1->id, $adleradaptivity->id);
 
         // login as user2
         $this->setUser($user2);
@@ -228,7 +234,10 @@ class view_page_test extends adler_testcase {
         $moodle_attempt->set_preferred_behaviour(1);
         question_engine::save_questions_usage_by_activity($moodle_attempt);
         // then create an adleradaptivity attempt
-        $attempt = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity')->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user1->id);
+        $attempt = $this
+            ->getDataGenerator()
+            ->get_plugin_generator('mod_adleradaptivity')
+            ->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user1->id, $adleradaptivity->id);
 
         // login as user2
         $this->setUser($user1);

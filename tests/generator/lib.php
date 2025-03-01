@@ -119,11 +119,12 @@ class mod_adleradaptivity_generator extends testing_module_generator {
         return $question;
     }
 
-    public function create_mod_adleradaptivity_attempt(int $attempt_id, int $user_id, bool $insert = true): object {
+    public function create_mod_adleradaptivity_attempt(int $attempt_id, int $user_id, int $adleradaptivity_id, bool $insert = true): object {
         global $DB;
         $default_params = [
             'attempt_id' => $attempt_id,
             'user_id' => $user_id,
+            'adleradaptivity_id' => $adleradaptivity_id,
         ];
 //        $params = array_merge($default_params, $params);
         $params = $default_params;

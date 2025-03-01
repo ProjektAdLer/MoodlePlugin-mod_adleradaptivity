@@ -139,6 +139,7 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
 
         // just check that the object is not empty
         $this->assertArrayHasKey('attempt_id', (array)$restored_adler_attempt);
+        $this->assertEquals($restored_module->instance, $restored_adler_attempt->adleradaptivity_id);
     }
 
     /** Get parsed xml from backup controller object.

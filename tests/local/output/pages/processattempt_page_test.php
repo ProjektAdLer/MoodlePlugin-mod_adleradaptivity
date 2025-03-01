@@ -46,7 +46,10 @@ class processattempt_page_test extends adler_testcase {
         $moodle_attempt = question_engine::make_questions_usage_by_activity('mod_adleradaptivity', $module_context);
         $moodle_attempt->set_preferred_behaviour(1);
         question_engine::save_questions_usage_by_activity($moodle_attempt);
-        $attempt = $this->getDataGenerator()->get_plugin_generator('mod_adleradaptivity')->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user->id);
+        $attempt = $this
+            ->getDataGenerator()
+            ->get_plugin_generator('mod_adleradaptivity')
+            ->create_mod_adleradaptivity_attempt($moodle_attempt->get_id(), $user->id, $adleradaptivity->id);
 
         // Login as the user
         if ($isValid) {
