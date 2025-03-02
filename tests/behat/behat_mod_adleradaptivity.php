@@ -86,21 +86,6 @@ class behat_mod_adleradaptivity extends behat_question_base {
     }
 
     /**
-     * Checks, that current page PATH matches regular expression
-     * Example: Then the url should match "superman is dead"
-     * Example: Then the uri should match "log in"
-     * Example: And the url should match "log in"
-     *
-     * Taken from MinkExtension
-     *
-     * @Then /^the (?i)url(?-i) should match (?P<pattern>"(?:[^"]|\\")*")$/
-     * @throws ExpectationException
-     */
-    public function assertUrlRegExp(string $pattern): void {
-        $this->assertSession()->addressMatches($this->fixStepArgument($pattern));
-    }
-
-    /**
      * Returns fixed step argument (with \\" replaced back to ")
      *
      * Taken from MinkExtension
