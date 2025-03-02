@@ -30,6 +30,9 @@ trait general_testcase_adjustments{
     public function tearDown(): void {
         parent::tearDown();
 
+        // output everything that was captured by expectOutput
+        fwrite(STDOUT, $this->getActualOutputForAssertion());
+
         Mockery::close();
     }
 }
