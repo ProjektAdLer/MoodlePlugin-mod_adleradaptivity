@@ -144,13 +144,14 @@ class mod_adleradaptivity_generator extends testing_module_generator {
      * @param bool $task_required If true, the task will be required. If false, the task will not be required.
      * @param bool $singlechoice If true, the question will be a single choice question. If false, the question will be a multiple choice question.
      * @param bool $q2 If true, a second question will be created. If false, a second question will not be created.
+     * @param string $prefix Used in everything that should be unique. Use if calling this function multiple times in a test.
      * @return array Returns an array containing the user, the first question (q1), and the second question (q2) if it was created.
      */
-    public function create_course_with_test_questions(testing_data_generator $generator, bool $task_required = true, bool $singlechoice = false, bool $q2 = false): array {
+    public function create_course_with_test_questions(testing_data_generator $generator, bool $task_required = true, bool $singlechoice = false, bool $q2 = false, string $prefix = ""): array {
         $adleradaptivity_generator = $generator->get_plugin_generator('mod_adleradaptivity');
 
-        $uuid = '75c248df-562f-40f7-9819-ebbeb078954b';
-        $uuid2 = '75c248df-562f-40f7-9819-ebbeb0789540';
+        $uuid = '75c248df-562f-40f7-9819-ebbeb078954b' . $prefix;
+        $uuid2 = '75c248df-562f-40f7-9819-ebbeb0789540' . $prefix;
 
         // create user, course and enrol user
         $user = $generator->create_user();
@@ -159,8 +160,8 @@ class mod_adleradaptivity_generator extends testing_module_generator {
 
         // create adleradaptivity module
         $adleradaptivity_module = $generator->create_module('adleradaptivity', ['course' => $course->id, 'completion' => COMPLETION_TRACKING_AUTOMATIC]);
-        $adleradaptivity_task = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => $task_required ? 100 : null]);
-        $adleradaptivity_task2 = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => null, 'uuid' => 'uuid2', 'name' => 'task2']);
+        $adleradaptivity_task = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => $task_required ? 100 : null, 'uuid' => 'uuid1' . $prefix]);
+        $adleradaptivity_task2 = $adleradaptivity_generator->create_mod_adleradaptivity_task($adleradaptivity_module->id, ['required_difficulty' => null, 'uuid' => 'uuid2' . $prefix, 'name' => 'task2']);
         $adleradaptivity_question = $adleradaptivity_generator->create_mod_adleradaptivity_question($adleradaptivity_task->id);
         if ($q2) {
             $adleradaptivity_question2 = $adleradaptivity_generator->create_mod_adleradaptivity_question($adleradaptivity_task->id, ['difficulty' => 200]);
@@ -168,7 +169,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
 
         // create question
         $generator = $generator->get_plugin_generator('core_question');
-        $qcat = $generator->create_question_category(['name' => 'My category', 'sortorder' => 1, 'idnumber' => 'myqcat']);
+        $qcat = $generator->create_question_category(['name' => 'My category' . $prefix, 'sortorder' => 1, 'idnumber' => 'myqcat' . $prefix]);
         $question1 = $adleradaptivity_generator->create_moodle_question($qcat->id, $singlechoice, 'q1', $uuid);
         if ($q2) {
             $question2 = $adleradaptivity_generator->create_moodle_question($qcat->id, $singlechoice, 'q2', $uuid2);

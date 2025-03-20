@@ -37,3 +37,11 @@ $string['view_question_success'] = 'Diese Frage wurde mindestens einmal richtig 
 $string['difficulty_0'] = 'Leicht';
 $string['difficulty_100'] = 'Mittel';
 $string['difficulty_200'] = 'Schwer';
+
+$string['privacy:metadata:core_question'] = 'Speichert question usage Informationen im core_question-Subsystem.';
+$string['privacy:metadata:adleradaptivity_attempts'] = 'Verknüpft Benutzer mit ihren Versuchen von AdLer-Adaptivitätselementen.';
+$string['privacy:metadata:adleradaptivity_attempts:user_id'] = 'Die ID des Benutzers, der den Versuch gemacht hat.';
+$string['privacy:metadata:adleradaptivity_attempts:attempt_id'] = 'Die ID des Versuchs.';
+$string['privacy:export:attempt'] = 'Versuch';
+$string['privacy:export:attempt:completed'] = 'Abgeschlossen';
+$string['privacy:export:attempt:not_completed'] = 'Nicht abgeschlossen';

@@ -37,3 +37,11 @@ $string['view_question_success'] = 'This question has been answered correctly at
 $string['difficulty_0'] = 'Easy';
 $string['difficulty_100'] = 'Medium';
 $string['difficulty_200'] = 'Hard';
+
+$string['privacy:metadata:core_question'] = 'Stores question usage information in the core_question subsystem.';
+$string['privacy:metadata:adleradaptivity_attempts'] = 'Links users to their attempts of AdLer adaptivity elements.';
+$string['privacy:metadata:adleradaptivity_attempts:user_id'] = 'The ID of the user who made the attempt.';
+$string['privacy:metadata:adleradaptivity_attempts:attempt_id'] = 'The ID of the attempt.';
+$string['privacy:export:attempt'] = 'Attempt';
+$string['privacy:export:attempt:completed'] = 'Completed';
+$string['privacy:export:attempt:not_completed'] = 'Not completed';
