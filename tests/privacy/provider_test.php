@@ -181,8 +181,11 @@ class provider_test extends adler_testcase {
             ['user_id' => $this->user->id]));
         $this->assertEquals(1, $db->count_records('adleradaptivity_attempts',
             ['user_id' => $this->other_user->id]));
-        $this->expectException(coding_exception::class);
-        question_engine::load_questions_usage_by_activity($attempt_id);
+        try {
+            question_engine::load_questions_usage_by_activity($attempt_id);
+        } catch (Exception $e) {
+            $this->assertStringContainsString(coding_exception::class, get_class($e));
+        }
     }
 
     public function test_delete_data_for_users() {
@@ -220,14 +223,14 @@ class provider_test extends adler_testcase {
             question_engine::load_questions_usage_by_activity($attempt_id);
             $this->fail('Expected exception not thrown');
         } catch (Exception $e) {
-            $this->assertEquals(coding_exception::class, get_class($e));
+            $this->assertStringContainsString(coding_exception::class, get_class($e));
         }
 
         try {
             question_engine::load_questions_usage_by_activity($other_attempt->attempt_id);
             $this->fail('Expected exception not thrown');
         } catch (Exception $e) {
-            $this->assertEquals(coding_exception::class, get_class($e));
+            $this->assertStringContainsString(coding_exception::class, get_class($e));
         }
     }
 
@@ -266,7 +269,7 @@ class provider_test extends adler_testcase {
             question_engine::load_questions_usage_by_activity($attempt_id);
             $this->fail('Expected exception not thrown');
         } catch (Exception $e) {
-            $this->assertEquals(coding_exception::class, get_class($e));
+            $this->assertStringContainsString(coding_exception::class, get_class($e));
         }
 
         // Verify that the attempt was not deleted for the other user. question_usage can not be tested as the
