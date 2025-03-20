@@ -2,6 +2,7 @@
 
 namespace mod_adleradaptivity\privacy;
 
+use coding_exception;
 use context_module;
 use core\context\module;
 use core\di;
@@ -180,7 +181,7 @@ class provider_test extends adler_testcase {
             ['user_id' => $this->user->id]));
         $this->assertEquals(1, $db->count_records('adleradaptivity_attempts',
             ['user_id' => $this->other_user->id]));
-        $this->expectException('coding_exception');
+        $this->expectException(coding_exception::class);
         question_engine::load_questions_usage_by_activity($attempt_id);
     }
 
@@ -219,14 +220,14 @@ class provider_test extends adler_testcase {
             question_engine::load_questions_usage_by_activity($attempt_id);
             $this->fail('Expected exception not thrown');
         } catch (Exception $e) {
-            $this->assertEquals('coding_exception', get_class($e));
+            $this->assertEquals(coding_exception::class, get_class($e));
         }
 
         try {
             question_engine::load_questions_usage_by_activity($other_attempt->attempt_id);
             $this->fail('Expected exception not thrown');
         } catch (Exception $e) {
-            $this->assertEquals('coding_exception', get_class($e));
+            $this->assertEquals(coding_exception::class, get_class($e));
         }
     }
 
@@ -265,7 +266,7 @@ class provider_test extends adler_testcase {
             question_engine::load_questions_usage_by_activity($attempt_id);
             $this->fail('Expected exception not thrown');
         } catch (Exception $e) {
-            $this->assertEquals('coding_exception', get_class($e));
+            $this->assertEquals(coding_exception::class, get_class($e));
         }
 
         // Verify that the attempt was not deleted for the other user. question_usage can not be tested as the
