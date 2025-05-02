@@ -45,7 +45,7 @@ jobs:
           echo "include_list=$include_str" >> "$GITHUB_OUTPUT"
 
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     needs: define-matrix
 
     services:
