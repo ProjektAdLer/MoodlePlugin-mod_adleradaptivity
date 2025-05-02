@@ -80,7 +80,7 @@ class lib_test extends adler_testcase {
     /**
      * Data provider for test_delete_complex_instance.
      */
-    public function data_provider_for_test_delete_complex_instance() {
+    public static function data_provider_for_test_delete_complex_instance() {
         return [
             'Test case 1: Without attempt' => [false],
             'Test case 2: With attempt' => [true],

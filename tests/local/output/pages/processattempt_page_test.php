@@ -16,7 +16,7 @@ require_once($CFG->dirroot . '/mod/adleradaptivity/tests/lib/adler_testcase.php'
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 
 class processattempt_page_test extends adler_testcase {
-    public function check_attempt_permission_provider() {
+    public static function check_attempt_permission_provider() {
         return [
             'valid attempt' => [true],
             'invalid attempt' => [false],

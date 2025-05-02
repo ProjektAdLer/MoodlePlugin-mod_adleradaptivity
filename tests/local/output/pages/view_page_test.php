@@ -71,7 +71,7 @@ class view_page_test extends adler_testcase {
         $this->assertEquals(1, $result[3]->instance); // module_instance
     }
 
-    public function invalidAttemptProvider(): array {
+    public static function invalidAttemptProvider(): array {
         return [
             '-7' => [-7],
             'abc' => ['abc'],
