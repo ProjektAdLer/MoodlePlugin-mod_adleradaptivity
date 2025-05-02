@@ -45,7 +45,7 @@ jobs:
           echo "include_list=$include_str" >> "$GITHUB_OUTPUT"
 
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: define-matrix
 
     services:
@@ -58,7 +58,7 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
       mariadb:
-        image: mariadb:10
+        image: mariadb:11
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -72,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.3']
+        php: ['8.4']
         moodle-branch: ['main']
         database: [pgsql, mariadb]
         experimental: [true]
