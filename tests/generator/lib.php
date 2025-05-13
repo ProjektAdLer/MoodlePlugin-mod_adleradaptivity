@@ -10,7 +10,7 @@ class mod_adleradaptivity_generator extends testing_module_generator {
      * @return stdClass
      * @throws coding_exception
      */
-    public function create_instance($record = null, array $options = null): stdClass {
+    public function create_instance($record = null, ?array $options = null): stdClass {
         $default_params = [
             'name' => 'name',
             'intro' => 'intro',
