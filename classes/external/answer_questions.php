@@ -220,7 +220,7 @@ class answer_questions extends external_api {
      *     'choice4' => "0",
      *  ] // submitted this question
      */
-    private static function format_multichoice_answer(string $answer, bool $is_single_choice, int $number_of_choices = null): array {
+    private static function format_multichoice_answer(string $answer, bool $is_single_choice, ?int $number_of_choices = null): array {
         // Answer shuffling is no problem because it is disabled for all attempts in this module
 
         $answers_array = json_decode($answer);
