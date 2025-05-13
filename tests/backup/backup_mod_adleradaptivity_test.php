@@ -81,10 +81,14 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
     public function test_restore() {
         global $DB;
 
+        $version_with_mod_qbank = $DB->record_exists('modules', ['name' => 'qbank']);
+
         // delete course
         delete_course($this->course_data['course']->id);
         $this->assertCount(0, $DB->get_records('adleradaptivity_questions'));
-        $this->assertCount(0, $DB->get_records('course_modules'));
+        $this->assertCount(
+            $version_with_mod_qbank ? 1 : 0,  // https://tracker.moodle.org/browse/MDL-71378
+            $DB->get_records('course_modules'));
 
         // create user with restore capabilities
         $admin_user = $this->getDataGenerator()->create_user();
@@ -124,6 +128,9 @@ class backup_mod_adleradaptivity_test extends adler_testcase {
         $restored_adler_questions = $DB->get_records('adleradaptivity_questions');
 
         // verify restored course
+        $this->assertCount(
+            $version_with_mod_qbank ? 2 : 1,   // https://tracker.moodle.org/browse/MDL-71378
+            $DB->get_records('course_modules'));
         $this->assertEquals('adleradaptivity', $restored_module->modname);
         $this->assertCount(2, $restored_adler_questions);
 
